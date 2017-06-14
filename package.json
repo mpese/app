@@ -1,0 +1,17 @@
+{
+  "name": "MPESE",
+  "version": "0.0.1",
+  "description": "Manage build for the MPESE project.",
+  "author": "Mike Jones (mike.a.jones@bristol.ac.uk)",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://bitbucket.org/mpese/mpese.git"
+  },
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-contrib-clean": "^1.1.0",
+    "grunt-contrib-copy": "^1.0.0",
+    "grunt-zip": "^0.17.1"
+  }
+}
