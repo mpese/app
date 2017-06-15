@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <people>
+        <group>
+            <title>Project Team</title>
+            <members>
+                <person>
+                    <title>Dr.</title>
+                    <name>Noah Millstone</name>
+                    <role>Principal Investigator</role>
+                    <institution>University of Birmingham</institution>
+                    <bio>Mauris eget fermentum neque. Duis vehicula eleifend nunc sed malesuada.
+                        Ut scelerisque pharetra eros ut porttitor. Nulla sit amet placerat lectus, 
+                        ut varius erat. Interdum et malesuada fames ac ante ipsum primis in 
+                        faucibus. Quisque tristique nunc luctus commodo interdum. Suspendisse 
+                        nisi justo, rutrum sed dolor vitae, tempor rutrum enim.</bio>
+                </person>
+                <person>
+                    <title>Dr.</title>
+                    <name>Sebastiaan Verweij</name>
+                    <role>Co-Investigator</role>
+                    <institution>University of Bristol</institution>
+                    <bio>Sebastiaan Verweij is Lecturer in Late Medieval and Early Modern Literature 
+                        at the Department of English at the University of Bristol. He was previously 
+                        a researcher for <em>Scriptorium: Medieval and Early Modern Manuscripts Online</em>, 
+                        and <em>The Oxford Edition of the Sermons of John Donne</em>. His first book 
+                        <em>The Literary Culture of Early Modern Scotland: Manuscript Production and 
+                            Transmission, 1560-1625</em> (Oxford University Press, 2016) has won 
+                            the Saltire Society's 'Scottish Research Book of the Year 2016' award. 
+                            He is also currently at work, with Professor Peter McCullough, on the 
+                            <em>Textual Companion</em> volume in <em>The Oxford Edition of the Sermons 
+                            of John Donne</em>. See further info see 
+                            <a href="http://research-information.bristol.ac.uk/person/s.verweij">http://research-information.bristol.ac.uk/person/s.verweij</a>.</bio>
+                </person>
+                <person>
+                    <title>Mr.</title>
+                    <name>Richard Bell</name>
+                    <role>Research Associate</role>
+                    <institution>University of Birmingham</institution>
+                    <bio>Mauris eget fermentum neque. Duis vehicula eleifend nunc sed malesuada.
+                        Ut scelerisque pharetra eros ut porttitor. Nulla sit amet placerat lectus, 
+                        ut varius erat. Interdum et malesuada fames ac ante ipsum primis in 
+                        faucibus. Quisque tristique nunc luctus commodo interdum. Suspendisse 
+                        nisi justo, rutrum sed dolor vitae, tempor rutrum enim.</bio>
+                </person>
+                <person>
+                    <title>Mr.</title>
+                    <name>Mike Jones</name>
+                    <role>Developer</role>
+                    <institution>University of Bristol</institution>
+                    <bio>Mike Jones has over eighteen years’ experience of software development, 
+                        working with numerous software languages, frameworks, open standards and 
+                        metadata standards. He has expertise and knowledge of Python and Java 
+                        development, XML technologies, and web and mobile development. Since 
+                        joining the University of Bristol in 2006 Mike has worked on a large 
+                        number of externally funded projects, including the AHRC-funded 
+                        <a href="http://knowyourbristol.org/">Know Your Bristol On the Move</a> and 
+                        <a href="http://outstories.knowyourbristol.org/">Outstories</a> projects</bio>
+                </person>
+            </members>
+        </group>
+    </people>
+</project>
