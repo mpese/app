@@ -28,22 +28,20 @@ if ($exist:path eq "") then
 
 else if ($exist:path eq "/") then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="index.html"/>
+        <forward url="{$exist:controller}/project.xql"/>
     </dispatch>
-
-(: change only during sale - remove again after sale is over :)
-else if ($exist:path eq "/index.html") then
+else if (ends-with($exist:resource, ".html")) then
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="index.html"/>
+		<forward url="{$exist:controller}/project.xql"/>
     </dispatch>
 
-
-
-else if (ends-with($exist:resource, ".html")) then (
-        util:declare-option("exist:serialize", "method=html5 media-type=text/html"),
-        doc($app-root || $exist:resource)
-    ) else
-    (: everything is passed through :)
-        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-            <cache-control cache="yes"/>
-        </dispatch>
+else if (contains($exist:path, "/$shared/")) then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="/shared-resources/{substring-after($exist:path, '/$shared/')}"/>
+    </dispatch>
+    
+else
+    (: everything else is passed through :)
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <cache-control cache="yes"/>
+    </dispatch>

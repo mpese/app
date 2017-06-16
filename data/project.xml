@@ -1,5 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project>
+    <abbr>MPESE</abbr>
+    <title>Manuscript Pamphleteering in Early Stuart England</title>
+    <abstract><em>Manuscript Pamphleteering in Early Stuart England</em> is an AHRC-funded project that will map 
+        a large but little-known corpus of handwritten political pamphlets that were composed in England between 
+        the Stuart accession (1603) and the outbreak of Civil War (1642).</abstract>
+    <description><p>Before the outbreak of Civil War in 1642, England developed a large, influential and often 
+        radical pamphlet literature. Speeches, learned briefs,  
+        and scaffold apologies joined character assassinations, secret histories and  
+        conspiracy theories in a jumbled literary underground. Pamphlets were produced 
+        commercially and informally and circulated across the kingdom; they fascinated 
+        readers and influenced events. Large numbers of copies survive - probably in 
+        the tens of thousands - suggesting a significant readership. Nevertheless, 
+        this pamphlet literature is rarely mentioned and even more rarely analyzed by 
+        historians or literary critics, not least because it was written by hand rather 
+        than printed with movable type.</p>
+        <p>This project aims to survey the vast hidden archive of early Stuart 
+            England's manuscript pamphlets. In collaboration with the British Library, 
+            this project will construct a database of manuscript pamphlet texts, 
+            bibliographic information, and digital images. This will allow users to 
+            search transcriptions of the pamphlets; analyze the distribution of copies 
+            through time and space; and see how such materials were presented: large 
+            and small, elaborate and plain, professional and amateur. The project will 
+            conduct additional research in the private papers of Francis Russell, fourth 
+            earl of Bedford, who was a major political figure of the early Stuart era as 
+            well as a reader and collector of manuscript pamphlets.</p></description>
+    <image>
+        <url>resources/img/mw133945.jpg</url>
+        <description>Francis Russell, 4th Earl of Bedford after George Vertue, pen and ink, late 18th to early 19th century (1737), NPG D28200.</description>
+        <copyright>National Portrait Gallery, London</copyright>
+    </image>
     <people>
         <group>
             <title>Project Team</title>
