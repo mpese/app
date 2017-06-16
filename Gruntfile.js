@@ -9,17 +9,17 @@ module.exports = function (grunt) {
         },
 
         clean: {
-            clean: ['dist']
+            clean: ['build', 'dist']
         },
 
         copy: {
-            dist: {
+            build: {
                 files: [
                     {
                         expand: true,
                         cwd: './',
-                        src: ['resources/**', '*.xql', '*.xml', '*.html'],
-                        dest: 'dist/'
+                        src: ['resources/**', 'data/*', '*.xql', '*.xml', '*.html'],
+                        dest: 'build/'
                     }
                 ]
             }
@@ -27,9 +27,9 @@ module.exports = function (grunt) {
 
         zip: {
             xar: {
-                cwd: 'dist/',
-                src: ['dist/**'],
-                dest: 'build/mpese.xar'
+                cwd: 'build/',
+                src: ['build/**'],
+                dest: 'dist/mpese.xar'
             }
         }
 
