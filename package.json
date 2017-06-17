@@ -6,7 +6,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://bitbucket.org/mpese/mpese.git"
+    "url": "git@bitbucket.org:researchit/mpese-app.git"
   },
   "devDependencies": {
     "grunt": "^1.0.1",

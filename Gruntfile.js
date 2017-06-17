@@ -17,9 +17,9 @@ module.exports = function (grunt) {
                 files: [
                     {
                         expand: true,
-                        cwd: './',
+                        cwd: './src/app',
                         src: ['resources/**', 'data/**', '*.xql', '*.xml', '*.html'],
-                        dest: 'build/'
+                        dest: './build/'
                     }
                 ]
             }
@@ -27,7 +27,7 @@ module.exports = function (grunt) {
 
         zip: {
             xar: {
-                cwd: 'build/',
+                cwd: './build/',
                 src: ['build/**'],
                 dest: 'dist/mpese.xar'
             }
