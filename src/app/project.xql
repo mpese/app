@@ -2,7 +2,9 @@ xquery version "3.0";
 declare boundary-space preserve;
 declare option exist:serialize "method=html5 media-type=text/html omit-xml-declaration=yes indent=yes";
 
-declare variable $project_uri := "/db/apps/mpese/data/project.xml";
+import module namespace config="http://mpese.rit.bris.ac.uk/config" at "modules/config.xqm";
+
+declare variable $project_uri := concat($config:data-root, "/project.xml");
 declare variable $data := doc($project_uri);
 declare variable $title := $data/project/title/text();
 
@@ -11,8 +13,12 @@ declare variable $title := $data/project/title/text();
     <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <meta name="description" content=""/>
-    <meta name="author" content="Mike Jones (mike.a.jones@bristol.ac.uk)"/>
+    <meta name="description" content="{$config:repo-descriptor//repo:description/text()}"/>
+    {
+        for $author in $config:repo-descriptor//repo:author
+            return
+                <meta name="author" content="{$author/text()}"/>
+    }
 
     <title>{$title}</title>
     
@@ -82,6 +88,8 @@ declare variable $title := $data/project/title/text();
           <img class="logo" src="resources/img/logo-bristol.svg" height="50" alt="University of Bristol"/>
           </div>
         <p>&#169; 2017 University of Birmingham, University of Bristol.</p>
+        <p class="pull-right">Version: {$config:repo-descriptor//repo:version/text()}; 
+        Deployed: {format-dateTime(xs:dateTime($config:repo-descriptor//repo:deployed/text()), "[D01]/[M01]/[Y0001]")}</p>
       </footer>
     
     </div> <!-- /container -->
