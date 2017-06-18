@@ -5,6 +5,7 @@ module namespace app="http://mpese.rit.bris.ac.uk/templates";
 import module namespace templates="http://exist-db.org/xquery/templates" ;
 import module namespace config="http://mpese.rit.bris.ac.uk/config" at "config.xqm";
 
+declare boundary-space preserve;
 
 (:~
  : This is a sample templating function. It will be called by the templating module if
@@ -51,7 +52,7 @@ declare function app:image($node as node(), $model as map(*)) {
 declare function app:people($node as node(), $model as map(*)) {
     <div>
      {
-        for $group in $config:project//people/group
+        for $group in $config:project//people/group[@id='project_team']
             return
                 <div class="group" id="{$group/@id}">
                     <h3>{$group/title/text()}</h3>
@@ -63,6 +64,25 @@ declare function app:people($node as node(), $model as map(*)) {
                                     <p>{$person/bio/node()}</p>
                                 </div>
                         }</div>
+                 </div>
+      }
+     </div>
+};
+
+declare function app:advisory($node as node(), $model as map(*)) {
+    <div>
+     {
+        for $group in $config:project//people/group[@id='advisory_board']
+            return
+                <div class="group" id="{$group/@id}">
+                    <h3>{$group/title/text()}</h3>
+                    <ul class="list-unstyled">{
+                        for $person in $group/members/person
+                            return
+                                <li>
+                                    {$person/title/text()} {$person/name/text()} ({$person/institution/text()})
+                                </li>
+                        }</ul>
                  </div>
       }
      </div>

@@ -1,11 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project>
     <abbr>MPESE</abbr>
     <title>Manuscript Pamphleteering in Early Stuart England</title>
-    <abstract><em>Manuscript Pamphleteering in Early Stuart England</em> is an AHRC-funded project that will map 
+    <abstract>
+        <em>Manuscript Pamphleteering in Early Stuart England</em> is an AHRC-funded project that will map 
         a large but little-known corpus of handwritten political pamphlets that were composed in England between 
         the Stuart accession (1603) and the outbreak of Civil War (1642).</abstract>
-    <description><p>Before the outbreak of Civil War in 1642, England developed a large, influential and often 
+    <description>
+        <p>Before the outbreak of Civil War in 1642, England developed a large, influential and often 
         radical pamphlet literature. Speeches, learned briefs,  
         and scaffold apologies joined character assassinations, secret histories and  
         conspiracy theories in a jumbled literary underground. Pamphlets were produced 
@@ -24,14 +25,15 @@
             and small, elaborate and plain, professional and amateur. The project will 
             conduct additional research in the private papers of Francis Russell, fourth 
             earl of Bedford, who was a major political figure of the early Stuart era as 
-            well as a reader and collector of manuscript pamphlets.</p></description>
+            well as a reader and collector of manuscript pamphlets.</p>
+    </description>
     <image>
         <url>resources/img/mw133945.jpg</url>
         <description>Francis Russell, 4th Earl of Bedford after George Vertue, pen and ink, late 18th to early 19th century (1737), NPG D28200.</description>
         <copyright>National Portrait Gallery, London</copyright>
     </image>
     <people>
-        <group>
+        <group id="project_team">
             <title>Project Team</title>
             <members>
                 <person>
@@ -86,6 +88,26 @@
                         number of externally funded projects, including the AHRC-funded 
                         <a href="http://knowyourbristol.org/">Know Your Bristol On the Move</a> and 
                         <a href="http://outstories.knowyourbristol.org/">Outstories</a> projects</bio>
+                </person>
+            </members>
+        </group>
+        <group id="advisory_board">
+            <title>Advisory Board</title>
+            <members>
+                <person>
+                    <title>Prof.</title>
+                    <name>Andrew McRae</name>
+                    <institution>University of Exeter</institution>
+                </person>
+                <person>
+                    <title>Prof.</title>
+                    <name>Richard Cust</name>
+                    <institution>University of Birmingham</institution>
+                </person>
+                <person>
+                    <title>Prof.</title>
+                    <name>Jason Peacey</name>
+                    <institution>Unicersity College London</institution>
                 </person>
             </members>
         </group>
