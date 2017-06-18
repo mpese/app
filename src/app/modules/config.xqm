@@ -31,6 +31,9 @@ declare variable $config:repo-descriptor := doc(concat($config:app-root, "/repo.
 (: The expath package file :)
 declare variable $config:expath-descriptor := doc(concat($config:app-root, "/expath-pkg.xml"))/expath:package;
 
+declare variable $config:project := doc(concat($config:data-root, "/project.xml"))/project;
+declare variable $config:app-abbrev := $config:project/abbr/text();
+
 (:~
  : Resolve the given path using the current application context.
  : If the app resides in the file system,
@@ -58,6 +61,10 @@ declare function config:expath-descriptor() as element(expath:package) {
 
 declare %templates:wrap function config:app-title($node as node(), $model as map(*)) as text() {
     $config:expath-descriptor/expath:title/text()
+};
+
+declare %templates:wrap function config:app-abbrev($node as node(), $model as map(*)) as text() {
+    $config:project/abbr/text()
 };
 
 declare function config:app-meta($node as node(), $model as map(*)) as element()* {
