@@ -6,7 +6,7 @@
     <type>application</type>
     <status>beta</status>
     <target>mpese</target>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <prepare>pre-install.xql</prepare>
     <finish/>
     <permissions user="guest" group="guest" mode="555"/>

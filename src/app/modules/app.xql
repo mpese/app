@@ -60,7 +60,7 @@ declare function app:people($node as node(), $model as map(*)) {
                         for $person in $group/members/person
                             return
                                 <div>
-                                    <h4>{$person/title/text()} {$person/name/text()} ({$person/institution/text()}) – {$person/role/text()}</h4>
+                                    <h4>{$person/name/text()} ({$person/institution/text()}) – {$person/role/text()}</h4>
                                     <p>{$person/bio/node()}</p>
                                 </div>
                         }</div>
@@ -72,7 +72,7 @@ declare function app:people($node as node(), $model as map(*)) {
 declare function app:advisory($node as node(), $model as map(*)) {
     <div>
      {
-        for $group in $config:project//people/group[@id='advisory_board']
+        for $group in $config:project//people/group[@id='committee' or @id='board']
             return
                 <div class="group" id="{$group/@id}">
                     <h3>{$group/title/text()}</h3>
