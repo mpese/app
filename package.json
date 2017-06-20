@@ -1,6 +1,6 @@
 {
   "name": "mpese-app",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Manage build for the MPESE project.",
   "author": "Mike Jones (mike.a.jones@bristol.ac.uk)",
   "license": "Apache-2.0",
