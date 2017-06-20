@@ -25,6 +25,30 @@ module.exports = function (grunt) {
             }
         },
 
+        replace: {
+            pkg: {
+                src: [ 'src/app/expath-pkg.xml'],
+                dest: 'build/expath-pkg.xml',
+                replacements: [
+                    {
+                        from: '@APPVERSION@',
+                        to: '<%= pkg.version %>'
+                    }
+                ],
+            },
+            
+            repo: {
+                src: [ 'src/app/repo.xml'],
+                dest: 'build/repo.xml',
+                replacements: [
+                    {
+                        from: '@APPVERSION@',
+                        to: '<%= pkg.version %>'
+                    }
+                ],
+            }
+        },
+
         zip: {
             xar: {
                 cwd: './build/',
@@ -41,9 +65,12 @@ module.exports = function (grunt) {
     // copy our files into place
     grunt.loadNpmTasks('grunt-contrib-copy');
 
+    // replace version numbers
+    grunt.loadNpmTasks('grunt-text-replace');
+
     // zip
     grunt.loadNpmTasks('grunt-zip');
 
     // default task
-    grunt.registerTask('default', ['clean', 'copy', 'zip'])
+    grunt.registerTask('default', ['clean', 'copy', 'replace', 'zip'])
 }
