@@ -36,10 +36,21 @@ module.exports = function (grunt) {
                     }
                 ],
             },
-            
+
             repo: {
                 src: [ 'src/app/repo.xml'],
                 dest: 'build/repo.xml',
+                replacements: [
+                    {
+                        from: '@APPVERSION@',
+                        to: '<%= pkg.version %>'
+                    }
+                ],
+            },
+
+            deploy: {
+                src: [ 'src/deploy/deploy.xql'],
+                dest: 'dist/deploy.xql',
                 replacements: [
                     {
                         from: '@APPVERSION@',
