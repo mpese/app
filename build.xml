@@ -18,35 +18,29 @@
         <classpath refid="classpath.core"/>
     </typedef>
 
-    <!-- -->
-    <target name="resources">
-        <xdb:list user="admin" password="admin" uri="xmldb:exist://localhost:9090/exist/xmlrpc/db/xar_files"
-            resources="true" outputproperty="resources"/>
-            <echoproperties>
-                <propertyset>
-                    <propertyref name="resources"/>
-                </propertyset>
-            </echoproperties>
-    </target>
-
+    <!-- Store the .xar file in the database -->
     <target name="store">
+        <input message="Enter password:" addproperty="password">
+            <handler classname="org.apache.tools.ant.input.SecureInputHandler" />
+        </input>
         <xdb:store uri="xmldb:exist://localhost:9090/exist/xmlrpc/db/xar_files"
-            createcollection="true" user="admin" password="admin">
+            createcollection="true" user="admin" password="${password}">
             <fileset dir="dist"> 
                 <include name="*.xar"/>
             </fileset>
         </xdb:store>
     </target>
 
+    <!-- Deploy the application .xar -->
     <target name="deploy" depends="store">
         <loadfile property="xquery" srcFile="dist/deploy.xql"/>
         <xdb:xquery uri="xmldb:exist://localhost:9090/exist/xmlrpc/db" user="admin" 
-                    password="admin" query="${xquery}" outputproperty="resources"/>
+                    password="${password}" query="${xquery}" outputproperty="deploy_output"/>
             <echoproperties>
                 <propertyset>
-                    <propertyref name="resources"/>
+                    <propertyref name="deploy_output"/>
                 </propertyset>
-            </echoproperties>    
+            </echoproperties> 
     </target>
 
 </project>
