@@ -38,10 +38,15 @@
         </xdb:store>
     </target>
 
-    <target name="deploy">
+    <target name="deploy" depends="store">
         <loadfile property="xquery" srcFile="dist/deploy.xql"/>
         <xdb:xquery uri="xmldb:exist://localhost:9090/exist/xmlrpc/db" user="admin" 
-            password="admin" query="${xquery}"/>
+                    password="admin" query="${xquery}" outputproperty="resources"/>
+            <echoproperties>
+                <propertyset>
+                    <propertyref name="resources"/>
+                </propertyset>
+            </echoproperties>    
     </target>
 
 </project>
