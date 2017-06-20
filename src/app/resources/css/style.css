@@ -18,5 +18,17 @@
 }
 
 .logo-block {
-	margin: 10px 0 10px 0;
+	text-align: center;
+}
+
+.logo-block img {
+	margin: 10px;
+}
+
+p {
+	text-align: justify;
+}
+
+footer p {
+	margin-top: 10px
 }
