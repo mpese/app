@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xdb="http://exist-db.org/ant">
+
+    <!-- the properties file -->
+    <property file="build.properties"/>
+
+    <!-- classpath with eXist jars -->
+    <path id="classpath.core">
+        <fileset dir="${server.dir}/lib/core">
+            <include name="*.jar"/>
+        </fileset>
+        <pathelement path="${server.dir}/exist.jar"/>
+        <pathelement path="${server.dir}/exist-optional.jar"/>
+    </path>
+
+    <!-- include exist ant tasks -->
+    <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
+        <classpath refid="classpath.core"/>
+    </typedef>
+
+    <!-- -->
+    <target name="resources">
+        <xdb:list user="admin" password="admin" uri="xmldb:exist://localhost:9090/exist/xmlrpc/db/xar_files"
+            resources="true" outputproperty="resources"/>
+            <echoproperties>
+                <propertyset>
+                    <propertyref name="resources"/>
+                </propertyset>
+            </echoproperties>
+    </target>
+
+    <target name="store">
+        <xdb:store uri="xmldb:exist://localhost:9090/exist/xmlrpc/db/xar_files"
+            createcollection="true" user="admin" password="admin">
+            <fileset dir="dist"> 
+                <include name="*.xar"/>
+            </fileset>
+        </xdb:store>
+    </target>
+
+    <target name="deploy">
+        <loadfile property="xquery" srcFile="dist/deploy.xql"/>
+        <xdb:xquery uri="xmldb:exist://localhost:9090/exist/xmlrpc/db" user="admin" 
+            password="admin" query="${xquery}"/>
+    </target>
+
+</project>

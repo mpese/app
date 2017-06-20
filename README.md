@@ -3,12 +3,19 @@
 ## Environment
 
 The build uses node and npm (https://nodejs.org/en/). Grunt is used for
-building and packaging the application.
+building and packaging the application. Deployment uses ant tasks (http://ant.apache.org/).
+Ensure that node, npm and ant are in your $PATH.
 
 ```
 git clone git@bitbucket.org:researchit/mpese-app.git
 cd mpese-app
 npm install
+```
+
+```
+git clone git@github.com:eXist-db/exist.git exist-src
+cd exist-src
+sh build.sh
 ```
 
 To create a .xar file
