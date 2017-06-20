@@ -29,7 +29,7 @@ module.exports = function (grunt) {
             xar: {
                 cwd: './build/',
                 src: ['build/**'],
-                dest: 'dist/mpese.xar'
+                dest: 'dist/<%= pkg.name %>-<%= pkg.version %>.xar'
             }
         }
 
