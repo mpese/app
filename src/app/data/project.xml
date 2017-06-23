@@ -1,4 +1,5 @@
-<project>
+<?xml version="1.0"?>
+<project xmlns:xi="http://www.w3.org/2001/XInclude">
     <abbr>MPESE</abbr>
     <title>Manuscript Pamphleteering in Early Stuart England</title>
     <abstract>
