@@ -48,6 +48,17 @@ module.exports = function (grunt) {
                 ],
             },
 
+            undeploy: {
+                src: [ 'src/deploy/undeploy.xql'],
+                dest: 'dist/undeploy.xql',
+                replacements: [
+                    {
+                        from: '@APPVERSION@',
+                        to: '<%= pkg.version %>'
+                    }
+                ],
+            },
+
             deploy: {
                 src: [ 'src/deploy/deploy.xql'],
                 dest: 'dist/deploy.xql',

@@ -2,10 +2,11 @@ xquery version "3.0";
  
 import module namespace repo = "http://exist-db.org/xquery/repo";
  
-declare variable $xar := "/db/xar_files/mpese-app-@APPVERSION@.xar";
- 
+declare variable $pkg := "http://mpese.rit.bris.ac.uk";
+
 try {
-    repo:install-and-deploy-from-db($xar)
+    repo:undeploy($pkg),
+    repo:remove($pkg)
 } catch * {
     <error>Caught error {$err:code}: {$err:description}</error>
 }
