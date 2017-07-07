@@ -18,11 +18,19 @@
         <classpath refid="classpath.core"/>
     </typedef>
 
-    <!-- Store the .xar file in the database -->
-    <target name="store">
+    <!-- Get the authentication credentials (and check we have properties)-->
+    <target name="credentials">
+        <fail unless="server.dir">No exist install directory, i.e. property 'server.dir'!</fail>
+        <fail unless="xmlrpc">No exist xmlprc, i,e. property 'xmlrpc'!</fail>
+        <!-- get the username and password -->
+        <input message="Enter username:" addproperty="username"/>
         <input message="Enter password:" addproperty="password">
             <handler classname="org.apache.tools.ant.input.SecureInputHandler" />
         </input>
+    </target>
+
+    <!-- Store the .xar file in the database -->
+    <target name="store" depends="credentials">
         <xdb:store uri="${xmlrpc}/db/xar_files"
             createcollection="true" user="admin" password="${password}">
             <fileset dir="dist"> 

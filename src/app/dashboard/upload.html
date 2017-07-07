@@ -1,0 +1,15 @@
+<div xmlns="http://www.w3.org/1999/xhtml" data-template="templates:surround"
+    data-template-with="templates/page.html" data-template-at="content">
+
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Upload a Word document: {$home}</h2>
+            <form class="form-inline" enctype="multipart/form-data" method="post" action="upload_word.xql">
+                <legend>Upload Document:</legend>
+                <input type="file" name="file"/>
+                <input type="submit" value="Upload"/>
+        </form>
+        </div>
+    </div>
+    <hr/>
+</div>
