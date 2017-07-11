@@ -1,13 +1,13 @@
 xquery version "3.0";
 
-module namespace config="http://mpese.rit.bris.ac.uk/config";
+module namespace config = "http://mpese.rit.bris.ac.uk/config";
 
-declare namespace templates="http://exist-db.org/xquery/templates";
-declare namespace repo="http://exist-db.org/xquery/repo";
-declare namespace expath="http://expath.org/ns/pkg";
+declare namespace templates = "http://exist-db.org/xquery/templates";
+declare namespace repo = "http://exist-db.org/xquery/repo";
+declare namespace expath = "http://expath.org/ns/pkg";
 
 (: Determine the root of the application :)
-declare variable $config:app-root := 
+declare variable $config:app-root :=
     let $rawPath := system:get-module-load-path()
     let $modulePath :=
         (: strip the xmldb: part :)
@@ -97,7 +97,7 @@ declare function config:app-info($node as node(), $model as map(*)) {
             }
             <tr>
                 <td>Controller:</td>
-                <td>{ request:get-attribute("$exist:controller") }</td>
+                <td>{request:get-attribute("$exist:controller")}</td>
             </tr>
         </table>
 };

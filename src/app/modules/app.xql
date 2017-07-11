@@ -1,9 +1,9 @@
 xquery version "3.1";
 
-module namespace app="http://mpese.rit.bris.ac.uk/templates";
+module namespace app = "http://mpese.rit.bris.ac.uk/templates";
 
-import module namespace templates="http://exist-db.org/xquery/templates" ;
-import module namespace config="http://mpese.rit.bris.ac.uk/config" at "config.xqm";
+import module namespace templates = "http://exist-db.org/xquery/templates";
+import module namespace config = "http://mpese.rit.bris.ac.uk/config" at "config.xqm";
 
 declare boundary-space preserve;
 
@@ -45,45 +45,56 @@ declare function app:image($node as node(), $model as map(*)) {
     <div>
         <img class="mpese-home-img-caption" src="{$config:project/image/url/text()}" alt="{$config:project/image/description/text()}"/>
         <p class="mpese-home-img-caption">{$config:project/image/description/text()}<br/>
-        {$config:project/image/copyright/text()}</p>
-     </div>
+            {$config:project/image/copyright/text()}</p>
+    </div>
 };
 
 declare function app:people($node as node(), $model as map(*)) {
     <div>
-     {
-        for $group in $config:project//people/group[@id='project_team']
+        {
+            for $group in $config:project//people/group[@id = 'project_team']
             return
                 <div class="group" id="{$group/@id}">
                     <h3>{$group/title/text()}</h3>
                     <div class="person">{
                         for $person in $group/members/person
-                            return
-                                <div>
-                                    <h4>{$person/name/text()} ({$person/institution/text()}) – {$person/role/text()}</h4>
-                                    <p>{$person/bio/node()}</p>
-                                </div>
-                        }</div>
-                 </div>
-      }
-     </div>
+                        return
+                            <div>
+                                <h4>{$person/name/text()} ({$person/institution/text()}) – {$person/role/text()}</h4>
+                                <p>{$person/bio/node()}</p>
+                            </div>
+                    }</div>
+                </div>
+        }
+    </div>
 };
 
 declare function app:advisory($node as node(), $model as map(*)) {
     <div>
-     {
-        for $group in $config:project//people/group[@id='committee' or @id='board']
+        {
+            for $group in $config:project//people/group[@id = 'committee' or @id = 'board']
             return
                 <div class="group" id="{$group/@id}">
                     <h3>{$group/title/text()}</h3>
                     <ul class="list-unstyled">{
                         for $person in $group/members/person
-                            return
-                                <li>
-                                    {$person/title/text()} {$person/name/text()} ({$person/institution/text()})
-                                </li>
-                        }</ul>
-                 </div>
-      }
-     </div>
+                        return
+                            <li>
+                                {$person/title/text()} {$person/name/text()} ({$person/institution/text()})
+                            </li>
+                    }</ul>
+                </div>
+        }
+    </div>
+};
+
+declare function app:msg($node as node(), $model as map(*)) {
+
+    let $msg := (session:get-attribute('msg'), session:remove-attribute('msg'))
+
+    return
+        if (not ($msg eq '')) then
+            <div>{$msg}</div>
+        else
+            ""
 };

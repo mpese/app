@@ -6,3 +6,4 @@ node_modules/
 .exist_history
 .exist_query_history
 build.properties
+.idea

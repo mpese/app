@@ -5,14 +5,14 @@
  :)
 xquery version "3.1";
 
-import module namespace templates="http://exist-db.org/xquery/templates" ;
+import module namespace templates = "http://exist-db.org/xquery/templates";
 
 (: 
  : The following modules provide functions which will be called by the 
  : templating.
  :)
-import module namespace config="http://mpese.rit.bris.ac.uk/config" at "config.xqm";
-import module namespace app="http://mpese.rit.bris.ac.uk/templates" at "app.xql";
+import module namespace config = "http://mpese.rit.bris.ac.uk/config" at "config.xqm";
+import module namespace app = "http://mpese.rit.bris.ac.uk/templates" at "app.xql";
 
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 
@@ -20,8 +20,8 @@ declare option output:method "html5";
 declare option output:media-type "text/html";
 
 let $config := map {
-    $templates:CONFIG_APP_ROOT : $config:app-root,
-    $templates:CONFIG_STOP_ON_ERROR : true()
+$templates:CONFIG_APP_ROOT : $config:app-root,
+$templates:CONFIG_STOP_ON_ERROR : true()
 }
 (:
  : We have to provide a lookup function to templates:apply to help it

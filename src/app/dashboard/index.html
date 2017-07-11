@@ -1,0 +1,18 @@
+<div xmlns="http://www.w3.org/1999/xhtml" xmlns:xf="http://www.w3.org/2002/xforms" data-template="templates:surround" data-template-with="templates/sub.html" data-template-at="content">
+    <h2>Dashboard</h2>
+    <div class="row app-">
+        <div data-template="app:msg"></div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <form class="form-inline" enctype="multipart/form-data" method="post" action="upload_word.xql">
+                <div class="form-group">
+                    <label for="word_upload">Upload Document:</label>
+                    <input class="form-control" id="word_upload" type="file" name="word_file"/>
+                    <input type="submit" class="btn btn-sm" value="Upload"/>
+                </div>
+            </form>
+        </div>
+    </div>
+    <hr/>
+</div>
