@@ -92,9 +92,14 @@ declare function app:msg($node as node(), $model as map(*)) {
 
     let $msg := (session:get-attribute('msg'), session:remove-attribute('msg'))
 
+    let $type := if (fn:starts-with($msg, 'success:')) then
+        'alert-success'
+    else
+        'alert-fail'
+
     return
         if (not ($msg eq '')) then
-            <div>{$msg}</div>
+            <div class="alert {$type}">{fn:substring-after($msg, ':')}</div>
         else
             ""
 };
