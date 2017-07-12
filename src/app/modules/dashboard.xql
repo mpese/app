@@ -51,7 +51,7 @@ declare function dashboard:unzip-docx($path as xs:string, $data-type as xs:strin
 declare function dashboard:unzip($base-collection as xs:string, $zip-filename as xs:string, $action as xs:string) {
     if (not($action = ('list', 'unzip'))) then <error>Invalid action</error>
     else
-        let $file := util:binary-doc($zip-filename)
+        let $file := util:binary-doc(concat($config:word_docs, $zip-filename))
         let $entry-filter := util:function(QName("http://mpese.rit.bris.ac.uk/dashboard/", "dashboard:zip-filter"), 3)
         let $entry-filter-params := ()
         let $entry-data := util:function(QName("http://mpese.rit.bris.ac.uk/dashboard/", "dashboard:unzip-docx"), 4)
@@ -97,7 +97,8 @@ declare function dashboard:store_word_doc($param_name as xs:string, $redirect as
                     ui:alert-fail(fn:concat($filename, ' has not been been stored!'), $redirect)
                 else
                 (: TODO, unzip and process ? :)
-                    (dashboard:unzip('/db/word_docs_xml/', $store, 'unzip'), ui:alert-success(fn:concat($filename, ' has been stored'), $redirect))
+                    (dashboard:unzip('/db/word_docs_xml/', functx:substring-after-last($store, '/'), 'unzip'),
+                        ui:alert-success(fn:concat($filename, ' has been stored'), $redirect))
 
 };
 
