@@ -11,6 +11,7 @@ import module namespace templates = "http://exist-db.org/xquery/templates";
 import module namespace config = "http://mpese.rit.bris.ac.uk/config" at "config.xqm";
 import module namespace app = "http://mpese.rit.bris.ac.uk/templates" at "app.xql";
 import module namespace ui = "http://mpese.rit.bris.ac.uk/ui/" at "ui.xql";
+import module namespace dashboard = "http://mpese.rit.bris.ac.uk/dashboard/" at "dashboard.xql";
 
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 

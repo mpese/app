@@ -32,7 +32,7 @@ declare function ui:msg($node as node(), $model as map(*)) {
 
     return
         if (not (empty($msg))) then
-            <div class="alert {$type}">{fn:substring-after($msg, ':')}</div>
+            <div class="mpese-alert alert {$type}">{fn:substring-after($msg, ':')}</div>
         else
             ""
 };
