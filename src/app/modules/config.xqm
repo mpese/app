@@ -34,6 +34,10 @@ declare variable $config:expath-descriptor := doc(concat($config:app-root, "/exp
 declare variable $config:project := doc(concat($config:data-root, "/project.xml"))/project;
 declare variable $config:app-abbrev := $config:project/abbr/text();
 
+(: Location to store the Word docs :)
+declare variable $config:word_docs := '/db/word_docs/';
+
+
 (:~
  : Resolve the given path using the current application context.
  : If the app resides in the file system,
