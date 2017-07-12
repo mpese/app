@@ -1,34 +1,40 @@
 .logo {
-	margin-right: 3em;
+    margin-right: 3em;
 }
 
 .jumbotron {
-	padding-top: 5em;
-	margin-bottom: 15px;
-	padding-bottom: 15px;
+    padding-top: 5em;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
 }
 
 .mpese-home-img {
-	margin-top: 20px;
+    margin-top: 20px;
 }
 
 .mpese-home-img-caption {
-	padding-top: 0.5em;
-	font-size: 0.8em;
+    padding-top: 0.5em;
+    font-size: 0.8em;
 }
 
 .logo-block {
-	text-align: center;
+    text-align: center;
 }
 
 .logo-block img {
-	margin: 10px;
+    margin: 10px;
 }
 
 p {
-	text-align: justify;
+    text-align: justify;
 }
 
 footer p {
-	margin-top: 10px
+    margin-top: 10px
+}
+
+.mpese-alert {
+    text-align: center;
+    font-size: medium;
+    font-weight: bold;
 }
