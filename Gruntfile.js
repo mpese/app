@@ -77,6 +77,12 @@ module.exports = function (grunt) {
                 src: ['build/**'],
                 dest: 'dist/<%= pkg.name %>-<%= pkg.version %>.xar'
             }
+        },
+
+        shell: {
+            deploy_local: {
+                command: 'ant deploy'
+            }
         }
 
     });
@@ -92,7 +98,12 @@ module.exports = function (grunt) {
 
     // zip
     grunt.loadNpmTasks('grunt-zip');
+        // zip
+    grunt.loadNpmTasks('grunt-shell');
 
     // default task
-    grunt.registerTask('default', ['clean', 'copy', 'replace', 'zip'])
+    grunt.registerTask('default', ['clean', 'copy', 'replace', 'zip']);
+
+    // deploy to local vagrant
+    grunt.registerTask('deploy', ['default', 'shell:deploy_local'])
 }
