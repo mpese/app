@@ -7,11 +7,35 @@ xquery version "3.1";
 :)
 module namespace dashboard = "http://mpese.rit.bris.ac.uk/dashboard/";
 
+declare namespace w = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+declare namespace tei = 'xmlns="http://www.tei-c.org/ns/1.0';
+
 import module namespace config = "http://mpese.rit.bris.ac.uk/config" at "config.xqm";
 import module namespace ui = "http://mpese.rit.bris.ac.uk/ui/" at "ui.xql";
 import module namespace functx = "http://www.functx.com" at "functx-1.0.xql";
 import module namespace utils = "http://mpese.rit.bris.ac.uk/utils/" at '../modules/utils.xql';
 
+declare function dashboard:process_word_xml($path as xs:string) {
+
+    let $doc := doc($path)
+        return
+            <body> {
+                for $p in $doc//w:p
+                return
+                    <p>{
+                        for $wr in $p/w:r
+                        return
+                            $wr/w:t/text()
+                    }</p>
+            }</body>
+};
+
+declare function dashboard:tei_template($insert) {
+    let $template := doc(concat($config:app-root, '/modules/mpese_text_template.xml'))
+        return
+            update insert ($insert) into $template/tei:body
+
+};
 
 (:~
  : Processes a .docx file upload and stores it in database. The function adds an
@@ -42,11 +66,18 @@ declare function dashboard:store_word_doc($param_name as xs:string, $redirect as
                     ui:alert-fail(fn:concat($filename, ' has not been been stored!'), $redirect)
                 else
                 (: TODO, unzip and process ? :)
-                    (utils:unzip('/db/word_docs_xml/', functx:substring-after-last($store, '/'), 'unzip'),
-                        ui:alert-success(fn:concat($filename, ' has been stored'), $redirect))
+                    (:(utils:unzip('/db/word_docs_xml/', functx:substring-after-last($store, '/'), 'unzip'),:)
+                        (:ui:alert-success(fn:concat($filename, ' has been stored'), $redirect)):)
+                        let $result := utils:unzip('/db/word_docs_xml/', functx:substring-after-last($store, '/'), 'unzip')
+                            return
+                                let $word_xml_path := $result/result[@object='word/document.xml']/@destination
+                                let $xsl_path := concat($config:app-root, '/modules/word_to_tei.xsl')
+                                let $xml := doc($word_xml_path)
+                                let $insert := dashboard:process_word_xml($word_xml_path)
+                                (:return $insert:)
+                                return dashboard:tei_template($insert)
 
 };
-
 
 declare function dashboard:list_word_docs($node as node(), $model as map(*)) {
 

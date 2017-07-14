@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+   <teiHeader>
+      <fileDesc>
+         <titleStmt>
+            <title><!-- title of text here (modernised? standardised?: e.g., Letter of the Devil to the Pope --></title>
+            <author><!-- author if known --></author>
+            <respStmt xml:id="NM">
+               <name>Noah Millstone</name>
+               <resp>Principal Investigator MPESE</resp>
+            </respStmt>
+            <respStmt xml:id="SV">
+               <name>Sebastiaan Verweij</name>
+               <resp>Co-Investigator MPESE</resp>
+            </respStmt>
+            <respStmt xml:id="RB">
+               <name>Richard Bell</name>
+               <resp>Research Associate</resp>
+            </respStmt>
+            <respStmt xml:id="MJ">
+               <name>Mike Jones</name>
+               <resp>Research Software Engineer</resp>
+            </respStmt>
+         </titleStmt>
+         <publicationStmt>
+            <publisher>Manuscript Pamphleteering in Early Stuart England (MPESE)</publisher>
+            <address>
+               <addrLine><!-- URL here --></addrLine>
+               <addrLine><!-- contact email here --></addrLine>
+            </address>
+            <availability>
+               <licence target="http://creativecommons.org">
+                  <p><!-- prose description of license arrangements here --></p>
+                  
+               </licence>   
+            </availability>
+            <date when="2017">2017</date>
+         </publicationStmt>
+         <sourceDesc>
+            <!-- XInclude to pull in data from the MS XML that is the exemplar for this transcription-->
+            <listBibl>
+               <bibl><!-- XInclude to pull in data from the MS XML for each other witness --></bibl>
+               <bibl><!-- Further bibls here for each other witness containing this text --></bibl>
+            </listBibl>
+         </sourceDesc>
+      </fileDesc>
+      <profileDesc>
+         <abstract><p><!-- brief summary or description of the text --></p></abstract>
+         <creation><!-- information about origin of the text (not the MS); eg. parliament, Inns of Court --></creation>
+         <langUsage>
+            <language ident="EN"><!-- note language used --></language>
+            <language ident="LA"><!-- note language used --></language>
+         </langUsage>
+         <textClass>
+            <keywords n="text-type">
+               <term><!-- text type here (e.g., letter, speech). We need to decide on a controlled list or taxonomy --></term>
+               <term><!-- next text type here --></term>
+            </keywords>
+         </textClass>
+         <textClass>
+            <keywords n="topic-keyword">
+               <term><!-- topic keyword here. We need to decide on a controlled list or taxonomy --></term>
+               <term><!-- next topic keyword here --></term>
+            </keywords>
+         </textClass>
+      </profileDesc>
+      <encodingDesc>
+         <editorialDecl>
+            <p><!-- build this info as we go along --></p>
+         </editorialDecl>
+      </encodingDesc>
+   </teiHeader>
+   <text>
+      <body>
+         <!-- transcription here. Insert pb at top of the page. Observe line breaks. -->
+         <p>
+            <pb n="1r"/>
+         </p>
+      </body>
+   </text>
+</TEI>
