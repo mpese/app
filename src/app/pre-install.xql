@@ -1,8 +1,18 @@
 xquery version "1.0";
 
-import module namespace xdb = "http://exist-db.org/xquery/xmldb";
+(
+(: the root collection :)
+xmldb:create-collection('/db', 'mpese'),
 
-declare variable $home external;
+(: tei xml :)
+xmldb:create-collection('/db/mpese', 'tei'),
 
-(xdb:create-collection('/db', 'word_docs'),
-xdb:create-collection('/db', 'word_docs_xml'))
+(: word upload workspace :)
+xmldb:create-collection('/db/mpese', 'word'),
+
+(: docx storage  :)
+xmldb:create-collection('/db/mpese/word', 'docx'),
+
+(: docx unzipped  :)
+xmldb:create-collection('/db/mpese/word', 'unzip')
+)
