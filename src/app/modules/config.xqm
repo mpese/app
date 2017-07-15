@@ -46,6 +46,8 @@ declare variable $config:docx_unzip := '/db/mpese/word/unzip/';
 (: Location to store the Word docs :)
 declare variable $config:word_docs := '/db/word_docs/';
 
+declare variable $config:tei-template := concat($config:app-root, '/modules/mpese_text_template.xml');
+
 
 (:~
  : Resolve the given path using the current application context.

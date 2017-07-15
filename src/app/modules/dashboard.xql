@@ -30,19 +30,38 @@ declare function dashboard:process_word_xml($path as xs:string) {
         }</body>
 };
 
-declare function dashboard:insert_tei($doc, $data) {
-    update replace doc($doc)//tei:body with $data
+(:~
+ : Replace the TEI:body with a new body, i.e. insert into our template
+ : the content we have extracted from Word.
+ :
+ : @param $doc - a copy of our template.
+ : @param $body - a replacement TEI:body.
+:)
+declare function dashboard:insert_tei($doc, $body) {
+    update replace doc($doc)//tei:body with $body
 };
 
-declare function dashboard:tei_template($filename, $data) {
+(:~
+ : Store a copy of our template in the database and replace the TEI:body
+ : with a new body, i.e. insert into our template the content we have
+ : extracted from Word.
+ :
+ : @param $doc - a copy of our template.
+ : @param $body - a replacement TEI:body.
+ : @returns the location of the new XML file.
+:)
+declare function dashboard:tei_template($filename, $body) {
 
     (: create a new file based on the template :)
-    let $template := doc(concat($config:app-root, '/modules/mpese_text_template.xml'))
+    let $template := doc($config:tei-template)
     let $doc := xmldb:store($config:tei, fn:encode-for-uri($filename), $template)
 
-    (: insert the data into the new file :)
-    return dashboard:insert_tei($doc, $data)
+    (: insert the new TEI body into the new file :)
+    let $insert := dashboard:insert_tei($doc, $body)
+
+    return $doc
 };
+
 
 (:~
  : Processes a .docx file upload and stores it in database. The function adds an
@@ -51,47 +70,63 @@ declare function dashboard:tei_template($filename, $data) {
  : @param $param_name - the parameter name that references the file.
  : @param $redirect - where we want to go after the operation.
  : @return a HTTP redirect with a message added to the sesssion.
- : @author Mike Jones (mike.a.jones@bristol.ac.uk)
 :)
-declare function dashboard:store_word_doc($param_name as xs:string, $redirect as xs:anyURI) {
+declare function dashboard:store_word_doc($param_name as xs:string) {
 
     let $filename := request:get-uploaded-file-name($param_name)
 
     return
     (: check a filename is set :)
     if ($filename eq '') then
-        ui:alert-fail('No file provided', $redirect)
+        <message type="warn">No file provided</message>
     (: bail if it isn't a .docx file :)
     else if (not(fn:ends-with($filename, '.docx'))) then
-        ui:alert-fail('No a .docx file', $redirect)
+        <message type="warn">No a .docx file</message>
     else
         (: attempt to store the file :)
         let $data := request:get-uploaded-file-data($param_name)
         let $store := xmldb:store($config:docx, encode-for-uri($filename), $data)
         return
             if (not($store)) then
-                ui:alert-fail(fn:concat($filename, ' has not been been stored!'), $redirect)
+                <message type="warn">fn:concat($filename, ' has not been been stored!')</message>
             else
-                (: TODO, unzip and process ? :)
-                (:(utils:unzip('/db/word_docs_xml/', functx:substring-after-last($store, '/'), 'unzip'),:)
-                (:ui:alert-success(fn:concat($filename, ' has been stored'), $redirect)):)
+                (: unzip the file :)
                 let $result := utils:unzip($config:docx_unzip, functx:substring-after-last($store, '/'), 'unzip')
+                (: find and process the document.xml file :)
+                let $word_xml_path := $result/result[@object = 'word/document.xml']/@destination
+                let $xml := doc($word_xml_path)
+                let $data := dashboard:process_word_xml($word_xml_path)
+                (: store the processed content within a copy of our template :)
+                let $xml_filename := fn:concat(substring-before($filename, '.docx'), '.xml')
+                let $template := dashboard:tei_template($xml_filename, $data)
+                (: delete the word doc :)
+                let $remove_word := xmldb:remove($config:docx, encode-for-uri($filename))
+                (: delete the unzipped .docx :)
+                let $remove_zip := xmldb:remove(fn:concat($config:docx_unzip,
+                        fn:encode-for-uri(substring-before($filename, '.docx')),'_docx_parts'))
                 return
-                    let $word_xml_path := $result/result[@object = 'word/document.xml']/@destination
-                    let $xml := doc($word_xml_path)
-                    let $data := dashboard:process_word_xml($word_xml_path)
-                    (:return $insert:)
-                    let $xml_filename := fn:concat(substring-before($filename, '.docx'), '.xml')
-                    return dashboard:tei_template($xml_filename, $data)
-
+                    <message type="success">{fn:concat($filename, ' has been processed')}</message>
 };
+
+(: TODO - add a title to the TEI/XML document :)
+(: TODO - list the TEI/XML rather than Word docs :)
 
 declare function dashboard:list_word_docs($node as node (), $model as map (*)) {
 
-    let $list := xmldb:get-child-resources($config:word_docs)
-
-    for $doc in $list
+    let $list := xmldb:get-child-resources($config:tei)
     return
-    <p>{xmldb:decode-uri($doc)}</p>
-
+    <table class="table table-striped">
+        <thead>
+            <th>File</th>
+            <th>Path</th>
+        </thead>
+        <tbody>{
+        for $tei in $list
+            return
+            <tr>
+                <td>{xmldb:decode-uri($tei)}</td>
+                <td>{fn:concat($config:tei, $tei)}</td>
+            </tr>
+        }</tbody>
+    </table>
 };

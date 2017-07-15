@@ -4,20 +4,12 @@ module namespace ui = "http://mpese.rit.bris.ac.uk/ui/";
 
 import module namespace session = "http://exist-db.org/xquery/session";
 
-(: prefix for successful alerts :)
-declare function ui:alert-success($msg as xs:string, $redirect as xs:anyURI) {
-    ui:alert(concat('success:', $msg), $redirect)
-};
-
-(: prefix for warning alerts :)
-declare function ui:alert-fail($msg as xs:string, $redirect as xs:anyURI) {
-    ui:alert(concat('fail:', $msg), $redirect)
-};
-
 (: add the message to the session and redirect :)
-declare function ui:alert($msg as xs:string, $redirect as xs:anyURI) {
-    (session:set-attribute('msg', $msg),
-    response:redirect-to($redirect))
+declare function ui:alert($msg as node()) {
+    let $out := if ($msg/@type eq 'warn') then concat('fail:', $msg/text())
+    else concat('success:', $msg/text())
+    return
+        session:set-attribute('msg', $out)
 };
 
 (: if we have an alert then display it :)
