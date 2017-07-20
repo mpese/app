@@ -103,6 +103,15 @@
                             <a href="http://outstories.knowyourbristol.org/">Outstories</a>
                         projects</bio>
                 </person>
+                <person>
+                    <name>Jon Hallett</name>
+                    <role>Systems Administrator</role>
+                    <institution>University of Bristol</institution>
+                    <bio>Jon Hallett is the systems administrator for the Research IT team at the University of Bristol. 
+                    He has worked in university IT for over twenty years and in that time has administered the full stack of technologies 
+                    in use in higher education, from patch cables to departmental IT infrastructure to critical corporate systems. His 
+                    skills include Puppet, Python, Perl, Unix, databases and networking.</bio>
+                </person>
             </members>
         </group>
         <group id="committee">
