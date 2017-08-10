@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <package xmlns="http://expath.org/ns/pkg" name="http://mpese.rit.bris.ac.uk" abbrev="mpese"
     version="@APPVERSION@" spec="1.0">
-    <title>Manuscript Pamphleteeting in Early Stuart England</title>
+    <title>Manuscript Pamphleteering in Early Stuart England</title>
     <dependency package="http://exist-db.org/apps/shared"/>
 </package>
