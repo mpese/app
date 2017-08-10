@@ -1,5 +1,8 @@
 # README
 
+This is the MPESE web application that is deployed on the eXist platform. This README provides details
+on building and deploying the application.
+
 ## Environment
 
 The build uses node and npm (https://nodejs.org/en/). Grunt is used for
