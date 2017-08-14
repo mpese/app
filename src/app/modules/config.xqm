@@ -47,18 +47,6 @@ declare variable $config:expath-descriptor := doc(concat($config:app-root, "/exp
 declare variable $config:project := doc(concat($config:data-root, "/project.xml"))/project;
 declare variable $config:app-abbrev := $config:project/abbr/text();
 
-(: TEI/XML storage root :)
-declare variable $config:tei := '/db/mpese/tei/';
-
-(: Word storeage root :)
-declare variable $config:docx := '/db/mpese/word/docx/';
-
-(: Word unzip area :)
-declare variable $config:docx_unzip := '/db/mpese/word/unzip/';
-
-(: Location to store the Word docs :)
-declare variable $config:word_docs := '/db/word_docs/';
-
 declare variable $config:tei-template := concat($config:app-root, '/modules/mpese_text_template.xml');
 
 

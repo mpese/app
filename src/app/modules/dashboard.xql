@@ -10,6 +10,7 @@ module namespace dashboard = "http://mpese.rit.bris.ac.uk/dashboard/";
 declare namespace w = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 declare namespace tei = 'http://www.tei-c.org/ns/1.0';
 
+import module namespace util = "http://exist-db.org/xquery/util";
 import module namespace config = "http://mpese.rit.bris.ac.uk/config" at "config.xqm";
 import module namespace ui = "http://mpese.rit.bris.ac.uk/ui/" at "ui.xql";
 import module namespace functx = "http://www.functx.com" at "functx-1.0.xql";
@@ -54,7 +55,7 @@ declare function dashboard:tei_template($filename, $body) {
 
     (: create a new file based on the template :)
     let $template := doc($config:tei-template)
-    let $doc := xmldb:store($config:tei, fn:encode-for-uri($filename), $template)
+    let $doc := xmldb:store($config:mpese-tei, fn:encode-for-uri($filename), $template)
 
     (: insert the new TEI body into the new file :)
     let $insert := dashboard:insert_tei($doc, $body)
@@ -85,13 +86,13 @@ declare function dashboard:store_word_doc($param_name as xs:string) {
     else
         (: attempt to store the file :)
         let $data := request:get-uploaded-file-data($param_name)
-        let $store := xmldb:store($config:docx, encode-for-uri($filename), $data)
+        let $store := xmldb:store($config:mpese-word-docx, encode-for-uri($filename), $data)
         return
             if (not($store)) then
                 <message type="warn">fn:concat($filename, ' has not been been stored!')</message>
             else
                 (: unzip the file :)
-                let $result := utils:unzip($config:docx_unzip, functx:substring-after-last($store, '/'), 'unzip')
+                let $result := utils:unzip(concat($config:mpese-word-unzip, '/'), functx:substring-after-last($store, '/'), 'unzip')
                 (: find and process the document.xml file :)
                 let $word_xml_path := $result/result[@object = 'word/document.xml']/@destination
                 let $xml := doc($word_xml_path)
@@ -100,9 +101,9 @@ declare function dashboard:store_word_doc($param_name as xs:string) {
                 let $xml_filename := fn:concat(substring-before($filename, '.docx'), '.xml')
                 let $template := dashboard:tei_template($xml_filename, $data)
                 (: delete the word doc :)
-                let $remove_word := xmldb:remove($config:docx, encode-for-uri($filename))
+                let $remove_word := xmldb:remove($config:mpese-word-docx, encode-for-uri($filename))
                 (: delete the unzipped .docx :)
-                let $remove_zip := xmldb:remove(fn:concat($config:docx_unzip,
+                let $remove_zip := xmldb:remove(fn:concat($config:mpese-word-unzip, '/',
                         fn:encode-for-uri(substring-before($filename, '.docx')),'_docx_parts'))
                 return
                     <message type="success">{fn:concat($filename, ' has been processed')}</message>
@@ -113,7 +114,7 @@ declare function dashboard:store_word_doc($param_name as xs:string) {
 
 declare function dashboard:list_word_docs($node as node (), $model as map (*)) {
 
-    let $list := xmldb:get-child-resources($config:tei)
+    let $list := xmldb:get-child-resources($config:mpese-tei)
     return
     <table class="table table-striped">
         <thead>
@@ -125,7 +126,7 @@ declare function dashboard:list_word_docs($node as node (), $model as map (*)) {
             return
             <tr>
                 <td>{xmldb:decode-uri($tei)}</td>
-                <td>{fn:concat($config:tei, $tei)}</td>
+                <td>{fn:concat($config:mpese-tei, '/', $tei)}</td>
             </tr>
         }</tbody>
     </table>

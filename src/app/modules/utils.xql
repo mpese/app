@@ -94,7 +94,7 @@ declare function utils:unzip($base-collection as xs:string, $zip-filename as xs:
     if (not($action = ('list', 'unzip'))) then
         <error>Invalid action</error>
     else
-        let $file := util:binary-doc(concat($config:docx, $zip-filename))
+        let $file := util:binary-doc(concat($config:mpese-word-docx, '/', $zip-filename))
         let $entry-filter := util:function(QName("http://mpese.rit.bris.ac.uk/utils/", "utils:zip-filter"), 3)
         let $entry-filter-params := ()
         let $entry-data := util:function(QName("http://mpese.rit.bris.ac.uk/utils/", "utils:unzip-docx"), 4)
