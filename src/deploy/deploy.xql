@@ -6,8 +6,7 @@ import module namespace xdb = "http://exist-db.org/xquery/xmldb";
 declare variable $xar := "/db/xar_files/mpese-app-@APPVERSION@.xar";
  
 try {
-    repo:install-and-deploy-from-db($xar),
-    xdb:create-collection('/db', 'word_docs')
+    repo:install-and-deploy-from-db($xar)
 } catch * {
     <error>Caught error {$err:code}: {$err:description}</error>
 }
