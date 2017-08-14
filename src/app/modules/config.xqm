@@ -32,6 +32,10 @@ declare variable $config:db-root := '/db';
 declare variable $config:mpese-root := concat($config:db-root, '/mpese');
 declare variable $config:mpese-word-root := concat($config:mpese-root, '/word');
 declare variable $config:mpese-tei := concat($config:mpese-root, '/tei');
+declare variable $config:mpese-tei-templates := concat($config:mpese-tei, '/templates');
+declare variable $config:mpese-tei-corpus := concat($config:mpese-tei, '/corpus');
+declare variable $config:mpese-tei-corpus-texts := concat($config:mpese-tei-corpus, '/texts');
+declare variable $config:mpese-tei-corpus-mss := concat($config:mpese-tei-corpus, '/mss');
 declare variable $config:mpese-word-docx := concat($config:mpese-word-root, '/docx');
 declare variable $config:mpese-word-unzip := concat($config:mpese-word-root, '/unzip');
 
@@ -47,8 +51,14 @@ declare variable $config:expath-descriptor := doc(concat($config:app-root, "/exp
 declare variable $config:project := doc(concat($config:data-root, "/project.xml"))/project;
 declare variable $config:app-abbrev := $config:project/abbr/text();
 
-declare variable $config:tei-template := concat($config:app-root, '/modules/mpese_text_template.xml');
+(: tei template filename :)
+declare variable $config:tei-template-filename := 'mpese_text_template.xml';
 
+(: tei template that can be updated by researchers :)
+declare variable $config:tei-template := concat($config:mpese-tei-templates, '/', $config:tei-template-filename);
+
+(: tei template distributed by app (copied to a place the researchers can update if the file doesn't exist :)
+declare variable $config:tei-template-app := concat($config:app-root, '/modules/', $config:tei-template-filename);
 
 (:~
  : Resolve the given path using the current application context.

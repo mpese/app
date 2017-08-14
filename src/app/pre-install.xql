@@ -50,7 +50,9 @@ declare function local:create-collection-recursive($base, $components) {
 declare function local:make-collections() {
     (
     (: tei xml :)
-    local:create-collection($config:mpese-tei),
+    local:create-collection($config:mpese-tei-templates),
+    local:create-collection($config:mpese-tei-corpus-texts),
+    local:create-collection($config:mpese-tei-corpus-mss),
 
     (: docx storage  :)
     local:create-collection($config:mpese-word-docx),

@@ -55,7 +55,7 @@ declare function dashboard:tei_template($filename, $body) {
 
     (: create a new file based on the template :)
     let $template := doc($config:tei-template)
-    let $doc := xmldb:store($config:mpese-tei, fn:encode-for-uri($filename), $template)
+    let $doc := xmldb:store($config:mpese-tei-corpus-texts, fn:encode-for-uri($filename), $template)
 
     (: insert the new TEI body into the new file :)
     let $insert := dashboard:insert_tei($doc, $body)
@@ -114,7 +114,7 @@ declare function dashboard:store_word_doc($param_name as xs:string) {
 
 declare function dashboard:list_word_docs($node as node (), $model as map (*)) {
 
-    let $list := xmldb:get-child-resources($config:mpese-tei)
+    let $list := xmldb:get-child-resources($config:mpese-tei-corpus-texts)
     return
     <table class="table table-striped">
         <thead>
