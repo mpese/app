@@ -1,18 +1,9 @@
 xquery version "1.0";
 
 import module namespace sm = "http://exist-db.org/xquery/securitymanager";
+import module namespace config = "http://mpese.rit.bris.ac.uk/config" at "modules/config.xqm";
 
-(: groups :)
-declare variable $mpese_group := 'mpese';
-
-(: collection paths :)
-declare variable $db-root := '/db';
-declare variable $mpese-root := concat($db-root, '/mpese');
-declare variable $mpese-word-root := concat($mpese-root, '/word');
-declare variable $mpese-tei := concat($mpese-root, '/tei');
-declare variable $mpese-word-docx := concat($mpese-word-root, '/docx');
-declare variable $mpese-word-unzip := concat($mpese-word-root, '/unzip');
-declare variable $mpese-app-dashboard := concat($db-root, '/apps/mpese/dashboard');
+declare variable $mpese-app-dashboard := concat($config:db-root, '/apps/mpese/dashboard');
 
 
 declare function local:chgrp-collection-recursive($group, $base, $components) {
@@ -36,15 +27,16 @@ declare function local:chgrp-collection($group, $collection) {
 };
 
 (: set the group owner for certain paths (recursively) :)
-local:chgrp-collection($mpese_group, $mpese-tei),
-local:chgrp-collection($mpese_group, $mpese-word-docx),
-local:chgrp-collection($mpese_group, $mpese-word-unzip),
+local:chgrp-collection($config:mpese_group, $config:mpese-tei),
+local:chgrp-collection($config:mpese_group, $config:mpese-word-docx),
+local:chgrp-collection($config:mpese_group, $config:mpese-word-unzip),
 
 (: set the group owner for certain paths (not recursively) :)
-sm:chgrp($mpese-app-dashboard, $mpese_group),
+sm:chgrp($mpese-app-dashboard, $config:mpese_group),
 sm:chown($mpese-app-dashboard, 'admin'),
 
 (: change permission for certain paths :)
-sm:chmod($mpese-tei, 'rwxrwxr-x'),
+sm:chmod(xs:anyURI($config:mpese-tei), 'rwxrwxr-x'),
+
 (: force login ... :)
-sm:chmod($mpese-app-dashboard, 'r-xr-x---')
+sm:chmod(xs:anyURI($mpese-app-dashboard), 'r-xr-x---')

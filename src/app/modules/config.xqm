@@ -22,6 +22,19 @@ declare variable $config:app-root :=
         substring-before($modulePath, "/modules")
 ;
 
+
+(: users and groups :)
+declare variable $config:mpese_group := 'mpese';
+declare variable $config:mpese_group_desc := 'The MPESE project';
+
+(: collection paths :)
+declare variable $config:db-root := '/db';
+declare variable $config:mpese-root := concat($config:db-root, '/mpese');
+declare variable $config:mpese-word-root := concat($config:mpese-root, '/word');
+declare variable $config:mpese-tei := concat($config:mpese-root, '/tei');
+declare variable $config:mpese-word-docx := concat($config:mpese-word-root, '/docx');
+declare variable $config:mpese-word-unzip := concat($config:mpese-word-root, '/unzip');
+
 (: The app data :)
 declare variable $config:data-root := $config:app-root || "/data";
 
