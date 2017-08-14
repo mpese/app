@@ -1,5 +1,6 @@
 xquery version "1.0";
 
+import module namespace util = "http://exist-db.org/xquery/util";
 import module namespace sm = "http://exist-db.org/xquery/securitymanager";
 import module namespace config = "http://mpese.rit.bris.ac.uk/config" at "modules/config.xqm";
 
@@ -26,6 +27,8 @@ declare function local:chgrp-collection($group, $collection) {
     )
 };
 
+util:log('INFO', ('MPESE: Running the post-installation script ...')),
+
 (: set the group owner for certain paths (recursively) :)
 local:chgrp-collection($config:mpese_group, $config:mpese-tei),
 local:chgrp-collection($config:mpese_group, $config:mpese-word-docx),
@@ -39,4 +42,6 @@ sm:chown($mpese-app-dashboard, 'admin'),
 sm:chmod(xs:anyURI($config:mpese-tei), 'rwxrwxr-x'),
 
 (: force login ... :)
-sm:chmod(xs:anyURI($mpese-app-dashboard), 'r-xr-x---')
+sm:chmod(xs:anyURI($mpese-app-dashboard), 'r-xr-x---'),
+
+util:log('INFO', ('MPESE: The post-installation script has finished'))

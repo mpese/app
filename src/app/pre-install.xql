@@ -1,5 +1,6 @@
 xquery version "1.0";
 
+import module namespace util = "http://exist-db.org/xquery/util";
 import module namespace sm = "http://exist-db.org/xquery/securitymanager";
 import module namespace xmldb = "http://exist-db.org/xquery/xmldb";
 import module namespace config = "http://mpese.rit.bris.ac.uk/config" at "modules/config.xqm";
@@ -59,8 +60,14 @@ declare function local:make-collections() {
     )
 };
 
+util:log('INFO', ('MPESE: Running the pre-installation script ...')),
+
 (: create group that will own collections :)
+util:log('INFO', ('MPESE: Creating users and groups.')),
 local:make-group($config:mpese_group, $config:mpese_group_desc),
 
 (: create collections :)
-local:make-collections()
+util:log('INFO', ('MPESE: Creating collections.')),
+local:make-collections(),
+
+util:log('INFO', ('MPESE: The pre-installation script has finished'))
