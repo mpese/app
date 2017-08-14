@@ -8,18 +8,29 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-8">
-            <div data-template="dashboard:list_word_docs"/>
-        </div>
-        <div class="col-md-4">
-            <form class="form-inline" enctype="multipart/form-data" method="post"
-                  action="upload_word.xql">
-                <div class="form-group">
-                    <label for="word_upload">Upload Word Document:</label>
-                    <input class="form-control" id="word_upload" type="file" name="word_file"/>
-                    <input type="submit" class="btn btn-sm" value="Upload"/>
+        <div class="col-md-7">
+            <!--<div data-template="dashboard:list_word_docs"/>-->
+            <div class="panel panel-primary">
+                <div class="panel-heading">Corpus</div>
+                <div class="panel-body">
+                    <p>There are <span data-template="dashboard:count_texts"/> texts</p>
+                    <p>There are <span data-template="dashboard:count_mss"/> texts</p>
                 </div>
-            </form>
+            </div>
+        </div>
+        <div class="col-md-5">
+            <div class="panel panel-default">
+                <div class="panel-heading">Upload a Word document</div>
+                <div class="panel-body">
+                    <form class="form-inline" enctype="multipart/form-data" method="post"
+                          action="upload_word.xql">
+                        <div class="form-group">
+                            <input class="form-control" id="word_upload" type="file" name="word_file"/>
+                            <input type="submit" class="btn btn-sm" value="Upload"/>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
     <hr/>

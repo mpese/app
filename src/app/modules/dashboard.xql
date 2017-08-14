@@ -123,6 +123,7 @@ declare function dashboard:list_word_docs($node as node (), $model as map (*)) {
         </thead>
         <tbody>{
         for $tei in $list
+        order by $tei ascending
             return
             <tr>
                 <td>{xmldb:decode-uri($tei)}</td>
@@ -130,4 +131,14 @@ declare function dashboard:list_word_docs($node as node (), $model as map (*)) {
             </tr>
         }</tbody>
     </table>
+};
+
+declare function dashboard:count_texts($node as node (), $model as map (*)) {
+    let $list := xmldb:get-child-resources($config:mpese-tei-corpus-texts)
+    return count($list)
+};
+
+declare function dashboard:count_mss($node as node (), $model as map (*)) {
+    let $list := xmldb:get-child-resources($config:mpese-tei-corpus-mss)
+    return count($list)
 };
