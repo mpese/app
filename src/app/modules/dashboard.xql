@@ -142,3 +142,42 @@ declare function dashboard:count_mss($node as node (), $model as map (*)) {
     let $list := xmldb:get-child-resources($config:mpese-tei-corpus-mss)
     return count($list)
 };
+
+declare function dashboard:rend_atts($node as node (), $model as map (*)) {
+    let $attrs := collection($config:mpese-tei-corpus)//@rend
+    return
+    <ul class='list-inline'>{
+        for $att in fn:distinct-values($attrs)
+        order by $att ascending
+            return
+            <li>{$att}</li>
+    }</ul>
+};
+
+declare function dashboard:text_types($node as node (), $model as map (*)) {
+    let $keywords := collection('/db/mpese/tei/corpus/')//tei:keywords[@n='text-type']/tei:term
+    return
+    <ul class='list-inline'>{
+        for $keyword in fn:distinct-values($keywords)
+        order by $keyword ascending
+            return
+                if(not(functx:all-whitespace($keyword))) then
+                    <li>{$keyword}</li>
+                else
+                    ()
+    }</ul>
+};
+
+declare function dashboard:topic_keywords($node as node (), $model as map (*)) {
+    let $keywords := collection('/db/mpese/tei/corpus/')//tei:keywords[@n='topic-keyword']/tei:term
+    return
+    <ul class='list-inline'>{
+        for $keyword in fn:distinct-values($keywords)
+        order by $keyword ascending
+            return
+                if(not(functx:all-whitespace($keyword))) then
+                    <li>{$keyword}</li>
+                else
+                    ()
+    }</ul>
+};
