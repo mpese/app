@@ -109,6 +109,36 @@ declare function dashboard:store_word_doc($param_name as xs:string) {
                     <message type="success">{fn:concat($filename, ' has been processed')}</message>
 };
 
+(: helper function for listing keywords :)
+declare function dashboard:keywords_as_list($att) {
+    let $keywords := collection('/db/mpese/tei/corpus/')//tei:keywords[@n=$att]/tei:term
+    return
+    <ul class='list-inline'>{
+        for $keyword in fn:distinct-values($keywords)
+        order by $keyword ascending
+            return
+                if(not(functx:all-whitespace($keyword))) then
+                    <li>{$keyword}</li>
+                else
+                    ()
+    }</ul>
+};
+
+
+declare function dashboard:authors($authors) {
+    if (fn:count($authors) eq 1) then
+            $authors/text()
+        else
+            for $author in $authors
+            return
+                if (not($author eq functx:last-node($authors))) then
+                    concat($author/text(), '; ')
+                else
+                    concat(' and ', $author)
+};
+
+(: --------- TEMPLATE FUNCTIONS --------- :)
+
 (: TODO - add a title to the TEI/XML document :)
 (: TODO - list the TEI/XML rather than Word docs :)
 
@@ -116,33 +146,42 @@ declare function dashboard:list_word_docs($node as node (), $model as map (*)) {
 
     let $list := xmldb:get-child-resources($config:mpese-tei-corpus-texts)
     return
-    <table class="table table-striped">
+    <table class="table-responsive table-striped">
         <thead>
-            <th>File</th>
-            <th>Path</th>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Last Modified</th>
         </thead>
         <tbody>{
         for $tei in $list
         order by $tei ascending
+            let $doc := fn:doc(concat($config:mpese-tei-corpus-texts, '/', $tei))
             return
             <tr>
-                <td>{xmldb:decode-uri($tei)}</td>
-                <td>{fn:concat($config:mpese-tei, '/', $tei)}</td>
+                <td>{$doc/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title/text()}</td>
+                <td>{
+                    let $authors:= $doc/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author
+                    return dashboard:authors($authors)
+                }</td>
+                <td>{fn:format-dateTime(xmldb:last-modified($config:mpese-tei-corpus-texts, $tei), "[D01]/[M01]/[Y0001] [H01]:[m01]:[s01]")}</td>
             </tr>
         }</tbody>
     </table>
 };
 
+(: count the numbers of texts :)
 declare function dashboard:count_texts($node as node (), $model as map (*)) {
     let $list := xmldb:get-child-resources($config:mpese-tei-corpus-texts)
     return count($list)
 };
 
+(: count the number of manuscripst :)
 declare function dashboard:count_mss($node as node (), $model as map (*)) {
     let $list := xmldb:get-child-resources($config:mpese-tei-corpus-mss)
     return count($list)
 };
 
+(: list the @rend attribute values :)
 declare function dashboard:rend_atts($node as node (), $model as map (*)) {
     let $attrs := collection($config:mpese-tei-corpus)//@rend
     return
@@ -154,30 +193,12 @@ declare function dashboard:rend_atts($node as node (), $model as map (*)) {
     }</ul>
 };
 
+(: list the text type keywords :)
 declare function dashboard:text_types($node as node (), $model as map (*)) {
-    let $keywords := collection('/db/mpese/tei/corpus/')//tei:keywords[@n='text-type']/tei:term
-    return
-    <ul class='list-inline'>{
-        for $keyword in fn:distinct-values($keywords)
-        order by $keyword ascending
-            return
-                if(not(functx:all-whitespace($keyword))) then
-                    <li>{$keyword}</li>
-                else
-                    ()
-    }</ul>
+    dashboard:keywords_as_list('text-type')
 };
 
+(: list the topic keywords :)
 declare function dashboard:topic_keywords($node as node (), $model as map (*)) {
-    let $keywords := collection('/db/mpese/tei/corpus/')//tei:keywords[@n='topic-keyword']/tei:term
-    return
-    <ul class='list-inline'>{
-        for $keyword in fn:distinct-values($keywords)
-        order by $keyword ascending
-            return
-                if(not(functx:all-whitespace($keyword))) then
-                    <li>{$keyword}</li>
-                else
-                    ()
-    }</ul>
+    dashboard:keywords_as_list('topic-keyword')
 };
