@@ -160,7 +160,14 @@ declare function dashboard:list_word_docs($node as node (), $model as map (*)) {
             let $doc := fn:doc(concat($config:mpese-tei-corpus-texts, '/', $tei))
             return
             <tr>
-                <td>{$doc/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title/text()}</td>
+                <td>{
+                    let $title := $doc/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title/text()
+                    return
+                        if(not(functx:all-whitespace($title))) then
+                            $title
+                        else
+                            string('Untitled')
+                }</td>
                 <td>{
                     let $authors:= $doc/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author
                     return dashboard:authors($authors)
