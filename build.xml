@@ -23,6 +23,7 @@
         <fail unless="server.dir">No exist install directory, i.e. property 'server.dir'!</fail>
         <fail unless="xmlrpc">No exist xmlprc, i,e. property 'xmlrpc'!</fail>
         <!-- get the username and password -->
+        <echo>${xmlrpc}</echo>
         <input message="Enter username:" addproperty="username"/>
         <input message="Enter password:" addproperty="password">
             <handler classname="org.apache.tools.ant.input.SecureInputHandler" />

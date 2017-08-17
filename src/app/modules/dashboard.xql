@@ -15,6 +15,7 @@ import module namespace config = "http://mpese.rit.bris.ac.uk/config" at "config
 import module namespace ui = "http://mpese.rit.bris.ac.uk/ui/" at "ui.xql";
 import module namespace functx = "http://www.functx.com" at "functx-1.0.xql";
 import module namespace utils = "http://mpese.rit.bris.ac.uk/utils/" at '../modules/utils.xql';
+import module namespace mpese-text = "http://mpese.rit.bris.ac.uk/corpus/text/" at '../modules/mpese-corpus-text.xqm';
 
 declare function dashboard:process_word_xml($path as xs:string) {
 
@@ -162,11 +163,13 @@ declare function dashboard:list_word_docs($node as node (), $model as map (*)) {
             <tr>
                 <td>{
                     let $title := $doc/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title/text()
+                    let $name := fn:substring-before($tei, '.xml')
+                    let $uri := fn:concat('text/', $name, '/index.html')
                     return
                         if(not(functx:all-whitespace($title))) then
-                            $title
+                            <a href="{$uri}">{$title}</a>
                         else
-                            string('Untitled')
+                            <a href="{$uri}">{string('Untitled')}</a>
                 }</td>
                 <td>{
                     let $authors:= $doc/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author
@@ -210,4 +213,12 @@ declare function dashboard:text_types($node as node (), $model as map (*)) {
 (: list the topic keywords :)
 declare function dashboard:topic_keywords($node as node (), $model as map (*)) {
     dashboard:keywords_as_list('topic-keyword')
+};
+
+declare function dashboard:find-text($node as node (), $model as map (*), $text as xs:string) {
+    map { "text" := concat($config:mpese-tei-corpus-texts, '/', $text) }
+};
+
+declare function dashboard:text-title($node as node (), $model as map (*)) {
+    <h3>{mpese-text:title($model('text'))}</h3>
 };
