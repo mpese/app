@@ -1,17 +1,33 @@
 <div xmlns="http://www.w3.org/1999/xhtml" xmlns:xf="http://www.w3.org/2002/xforms"
      data-template="templates:surround" data-template-with="templates/sub2.html"
      data-template-at="content">
-    <div data-template="dashboard:find-text">
+    <!-- dashboard-text:find-text must enclose other dash-template functions -->
+    <div data-template="dashboard-text:find-text">
         <div class="mpese-breadcrumb">
             <p><a href="../../index.html">Back to the dashboard</a></p>
         </div>
-        <h2 data-template="dashboard:text-title"></h2>
+        <h2 data-template="dashboard-text:title"></h2>
         <div class="row">
             <div class="col-md-7">
-
+                <div>
+                    <div data-template="dashboard-text:text-body"/>
+                </div>
             </div>
             <div class="col-md-5">
-                <p>Right column ...</p>
+                <!-- keywords: text types -->
+                <div class="panel panel-default">
+                    <div class="panel-heading">Text types</div>
+                    <div class="panel-body">
+                        <div data-template="dashboard-text:keywords-text-type"></div>
+                    </div>
+                </div>
+                <!-- keywords: topics -->
+                <div class="panel panel-default">
+                    <div class="panel-heading">Text types</div>
+                    <div class="panel-body">
+                        <div data-template="dashboard-text:keywords-topic"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -215,10 +215,3 @@ declare function dashboard:topic_keywords($node as node (), $model as map (*)) {
     dashboard:keywords_as_list('topic-keyword')
 };
 
-declare function dashboard:find-text($node as node (), $model as map (*), $text as xs:string) {
-    map { "text" := concat($config:mpese-tei-corpus-texts, '/', $text) }
-};
-
-declare function dashboard:text-title($node as node (), $model as map (*)) {
-    <h3>{mpese-text:title($model('text'))}</h3>
-};
