@@ -27,6 +27,7 @@ declare function mpese-text:keywords-topic($text) {
     fn:doc($text)/tei:TEI/tei:teiHeader/tei:profileDesc/tei:textClass/tei:keywords[@n='topic-keyword']/tei:term
 };
 
+(: display the text (delegate to an xsl file) :)
 declare function mpese-text:text-body($text) {
     let $input := doc($text)
     let $xsl := doc('corpus-text-html.xsl')

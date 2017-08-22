@@ -16,6 +16,7 @@ import module namespace ui = "http://mpese.rit.bris.ac.uk/ui/" at "ui.xql";
 import module namespace functx = "http://www.functx.com" at "functx-1.0.xql";
 import module namespace utils = "http://mpese.rit.bris.ac.uk/utils/" at '../modules/utils.xql';
 import module namespace mpese-text = "http://mpese.rit.bris.ac.uk/corpus/text/" at '../modules/mpese-corpus-text.xqm';
+import module namespace mpese-mss = "http://mpese.rit.bris.ac.uk/corpus/mss/" at '../modules/mpese-corpus-mss.xqm';
 
 declare function dashboard:process_word_xml($path as xs:string) {
 
@@ -215,3 +216,6 @@ declare function dashboard:topic_keywords($node as node (), $model as map (*)) {
     dashboard:keywords_as_list('topic-keyword')
 };
 
+declare function dashboard:list-mss($node as node (), $model as map (*)) {
+    mpese-mss:list-mss()
+};
