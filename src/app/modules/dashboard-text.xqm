@@ -30,7 +30,9 @@ declare function dashboard-text:items-as-list($list) {
 
 (: ---------- TEMPLATE FUNCTIONS ----------- :)
 
-(: adds the full URI of the text to the map so that it can be used by the following functions :)
+(: adds the full URI of the text to the map so that it can be used by the following functions  -
+ : the $mss variable is passed in via the controller; it generates it from the requested
+ : URL, which includes the name of the file :)
 declare function dashboard-text:find-text($node as node (), $model as map (*), $text as xs:string) {
     map { "text" := concat($config:mpese-tei-corpus-texts, '/', $text) }
 };

@@ -216,6 +216,3 @@ declare function dashboard:topic_keywords($node as node (), $model as map (*)) {
     dashboard:keywords_as_list('topic-keyword')
 };
 
-declare function dashboard:list-mss($node as node (), $model as map (*)) {
-    mpese-mss:list-mss()
-};

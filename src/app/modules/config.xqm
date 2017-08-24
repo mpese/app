@@ -60,6 +60,9 @@ declare variable $config:tei-template := concat($config:mpese-tei-templates, '/'
 (: tei template distributed by app (copied to a place the researchers can update if the file doesn't exist :)
 declare variable $config:tei-template-app := concat($config:app-root, '/modules/', $config:tei-template-filename);
 
+(: preferred date-time format (files :)
+declare variable $config:date-time-fmt := '[D01]/[M01]/[Y0001] [H01]:[m01]:[s01]';
+
 (:~
  : Resolve the given path using the current application context.
  : If the app resides in the file system,

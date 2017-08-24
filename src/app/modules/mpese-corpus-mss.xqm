@@ -7,32 +7,24 @@ declare namespace tei = 'http://www.tei-c.org/ns/1.0';
 import module namespace xmldb = 'http://exist-db.org/xquery/xmldb';
 import module namespace config = 'http://mpese.rit.bris.ac.uk/config' at 'config.xqm';
 
-(: get the list of mss docunts :)
-declare function mpese-mss:docs() {
+(: get the list of mss documents :)
+declare function mpese-mss:all-docs() {
     xmldb:get-child-resources($config:mpese-tei-corpus-mss)
 };
 
-declare function mpese-mss:list-mss() {
-    let $docs := mpese-mss:docs()
+(: get a single doc of mss documents :)
+declare function mpese-mss:doc($doc) {
+    fn:doc(concat($config:mpese-tei-corpus-mss, '/', $doc))
+};
+
+(: get the mss identifier - holds details of repository and mss shelf mark :)
+declare function mpese-mss:identifier($mss_doc) {
+    $mss_doc/tei:TEI/tei:text/tei:body/tei:msDesc/tei:msIdentifier
+};
+
+(: mss title - use the repo, collection, idno :)
+declare function mpese-mss:title($mss_doc) {
+    let $ident := mpese-mss:identifier($mss_doc)
     return
-        <table class='table table-respossive'>
-            <thead>
-                <tr>
-                    <th>Repository</th>
-                    <th>Collection</th>
-                    <th>ID No.</th>
-                </tr>
-            </thead>
-            <tbody>{
-                        for $doc in $docs
-        order by $doc ascending
-            let $mss := fn:doc(concat($config:mpese-tei-corpus-mss, '/', $doc))
-            return
-            <tr>
-                <td>{$mss/tei:TEI/tei:text/tei:body/tei:msDesc/tei:msIdentifier/tei:repository}</td>
-                <td>{$mss/tei:TEI/tei:text/tei:body/tei:msDesc/tei:msIdentifier/tei:collection}</td>
-                <td>{$mss/tei:TEI/tei:text/tei:body/tei:msDesc/tei:msIdentifier/tei:idno}</td>
-            </tr>
-            }</tbody>
-        </table>
+        concat($ident/tei:repository, ': ', $ident/tei:collection, ', ', $ident/tei:idno)
 };

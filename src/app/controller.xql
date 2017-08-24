@@ -6,6 +6,8 @@ declare variable $exist:controller external;
 declare variable $exist:prefix external;
 declare variable $exist:root external;
 
+declare variable $view := concat($exist:controller, '/modules/view.xql');
+
 util:log('INFO', ($exist:path)),
 
 if ($exist:path eq "") then
@@ -41,9 +43,32 @@ else if (fn:starts-with($exist:path, "/dashboard/text/")) then
                 <set-attribute name="text" value="{$file}"/>
             </forward>
             <view>
-                <forward url="{$exist:controller}/modules/view.xql"/>
+                <forward url="{$view}"/>
             </view>
         </dispatch>)
+else if (fn:starts-with($exist:path, "/dashboard/mss/")) then
+    if ($exist:path eq "/dashboard/mss/all/index.html") then
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+            <forward url="{$exist:controller}/dashboard/all_mss.html"/>
+            <view>
+                <forward url="{$view}"/>
+            </view>
+        </dispatch>
+    else
+        let $seq := fn:tokenize($exist:path, '/')
+        let $idx := fn:index-of($seq, 'mss') + 1
+        let $file := fn:concat($seq[$idx], '.xml')
+        return
+        (   util:log('INFO', ($seq)),
+            util:log('INFO', (fn:concat('Dashboard mss URL, looking for ', $file))),
+            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+                <forward url="{$exist:controller}/dashboard/mss_item.html">
+                    <set-attribute name="mss" value="{$file}"/>
+                </forward>
+                <view>
+                    <forward url="{$view}"/>
+                </view>
+            </dispatch>)
 else if (ends-with($exist:resource, ".html")) then
     (: the html page is run through view.xql to expand templates :)
     (util:log('INFO', $exist:resource)

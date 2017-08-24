@@ -1,22 +1,18 @@
 <div xmlns="http://www.w3.org/1999/xhtml" xmlns:xf="http://www.w3.org/2002/xforms"
-     data-template="templates:surround" data-template-with="templates/sub.html"
+     data-template="templates:surround" data-template-with="templates/sub2.html"
      data-template-at="content">
-    <h2>Dashboard</h2>
-    <div class="row">
-        <div>
-            <div data-template="ui:msg"/>
-        </div>
-    </div>
+    <h2>Dashboard: Manuscripts</h2>
     <div class="row">
         <div class="col-md-7">
-            <div data-template="dashboard:list-mss"></div>
+            <p class="mpese-text-count"><span data-template="dashboard:count_mss"/> manuscripts</p>
+            <div data-template="dashboard-mss:all"></div>
         </div>
         <div class="col-md-5">
             <div class="panel panel-info">
                 <div class="panel-heading">Corpus</div>
                 <div class="panel-body">
-                    <p>There are <span data-template="dashboard:count_texts"/> texts</p>
-                    <p>There are <span data-template="dashboard:count_mss"/> manuscripts</p>
+                    <p>There are <a href="../../index.html"><span data-template="dashboard:count_texts"/> texts</a></p>
+                    <p>There are <a href="./index.html"><span data-template="dashboard:count_mss"/> manuscripts</a></p>
                 </div>
             </div>
             <div class="panel panel-default">

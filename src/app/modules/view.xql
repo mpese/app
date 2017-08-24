@@ -13,6 +13,7 @@ import module namespace app = "http://mpese.rit.bris.ac.uk/templates" at "app.xq
 import module namespace ui = "http://mpese.rit.bris.ac.uk/ui/" at "ui.xql";
 import module namespace dashboard = "http://mpese.rit.bris.ac.uk/dashboard/" at "dashboard.xql";
 import module namespace dashboard-text = "http://mpese.rit.bris.ac.uk/dashboard/text/" at "dashboard-text.xqm";
+import module namespace dashboard-mss = "http://mpese.rit.bris.ac.uk/dashboard/mss/" at "dashboard-mss.xqm";
 
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 

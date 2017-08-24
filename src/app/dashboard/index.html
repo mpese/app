@@ -1,7 +1,7 @@
 <div xmlns="http://www.w3.org/1999/xhtml" xmlns:xf="http://www.w3.org/2002/xforms"
      data-template="templates:surround" data-template-with="templates/sub.html"
      data-template-at="content">
-    <h2>Dashboard</h2>
+    <h2>Dashboard: Texts</h2>
     <div class="row">
         <div>
             <div data-template="ui:msg"/>
@@ -9,9 +9,17 @@
     </div>
     <div class="row">
         <div class="col-md-7">
+            <p class="mpese-text-count"><span data-template="dashboard:count_texts"/> texts</p>
             <div data-template="dashboard:list_word_docs"/>
         </div>
         <div class="col-md-5">
+            <div class="panel panel-info">
+                <div class="panel-heading">Corpus</div>
+                <div class="panel-body">
+                    <p>There are <a href="."><span data-template="dashboard:count_texts"/> texts</a></p>
+                    <p>There are <a href="./mss/all/index.html"><span data-template="dashboard:count_mss"/> manuscripts</a></p>
+                </div>
+            </div>
             <div class="panel panel-primary">
                 <div class="panel-heading">Upload a Word document</div>
                 <div class="panel-body">
@@ -22,13 +30,6 @@
                             <input type="submit" class="btn btn-sm" value="Upload"/>
                         </div>
                     </form>
-                </div>
-            </div>
-            <div class="panel panel-info">
-                <div class="panel-heading">Corpus</div>
-                <div class="panel-body">
-                    <p>There are <span data-template="dashboard:count_texts"/> texts</p>
-                    <p>There are <span data-template="dashboard:count_mss"/> manuscripts</p>
                 </div>
             </div>
             <div class="panel panel-default">
