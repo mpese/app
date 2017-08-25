@@ -148,7 +148,7 @@ declare function dashboard:list_word_docs($node as node (), $model as map (*)) {
 
     let $list := xmldb:get-child-resources($config:mpese-tei-corpus-texts)
     return
-    <table id="mpese-dash-texts" class="table-responsive table-striped">
+    <table id="mpese-dash-texts" class="table table-responsive table-striped">
         <thead>
             <tr>
                 <th>Title</th>

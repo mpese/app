@@ -8,6 +8,14 @@ declare variable $exist:root external;
 
 declare variable $view := concat($exist:controller, '/modules/view.xql');
 
+
+declare function local:item_file($type) {
+    let $seq := fn:tokenize($exist:path, '/')
+    let $idx := fn:index-of($seq, $type) + 1
+    return
+        fn:concat($seq[$idx], '.xml')
+};
+
 util:log('INFO', ($exist:path)),
 
 if ($exist:path eq "") then
@@ -32,14 +40,11 @@ else if ($exist:path eq "/dashboard/") then
         <redirect url="{concat(request:get-uri(), 'index.html')}"/>
     </dispatch>
 else if (fn:starts-with($exist:path, "/dashboard/text/")) then
-    let $seq := fn:tokenize($exist:path, '/')
-    let $idx := fn:index-of($seq, 'text') + 1
-    let $file := fn:concat($seq[$idx], '.xml')
+    let $file := local:item_file('text')
     return
-        (   util:log('INFO', ($seq)),
-            util:log('INFO', (fn:concat('Dashboard text URL, looking for ', $file))),
+        (util:log('INFO', (fn:concat('Dashboard text URL, looking for ', $file))),
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-            <forward url="{$exist:controller}/dashboard/text.html">
+            <forward url="{$exist:controller}/dashboard/text_item.html">
                 <set-attribute name="text" value="{$file}"/>
             </forward>
             <view>
@@ -49,7 +54,7 @@ else if (fn:starts-with($exist:path, "/dashboard/text/")) then
 else if (fn:starts-with($exist:path, "/dashboard/mss/")) then
     if ($exist:path eq "/dashboard/mss/all/index.html") then
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-            <forward url="{$exist:controller}/dashboard/all_mss.html"/>
+            <forward url="{$exist:controller}/dashboard/mss_all.html"/>
             <view>
                 <forward url="{$view}"/>
             </view>
