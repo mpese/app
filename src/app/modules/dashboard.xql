@@ -120,7 +120,7 @@ declare function dashboard:keywords_as_list($att) {
         order by $keyword ascending
             return
                 if(not(functx:all-whitespace($keyword))) then
-                    <li>{$keyword}</li>
+                    <li><a href="{concat('./index.html?', $att, '=', $keyword)}">{$keyword}</a></li>
                 else
                     ()
     }</ul>
@@ -139,6 +139,23 @@ declare function dashboard:authors($authors) {
                     concat(' and ', $author)
 };
 
+declare function dashboard:get-texts($text-type, $topic-keyword) {
+
+    if ($text-type) then
+        fn:collection($config:mpese-tei-corpus-texts)//tei:keywords[@n="text-type"]/tei:term[fn:contains(., $text-type)]
+    else if ($topic-keyword) then
+        fn:collection($config:mpese-tei-corpus-texts)//tei:keywords[@n="topic-keyword"]/tei:term[fn:contains(., $topic-keyword)]
+    else
+        fn:collection($config:mpese-tei-corpus-texts)
+};
+
+(: get the last-modified date of the node's document, i.e. TEI document :)
+declare function dashboard:last-modified($doc_name) {
+            let $lmd := xmldb:last-modified($config:mpese-tei-corpus-texts, $doc_name)
+            return
+                fn:format-dateTime($lmd, $config:date-time-fmt)
+};
+
 (: --------- TEMPLATE FUNCTIONS --------- :)
 
 (: TODO - add a title to the TEI/XML document :)
@@ -146,40 +163,47 @@ declare function dashboard:authors($authors) {
 
 declare function dashboard:list_word_docs($node as node (), $model as map (*)) {
 
-    let $list := xmldb:get-child-resources($config:mpese-tei-corpus-texts)
+    let $text-type := request:get-parameter('text-type', '')
+    let $topic-keyword := request:get-parameter('topic-keyword', '')
+
+    let $list := dashboard:get-texts($text-type, $topic-keyword)
     return
-    <table id="mpese-dash-texts" class="table table-responsive table-striped">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Author</th>
-                <th>Last Modified</th>
-            </tr>
-        </thead>
-        <tbody>{
-        for $tei in $list
-        order by $tei ascending
-            let $doc := fn:doc(concat($config:mpese-tei-corpus-texts, '/', $tei))
+    <div>
+        <p class='mpese-text-count'>{fn:count($list)} results.</p>
+        <table id="mpese-dash-texts" class="table table-responsive table-striped">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Last Modified</th>
+                </tr>
+            </thead>
+            <tbody>{
+            for $a in $list
+            let $tei := root($a)
+            (: extract the filename from the full path :)
+            let $doc_name := functx:substring-after-last(fn:document-uri($tei), '/')
             return
-            <tr>
-                <td>{
-                    let $title := $doc/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title/text()
-                    let $name := fn:substring-before($tei, '.xml')
-                    let $uri := fn:concat('text/', $name, '/index.html')
-                    return
-                        if(not(functx:all-whitespace($title))) then
-                            <a href="{$uri}">{$title}</a>
-                        else
-                            <a href="{$uri}">{string('Untitled')}</a>
-                }</td>
-                <td>{
-                    let $authors:= $doc/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author
-                    return dashboard:authors($authors)
-                }</td>
-                <td>{fn:format-dateTime(xmldb:last-modified($config:mpese-tei-corpus-texts, $tei), "[D01]/[M01]/[Y0001] [H01]:[m01]:[s01]")}</td>
-            </tr>
-        }</tbody>
-    </table>
+                <tr>
+                    <td>{
+                        let $title := $tei/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title/text()
+                        let $name := fn:substring-before($doc_name, '.xml')
+                        let $uri := fn:concat('text/', $name, '/index.html')
+                        return
+                            if(not(functx:all-whitespace($title))) then
+                                <a href="{$uri}">{$title}</a>
+                            else
+                                <a href="{$uri}">{string('Untitled')}</a>
+                    }</td>
+                    <td>{
+                        let $authors:= $tei/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author
+                        return dashboard:authors($authors)
+                    }</td>
+                    <td>{dashboard:last-modified($doc_name)}</td>
+                </tr>
+            }</tbody>
+        </table>
+    </div>
 };
 
 (: count the numbers of texts :)
