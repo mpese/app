@@ -36,6 +36,8 @@ declare variable $config:mpese-tei-templates := concat($config:mpese-tei, '/temp
 declare variable $config:mpese-tei-corpus := concat($config:mpese-tei, '/corpus');
 declare variable $config:mpese-tei-corpus-texts := concat($config:mpese-tei-corpus, '/texts');
 declare variable $config:mpese-tei-corpus-mss := concat($config:mpese-tei-corpus, '/mss');
+declare variable $config:mpese-tei-corpus-people := concat($config:mpese-tei-corpus, '/people');
+declare variable $config:mpese-tei-corpus-places := concat($config:mpese-tei-corpus, '/places');
 declare variable $config:mpese-word-docx := concat($config:mpese-word-root, '/docx');
 declare variable $config:mpese-word-unzip := concat($config:mpese-word-root, '/unzip');
 

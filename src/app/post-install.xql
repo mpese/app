@@ -48,6 +48,8 @@ util:log('INFO', ('MPESE: Running the post-installation script ...')),
 local:chgrp-collection($config:mpese_group, $config:mpese-tei-templates),
 local:chgrp-collection($config:mpese_group, $config:mpese-tei-corpus-texts),
 local:chgrp-collection($config:mpese_group, $config:mpese-tei-corpus-mss),
+local:chgrp-collection($config:mpese_group, $config:mpese-tei-corpus-people),
+local:chgrp-collection($config:mpese_group, $config:mpese-tei-corpus-places),
 local:chgrp-collection($config:mpese_group, $config:mpese-word-docx),
 local:chgrp-collection($config:mpese_group, $config:mpese-word-unzip),
 
@@ -58,6 +60,10 @@ sm:chown($mpese-app-dashboard, 'admin'),
 (: change permission for certain paths :)
 sm:chmod(xs:anyURI($config:mpese-tei-corpus-texts), 'rwxrwxr-x'),
 sm:chmod(xs:anyURI($config:mpese-tei-corpus-mss), 'rwxrwxr-x'),
+sm:chmod(xs:anyURI($config:mpese-tei-corpus-people), 'rwxrwxr-x'),
+sm:chmod(xs:anyURI($config:mpese-tei-corpus-places), 'rwxrwxr-x'),
+sm:chmod(xs:anyURI($config:mpese-word-docx), 'rwxrwxr-x'),
+sm:chmod(xs:anyURI($config:mpese-word-unzip), 'rwxrwxr-x'),
 
 local:copy-text-template(),
 
