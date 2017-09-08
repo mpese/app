@@ -9,7 +9,7 @@
     </div>
     <div class="row">
         <div class="col-md-7">
-            <div data-template="dashboard:list_word_docs"/>
+            <div data-template="dashboard:list_texts"/>
         </div>
         <div class="col-md-5">
             <div class="panel panel-info">
@@ -17,6 +17,12 @@
                 <div class="panel-body">
                     <p>There are <a href="."><span data-template="dashboard:count_texts"/> texts</a></p>
                     <p>There are <a href="./mss/all/index.html"><span data-template="dashboard:count_mss"/> manuscripts</a></p>
+                </div>
+            </div>
+            <div class="panel panel-warning">
+                <div class="panel-heading">Content Warning</div>
+                <div class="panel-body">
+                    <p>There are <span data-template="dashboard:total_missing_bibliographies"/> texts with missing bibliographies</p>
                 </div>
             </div>
             <div class="panel panel-primary">

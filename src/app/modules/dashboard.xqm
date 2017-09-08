@@ -139,12 +139,17 @@ declare function dashboard:authors($authors) {
                     concat(' and ', $author)
 };
 
-declare function dashboard:get-texts($text-type, $topic-keyword) {
+declare function dashboard:get-texts($text-type, $topic-keyword, $missing) {
 
     if ($text-type) then
         fn:collection($config:mpese-tei-corpus-texts)//tei:keywords[@n="text-type"]/tei:term[fn:contains(., $text-type)]
     else if ($topic-keyword) then
         fn:collection($config:mpese-tei-corpus-texts)//tei:keywords[@n="topic-keyword"]/tei:term[fn:contains(., $topic-keyword)]
+    else if ($missing) then
+        if ($missing eq 'bibliography') then
+            fn:distinct-values(dashboard:missing-bibliography())
+        else
+            fn:collection($config:mpese-tei-corpus-texts)
     else
         fn:collection($config:mpese-tei-corpus-texts)
 };
@@ -156,30 +161,28 @@ declare function dashboard:last-modified($doc_name) {
                 fn:format-dateTime($lmd, $config:date-time-fmt)
 };
 
-(: --------- TEMPLATE FUNCTIONS --------- :)
+(: get the documents that are missing a bibliography; checks for a bibl with no content or an xml
+ : comment, as found in templates used by the researchers :)
+declare function dashboard:missing-bibliography() {
+    for $bibl in fn:collection($config:mpese-tei-corpus-texts)/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listBibl/tei:bibl
+    where functx:has-empty-content($bibl) or $bibl/comment()
+    return root($bibl)
+};
 
-(: TODO - add a title to the TEI/XML document :)
-(: TODO - list the TEI/XML rather than Word docs :)
-
-declare function dashboard:list_word_docs($node as node (), $model as map (*)) {
-
-    let $text-type := request:get-parameter('text-type', '')
-    let $topic-keyword := request:get-parameter('topic-keyword', '')
-
-    let $list := dashboard:get-texts($text-type, $topic-keyword)
-    return
+declare function dashboard:texts_table($texts) {
     <div>
-        <p class='mpese-text-count'>{fn:count($list)} results.</p>
+        <p class='mpese-text-count'>{fn:count($texts)} results.</p>
         <table id="mpese-dash-texts" class="table table-responsive table-striped">
             <thead>
                 <tr>
                     <th>Title</th>
                     <th>Author</th>
+                    <th>Date</th>
                     <th>Last Modified</th>
                 </tr>
             </thead>
             <tbody>{
-            for $a in $list
+            for $a in $texts
             let $tei := root($a)
             (: extract the filename from the full path :)
             let $doc_name := functx:substring-after-last(fn:document-uri($tei), '/')
@@ -195,6 +198,7 @@ declare function dashboard:list_word_docs($node as node (), $model as map (*)) {
                             else
                                 <a href="{$uri}">{string('Untitled')}</a>
                     }</td>
+                    <td>{$tei/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:date/text()}</td>
                     <td>{
                         let $authors:= $tei/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author
                         return dashboard:authors($authors)
@@ -204,6 +208,23 @@ declare function dashboard:list_word_docs($node as node (), $model as map (*)) {
             }</tbody>
         </table>
     </div>
+};
+
+
+(: --------- TEMPLATE FUNCTIONS --------- :)
+
+(: TODO - add a title to the TEI/XML document :)
+(: TODO - list the TEI/XML rather than Word docs :)
+
+declare function dashboard:list_texts($node as node (), $model as map (*)) {
+
+    let $text-type := request:get-parameter('text-type', '')
+    let $topic-keyword := request:get-parameter('topic-keyword', '')
+    let $missing-data := request:get-parameter('missing', '')
+
+    let $texts := dashboard:get-texts($text-type, $topic-keyword, $missing-data)
+    return
+        dashboard:texts_table($texts)
 };
 
 (: count the numbers of texts :)
@@ -240,3 +261,6 @@ declare function dashboard:topic_keywords($node as node (), $model as map (*)) {
     dashboard:keywords_as_list('topic-keyword')
 };
 
+declare function dashboard:total_missing_bibliographies($node as node (), $model as map (*)) {
+    fn:count(fn:distinct-values(dashboard:missing-bibliography()))
+};
