@@ -142,12 +142,12 @@ declare function dashboard:authors($authors) {
 declare function dashboard:get-texts($text-type, $topic-keyword, $missing) {
 
     if ($text-type) then
-        fn:collection($config:mpese-tei-corpus-texts)//tei:keywords[@n="text-type"]/tei:term[fn:contains(., $text-type)]
+        fn:collection($config:mpese-tei-corpus-texts)//tei:keywords[@n="text-type"]/tei:term[text() eq $text-type]
     else if ($topic-keyword) then
-        fn:collection($config:mpese-tei-corpus-texts)//tei:keywords[@n="topic-keyword"]/tei:term[fn:contains(., $topic-keyword)]
+        fn:collection($config:mpese-tei-corpus-texts)//tei:keywords[@n="topic-keyword"]/tei:term[text() eq $topic-keyword]
     else if ($missing) then
         if ($missing eq 'bibliography') then
-            fn:distinct-values(dashboard:missing-bibliography())
+            dashboard:missing-bibliography()
         else
             fn:collection($config:mpese-tei-corpus-texts)
     else
@@ -163,10 +163,10 @@ declare function dashboard:last-modified($doc_name) {
 
 (: get the documents that are missing a bibliography; checks for a bibl with no content or an xml
  : comment, as found in templates used by the researchers :)
-declare function dashboard:missing-bibliography() {
+declare function dashboard:missing-bibliography() as node()* {
     for $bibl in fn:collection($config:mpese-tei-corpus-texts)/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listBibl/tei:bibl
-    where functx:has-empty-content($bibl) or $bibl/comment()
-    return root($bibl)
+    where not($bibl/node()) or $bibl/comment()
+    return $bibl
 };
 
 declare function dashboard:texts_table($texts) {
