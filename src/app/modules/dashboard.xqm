@@ -111,6 +111,28 @@ declare function dashboard:store_word_doc($param_name as xs:string) {
                     <message type="success">{fn:concat($filename, ' has been processed')}</message>
 };
 
+
+
+declare function dashboard:empty-element($element as element()) {
+    not($element/node()) or $element/comment()
+};
+
+(: find documents that have mission bibliographical detail :)
+declare function dashboard:missing-biblio() {
+    let $missing-biblio := (
+        for $a in  fn:collection($config:mpese-tei-corpus-texts)/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listBibl/tei:bibl
+        where dashboard:empty-element($a)
+        return document-uri(root($a)))
+    let $distinct-missing := distinct-values($missing-biblio)
+    return
+        for $a in $distinct-missing
+        order by doc($a)/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title/text()
+            return doc($a)
+
+};
+
+
+
 (: helper function for listing keywords :)
 declare function dashboard:keywords_as_list($att) {
     let $keywords := collection('/db/mpese/tei/corpus/')//tei:keywords[@n=$att]/tei:term
@@ -146,8 +168,10 @@ declare function dashboard:get-texts($text-type, $topic-keyword, $missing) {
     else if ($topic-keyword) then
         fn:collection($config:mpese-tei-corpus-texts)//tei:keywords[@n="topic-keyword"]/tei:term[text() eq $topic-keyword]
     else if ($missing) then
-        if ($missing eq 'bibliography') then
-            dashboard:missing-bibliography()
+        if ($missing eq 'biblio') then
+            dashboard:missing-biblio()
+        else if ($missing eq 'unclear') then
+            dashboard:unclear-used()
         else
             fn:collection($config:mpese-tei-corpus-texts)
     else
@@ -161,12 +185,15 @@ declare function dashboard:last-modified($doc_name) {
                 fn:format-dateTime($lmd, $config:date-time-fmt)
 };
 
-(: get the documents that are missing a bibliography; checks for a bibl with no content or an xml
- : comment, as found in templates used by the researchers :)
-declare function dashboard:missing-bibliography() as node()* {
-    for $bibl in fn:collection($config:mpese-tei-corpus-texts)/tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listBibl/tei:bibl
-    where not($bibl/node()) or $bibl/comment()
-    return $bibl
+
+declare function dashboard:unclear-used() {
+    let $missing-biblio := (
+        for $a in fn:collection($config:mpese-tei-corpus-texts)//tei:unclear
+        return document-uri(root($a)))
+    let $distinct-missing := distinct-values($missing-biblio)
+    return
+        for $a in $distinct-missing
+            return doc($a)
 };
 
 declare function dashboard:texts_table($texts) {
@@ -198,11 +225,11 @@ declare function dashboard:texts_table($texts) {
                             else
                                 <a href="{$uri}">{string('Untitled')}</a>
                     }</td>
-                    <td>{$tei/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:date/text()}</td>
                     <td>{
                         let $authors:= $tei/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author
                         return dashboard:authors($authors)
                     }</td>
+                    <td>{$tei/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:date/text()}</td>
                     <td>{dashboard:last-modified($doc_name)}</td>
                 </tr>
             }</tbody>
@@ -262,5 +289,10 @@ declare function dashboard:topic_keywords($node as node (), $model as map (*)) {
 };
 
 declare function dashboard:total_missing_bibliographies($node as node (), $model as map (*)) {
-    fn:count(fn:distinct-values(dashboard:missing-bibliography()))
+    fn:count(dashboard:missing-biblio())
 };
+
+declare function dashboard:total_missing_unclear($node as node (), $model as map (*)) {
+    fn:count(dashboard:unclear-used())
+};
+

@@ -57,6 +57,8 @@
 
     <xsl:template match="tei:del"><del><xsl:apply-templates/></del></xsl:template>
 
+     <xsl:template match="tei:unclear"><span class="unclear"><xsl:apply-templates/></span></xsl:template>
+
     <xsl:template match="tei:gap"><span class="mpese-gap"><xsl:apply-templates/></span></xsl:template>
 
     <!--<xsl:template match="*">-->
