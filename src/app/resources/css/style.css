@@ -54,3 +54,7 @@ footer p {
 .unclear {
     text-decoration: dashed;
 }
+
+img.pese-home-img-caption {
+    max-width: 100%;
+}
