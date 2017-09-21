@@ -296,3 +296,9 @@ declare function dashboard:total_missing_unclear($node as node (), $model as map
     fn:count(dashboard:unclear-used())
 };
 
+declare function dashboard:text-download-xml($node as node (), $model as map (*)) {
+    let $file := request:get-attribute('text')
+    return
+        <p><a href="./index.xml" download="{$file}">Download XML</a></p>
+};
+
