@@ -40,17 +40,27 @@ else if ($exist:path eq "/dashboard/") then
         <redirect url="{concat(request:get-uri(), 'index.html')}"/>
     </dispatch>
 else if (fn:starts-with($exist:path, "/dashboard/text/")) then
-    let $file := local:item_file('text')
-    return
-        (util:log('INFO', (fn:concat('Dashboard text URL, looking for ', $file))),
-        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-            <forward url="{$exist:controller}/dashboard/text_item.html">
-                <set-attribute name="text" value="{$file}"/>
-            </forward>
-            <view>
-                <forward url="{$view}"/>
-            </view>
-        </dispatch>)
+    if (ends-with($exist:resource, ".xml")) then
+        let $file := local:item_file('text')
+        return
+            (util:log('INFO', (fn:concat('Dashboard text URL, looking for ', $file))),
+            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+                <forward url="{$exist:controller}/dashboard/serialize_xml.xql">
+                    <set-attribute name="text" value="{$file}"/>
+                </forward>
+            </dispatch>)
+    else
+        let $file := local:item_file('text')
+        return
+            (util:log('INFO', (fn:concat('Dashboard text URL, looking for ', $file))),
+            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+                <forward url="{$exist:controller}/dashboard/text_item.html">
+                    <set-attribute name="text" value="{$file}"/>
+                </forward>
+                <view>
+                    <forward url="{$view}"/>
+                </view>
+            </dispatch>)
 else if (fn:starts-with($exist:path, "/dashboard/mss/")) then
     if ($exist:path eq "/dashboard/mss/all/index.html") then
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
