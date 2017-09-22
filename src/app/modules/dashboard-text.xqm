@@ -32,20 +32,30 @@ declare function dashboard-text:items-as-list($list) {
     }</ul>
 };
 
-
+(: Manuscript details for a text. This is the <msIdentifier/> and this usually comes from following an xinclude :)
 declare function dashboard-text:mss-details($node as node()) {
+
+    (: get the base URI of the mss :)
     let $mss_uri := fn:base-uri($node)
+
+    (: work out the name  of the file, without an extension :)
     let $name := utils:name-from-uri($mss_uri)
-        return
+
+    (: return a link + text to the manuscript :)
+    return
         <p><a href="../../mss/{$name}/index.html">{$node//tei:repository/string()}, {$node//tei:collection/string()}, {$node//tei:idno/string()}</a></p>
 };
 
+(: Get the <msIdentifier/> for the witnesses by following xincludes under the <listBibl xml:id="witness"/> element :)
 declare function dashboard-text:witnesses-includes($uri as xs:string)  {
 
-   let $witnesses := fn:doc($uri)//tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listBibl[@xml:id='witness']/tei:bibl/xi:include
+    (: find the include nodes :)
+    let $witnesses := fn:doc($uri)//tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listBibl[@xml:id='witness']/tei:bibl/xi:include
 
-   for $include in $witnesses
-       (: get the path and id :)
+    (: follow each include to get the manuscript details :)
+    for $include in $witnesses
+
+        (: get the path and id :)
         let $include_url := $include/@href/string()
         let $include_id := $include/@xpointer/string()
 
@@ -57,6 +67,7 @@ declare function dashboard-text:witnesses-includes($uri as xs:string)  {
         return
             doc($mss_full)//*[@xml:id=$include_id]
 };
+
 
 declare function dashboard-text:mss-identifier($file as xs:string) {
 
@@ -92,18 +103,22 @@ declare %templates:wrap function dashboard-text:title($node as node (), $model a
     mpese-text:title($model('text'))
 };
 
+(: text type keywords :)
 declare function dashboard-text:keywords-text-type($node as node (), $model as map (*), $text as xs:string) {
     dashboard-text:items-as-list(mpese-text:keywords-text-type($model('text')))
 };
 
+(: topic keywords :)
 declare function dashboard-text:keywords-topic($node as node (), $model as map (*), $text as xs:string) {
     dashboard-text:items-as-list(mpese-text:keywords-topic($model('text')))
 };
 
+(: the transcript :)
 declare function dashboard-text:text-body($node as node (), $model as map (*), $text as xs:string) {
     mpese-text:text-body($model('text'))
 };
 
+(: the manuscript for the text :)
 declare function dashboard-text:text-mss($node as node (), $model as map (*), $text as xs:string) {
     let $mss_ident := dashboard-text:mss-identifier($model('text'))
     let $mss_uri := fn:base-uri($mss_ident)
@@ -112,8 +127,8 @@ declare function dashboard-text:text-mss($node as node (), $model as map (*), $t
         <p><a href="../../mss/{$name}/index.html">{$mss_ident//tei:repository/string()}, {$mss_ident//tei:collection/string()}, {$mss_ident//tei:idno/string()}</a></p>
 };
 
+(: other witnesses for the text :)
 declare function dashboard-text:witnesses($node as node (), $model as map (*), $text as xs:string)  {
-
  let $witnesses_inc := dashboard-text:witnesses-includes($model('text'))
  for $witness in $witnesses_inc
     return dashboard-text:mss-details($witness)
