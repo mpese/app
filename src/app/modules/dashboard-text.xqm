@@ -8,10 +8,14 @@ module namespace dashboard-text = "http://mpese.rit.bris.ac.uk/dashboard/text/";
  : it to text.html
  :)
 
+declare namespace tei = 'http://www.tei-c.org/ns/1.0';
+declare namespace xi = 'http://www.w3.org/2001/XInclude';
+
 import module namespace config = "http://mpese.rit.bris.ac.uk/config" at "config.xqm";
 import module namespace templates = "http://exist-db.org/xquery/templates";
 import module namespace functx = "http://www.functx.com" at "functx-1.0.xql";
 import module namespace mpese-text = "http://mpese.rit.bris.ac.uk/corpus/text/" at 'mpese-corpus-text.xqm';
+import module namespace utils = "http://mpese.rit.bris.ac.uk/utils/";
 
 (: ---------- HELPER FUNCTIONS ------------- :)
 
@@ -27,6 +31,52 @@ declare function dashboard-text:items-as-list($list) {
                     ()
     }</ul>
 };
+
+
+declare function dashboard-text:mss-details($node as node()) {
+    let $mss_uri := fn:base-uri($node)
+    let $name := utils:name-from-uri($mss_uri)
+        return
+        <p><a href="../../mss/{$name}/index.html">{$node//tei:repository/string()}, {$node//tei:collection/string()}, {$node//tei:idno/string()}</a></p>
+};
+
+declare function dashboard-text:witnesses-includes($uri as xs:string)  {
+
+   let $witnesses := fn:doc($uri)//tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listBibl[@xml:id='witness']/tei:bibl/xi:include
+
+   for $include in $witnesses
+       (: get the path and id :)
+        let $include_url := $include/@href/string()
+        let $include_id := $include/@xpointer/string()
+
+        (: get the full path for the mss :)
+        let $mss := if (fn:starts-with($include_url, '../')) then fn:substring($include_url, 3) else $include_url
+        let $mss_full := concat($config:mpese-tei-corpus, $mss)
+
+        (: return the node :)
+        return
+            doc($mss_full)//*[@xml:id=$include_id]
+};
+
+declare function dashboard-text:mss-identifier($file as xs:string) {
+
+    (: get the include :)
+    let $include := doc($file)//tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:msDesc/xi:include
+
+    (: get the path and id :)
+    let $include_url := $include/@href/string()
+    let $include_id := $include/@xpointer/string()
+
+    (: get the full path for the mss :)
+    let $mss := if (fn:starts-with($include_url, '../')) then fn:substring($include_url, 3) else $include_url
+    let $mss_full := concat($config:mpese-tei-corpus, $mss)
+
+    (: return the node :)
+    return
+        doc($mss_full)//*[@xml:id=$include_id]
+};
+
+
 
 (: ---------- TEMPLATE FUNCTIONS ----------- :)
 
@@ -52,4 +102,19 @@ declare function dashboard-text:keywords-topic($node as node (), $model as map (
 
 declare function dashboard-text:text-body($node as node (), $model as map (*), $text as xs:string) {
     mpese-text:text-body($model('text'))
+};
+
+declare function dashboard-text:text-mss($node as node (), $model as map (*), $text as xs:string) {
+    let $mss_ident := dashboard-text:mss-identifier($model('text'))
+    let $mss_uri := fn:base-uri($mss_ident)
+    let $name := utils:name-from-uri($mss_uri)
+        return
+        <p><a href="../../mss/{$name}/index.html">{$mss_ident//tei:repository/string()}, {$mss_ident//tei:collection/string()}, {$mss_ident//tei:idno/string()}</a></p>
+};
+
+declare function dashboard-text:witnesses($node as node (), $model as map (*), $text as xs:string)  {
+
+ let $witnesses_inc := dashboard-text:witnesses-includes($model('text'))
+ for $witness in $witnesses_inc
+    return dashboard-text:mss-details($witness)
 };

@@ -120,3 +120,11 @@ declare function utils:unzip($base-collection as xs:string, $zip-filename as xs:
             <results
                 action="{$action}">{$unzip}</results>
 };
+
+
+declare function utils:name-from-uri($uri as xs:string) as xs:string  {
+    let $seq1 := fn:tokenize($uri, '/')
+    let $file := $seq1[fn:count($seq1)]
+    let $seq2 := fn:tokenize($file, '\.')
+    return $seq2[1]
+};
