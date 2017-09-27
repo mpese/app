@@ -11,9 +11,10 @@ declare variable $view := concat($exist:controller, '/modules/view.xql');
 (: calculate the xml filename from URL path :)
 declare function local:item_file($type) {
     let $seq := fn:tokenize($exist:path, '/')
-    let $idx := fn:index-of($seq, $type) + 1
+    let $file := $seq[fn:count($seq)]
+    let $seq2 := fn:tokenize($file, '\.')
     return
-        fn:concat($seq[$idx], '.xml')
+        concat($seq2[1], '.xml')
 };
 
 util:log('INFO', ($exist:path)),
@@ -62,7 +63,7 @@ else if (fn:starts-with($exist:path, "/dashboard/text/")) then
                 </view>
             </dispatch>)
 else if (fn:starts-with($exist:path, "/dashboard/mss/")) then
-    if ($exist:path eq "/dashboard/mss/all/index.html") then
+    if ($exist:path eq "/dashboard/mss/all.html") then
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
             <forward url="{$exist:controller}/dashboard/mss_all.html"/>
             <view>

@@ -20,7 +20,7 @@ declare namespace tei = 'http://www.tei-c.org/ns/1.0';
 declare function dashboard-mss:url($doc) {
     let $name := fn:substring-before($doc, '.xml')
     return
-        fn:concat('../', $name, '/index.html')
+        fn:concat('./', $name, '.html')
 };
 
 

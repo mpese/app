@@ -43,14 +43,14 @@ declare function dashboard-text:mss-details($node as node()) {
 
     (: return a link + text to the manuscript :)
     return
-        <p><a href="../../mss/{$name}/index.html">{$node//tei:repository/string()}, {$node//tei:collection/string()}, {$node//tei:idno/string()}</a></p>
+        <p><a href="../mss/{$name}.html">{$node//tei:repository/string()}, {$node//tei:collection/string()}, {$node//tei:idno/string()}</a></p>
 };
 
 (: Get the <msIdentifier/> for the witnesses by following xincludes under the <listBibl xml:id="witness"/> element :)
 declare function dashboard-text:witnesses-includes($uri as xs:string)  {
 
     (: find the include nodes :)
-    let $witnesses := fn:doc($uri)//tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:listBibl[@xml:id='witness']/tei:bibl/xi:include
+    let $witnesses := fn:doc($uri)//tei:listBibl[@xml:id='mss_witness']/tei:bibl/xi:include
 
     (: follow each include to get the manuscript details :)
     for $include in $witnesses
@@ -122,9 +122,13 @@ declare function dashboard-text:text-body($node as node (), $model as map (*), $
 declare function dashboard-text:text-mss($node as node (), $model as map (*), $text as xs:string) {
     let $mss_ident := dashboard-text:mss-identifier($model('text'))
     let $mss_uri := fn:base-uri($mss_ident)
-    let $name := utils:name-from-uri($mss_uri)
-        return
-        <p><a href="../../mss/{$name}/index.html">{$mss_ident//tei:repository/string()}, {$mss_ident//tei:collection/string()}, {$mss_ident//tei:idno/string()}</a></p>
+    return
+        if ($mss_uri) then
+            let $name := utils:name-from-uri($mss_uri)
+            return
+                <p><a href="../mss/{$name}.html">{$mss_ident//tei:repository/string()}, {$mss_ident//tei:collection/string()}, {$mss_ident//tei:idno/string()}</a></p>
+        else
+            ""
 };
 
 (: other witnesses for the text :)

@@ -218,7 +218,7 @@ declare function dashboard:texts_table($texts) {
                     <td>{
                         let $title := $tei/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title/text()
                         let $name := fn:substring-before($doc_name, '.xml')
-                        let $uri := fn:concat('text/', $name, '/index.html')
+                        let $uri := fn:concat('text/', $name, '.html')
                         return
                             if(not(functx:all-whitespace($title))) then
                                 <a href="{$uri}">{$title}</a>
@@ -266,6 +266,12 @@ declare function dashboard:count_mss($node as node (), $model as map (*)) {
     return count($list)
 };
 
+(: count the number of people :)
+declare function dashboard:count_people($node as node (), $model as map (*)) {
+    let $people := collection($config:mpese-tei-corpus-people)//tei:person
+    return fn:count($people)
+};
+
 (: list the @rend attribute values :)
 declare function dashboard:rend_atts($node as node (), $model as map (*)) {
     let $attrs := collection($config:mpese-tei-corpus)//@rend
@@ -299,6 +305,6 @@ declare function dashboard:total_missing_unclear($node as node (), $model as map
 declare function dashboard:text-download-xml($node as node (), $model as map (*)) {
     let $file := request:get-attribute('text')
     return
-        <p><a href="./index.xml" download="{$file}">Download XML</a></p>
+        <p><a href="./{$file}" download="{$file}">Download XML</a></p>
 };
 
