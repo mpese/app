@@ -136,13 +136,14 @@ declare function dashboard:missing-biblio() {
 (: helper function for listing keywords :)
 declare function dashboard:keywords_as_list($att) {
     let $keywords := collection('/db/mpese/tei/corpus/')//tei:keywords[@n=$att]/tei:term
+    let $code := ( if ($att eq 'text-type') then '01' else '02')
     return
     <ul class='list-inline'>{
         for $keyword in fn:distinct-values($keywords)
         order by $keyword ascending
             return
                 if(not(functx:all-whitespace($keyword))) then
-                    <li><a href="{concat('./index.html?', $att, '=', $keyword)}">{$keyword}</a></li>
+                    <li><a href="{concat('./index.html?code=', $code, '&amp;value=', $keyword)}">{$keyword}</a></li>
                 else
                     ()
     }</ul>
@@ -161,19 +162,28 @@ declare function dashboard:authors($authors) {
                     concat(' and ', $author)
 };
 
-declare function dashboard:get-texts($text-type, $topic-keyword, $missing) {
+(:
+ :  Filters
+ :
+ :  01 - matching a specific text-type
+ :  02 - matching a specific topic-keyword
+ :  03 - missing a bibliography
+ :  04 – unclear text
+ :  05 - dates that haven't been normalised
+ :)
 
-    if ($text-type) then
-        fn:collection($config:mpese-tei-corpus-texts)//tei:keywords[@n="text-type"]/tei:term[text() eq $text-type]
-    else if ($topic-keyword) then
-        fn:collection($config:mpese-tei-corpus-texts)//tei:keywords[@n="topic-keyword"]/tei:term[text() eq $topic-keyword]
-    else if ($missing) then
-        if ($missing eq 'biblio') then
-            dashboard:missing-biblio()
-        else if ($missing eq 'unclear') then
-            dashboard:unclear-used()
-        else
-            fn:collection($config:mpese-tei-corpus-texts)
+declare function dashboard:get-texts($code, $value) {
+
+    if ($code eq '01') then
+        fn:collection($config:mpese-tei-corpus-texts)//tei:keywords[@n="text-type"]/tei:term[text() eq $value]
+    else if ($code eq '02') then
+        fn:collection($config:mpese-tei-corpus-texts)//tei:keywords[@n="topic-keyword"]/tei:term[text() eq $value]
+    else if ($code eq '03') then
+        dashboard:missing-biblio()
+    else if ($code eq '04') then
+        dashboard:unclear-used()
+    else if ($code eq '05') then
+        dashboard:not-normalized-dates()
     else
         fn:collection($config:mpese-tei-corpus-texts)
 };
@@ -195,6 +205,18 @@ declare function dashboard:unclear-used() {
         for $a in $distinct-missing
             return doc($a)
 };
+
+declare function dashboard:not-normalized-dates() {
+    let $dates := (
+        for $a in fn:collection($config:mpese-tei-corpus-texts)//tei:date[not(@when)]
+        return document-uri(root($a)))
+    let $distinct-missing := distinct-values($dates)
+    return
+        for $a in $distinct-missing
+            return doc($a)
+};
+
+
 
 declare function dashboard:texts_table($texts) {
     <div>
@@ -245,11 +267,10 @@ declare function dashboard:texts_table($texts) {
 
 declare function dashboard:list_texts($node as node (), $model as map (*)) {
 
-    let $text-type := request:get-parameter('text-type', '')
-    let $topic-keyword := request:get-parameter('topic-keyword', '')
-    let $missing-data := request:get-parameter('missing', '')
+    let $code := request:get-parameter('code', '')
+    let $value := request:get-parameter('value', '')
 
-    let $texts := dashboard:get-texts($text-type, $topic-keyword, $missing-data)
+    let $texts := dashboard:get-texts($code, $value)
     return
         dashboard:texts_table($texts)
 };
@@ -300,6 +321,10 @@ declare function dashboard:total_missing_bibliographies($node as node (), $model
 
 declare function dashboard:total_missing_unclear($node as node (), $model as map (*)) {
     fn:count(dashboard:unclear-used())
+};
+
+declare function dashboard:total_not_normalized_dates($node as node (), $model as map (*)) {
+    fn:count(dashboard:not-normalized-dates())
 };
 
 declare function dashboard:text-download-xml($node as node (), $model as map (*)) {
