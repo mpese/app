@@ -11,7 +11,7 @@ declare variable $view := concat($exist:controller, '/modules/view.xql');
 (: calculate the xml filename from URL path :)
 declare function local:item_file($type) {
     let $seq := fn:tokenize($exist:path, '/')
-    let $file := $seq[fn:count($seq)]
+    let $file := $seq[fn:last()]
     let $seq2 := fn:tokenize($file, '\.')
     return
         concat($seq2[1], '.xml')
