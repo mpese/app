@@ -66,6 +66,11 @@ declare %templates:wrap function dashboard-mss:title($node as node (), $model as
     mpese-mss:title(doc($model('mss')))
 };
 
+(: name of the mss :)
+declare %templates:wrap function dashboard-mss:name($node as node (), $model as map (*)) {
+    mpese-mss:name(doc($model('mss')))
+};
+
 declare %templates:wrap function dashboard-mss:details($node as node (), $model as map (*)) {
     let $mss_doc := doc($model('mss'))
     return
@@ -73,7 +78,25 @@ declare %templates:wrap function dashboard-mss:details($node as node (), $model 
         order by $item/@n
         return
             <div class="mss-entry">
-                <p>{$item/tei:locus/text()}</p>
-                <p>{$item/tei:title/text()} / {$item/tei:author/text()}</p>
+                <p><strong>{$item/tei:locus/text()}</strong></p>
+                <p><em>{$item/tei:title/text()}</em>
+                {
+                let $auth_count := fn:count($item/tei:author)
+                return
+                    if ($auth_count > 0) then
+                        <span> / {
+                            if ($auth_count > 1) then
+                                for $author at $pos in $item/tei:author
+                                    return
+                                        if ($pos eq $auth_count) then
+                                            concat(' and ', $author/text())
+                                        else
+                                            concat($author/text(), ', ')
+                            else
+                                $item/tei:author
+                        }</span>
+                    else
+                        ""
+                }</p>
             </div>
 };

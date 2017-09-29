@@ -22,6 +22,11 @@ declare function mpese-mss:identifier($mss_doc) {
     $mss_doc/tei:TEI/tei:text/tei:body/tei:msDesc/tei:msIdentifier
 };
 
+(: get the mss name :)
+declare function mpese-mss:name($mss_doc) {
+    $mss_doc//tei:body/tei:msDesc/tei:msIdentifier/tei:msName/text()
+};
+
 (: mss title - use the repo, collection, idno :)
 declare function mpese-mss:title($mss_doc) {
     let $ident := mpese-mss:identifier($mss_doc)
