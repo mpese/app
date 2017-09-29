@@ -12,6 +12,7 @@ import module namespace config = "http://mpese.rit.bris.ac.uk/config" at "config
 import module namespace templates = "http://exist-db.org/xquery/templates";
 import module namespace functx = "http://www.functx.com" at "functx-1.0.xql";
 import module namespace mpese-mss = "http://mpese.rit.bris.ac.uk/corpus/mss/" at 'mpese-corpus-mss.xqm';
+import module namespace utils = "http://mpese.rit.bris.ac.uk/utils/";
 
 declare namespace tei = 'http://www.tei-c.org/ns/1.0';
 
@@ -98,5 +99,43 @@ declare %templates:wrap function dashboard-mss:details($node as node (), $model 
                     else
                         ""
                 }</p>
+                {
+                    let $resp_count := fn:count($item/tei:respStmt)
+                    return
+                        if ($resp_count > 0) then
+                            <p>{
+                                if ($resp_count > 1) then
+                                    for $resp at $pos in $item/tei:respStmt
+                                        return
+                                            if ($pos eq $resp_count) then
+                                                concat(' and ', $resp/tei:name/text(), ' (', $resp/tei:role/text(), ')')
+                                            else
+                                                concat($resp/tei:name/text(), ' (', $resp/tei:resp/text(), ')', ', ')
+                                else
+                                    concat($item/tei:respStmt/tei:name/text(), ' (', $item/tei:respStmt/tei:resp/text(), ')')
+                        }</p>
+                        else
+                            ""
+                }
+                {
+                    let $link_count := fn:count($item/tei:link)
+                    return
+                        if ($link_count > 0) then
+                            for $link in $item/tei:link
+                                return
+                                    <p>{
+                                        let $target := $link/@target/string()
+                                        let $type := $link/@type/string()
+                                        let $name := utils:name-from-uri($target)
+                                        let $url := concat('../text/', $name, '.html')
+                                        return
+                                            if ($type eq 't_witness') then
+                                                <a href="{$url}">Transcript</a>
+                                            else
+                                                <a href="{$url}">Transcript of witness from elsewhere</a>
+                                    }</p>
+                        else
+                            ""
+                }
             </div>
 };
