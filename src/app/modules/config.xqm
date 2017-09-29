@@ -38,6 +38,7 @@ declare variable $config:mpese-tei-corpus-texts := concat($config:mpese-tei-corp
 declare variable $config:mpese-tei-corpus-mss := concat($config:mpese-tei-corpus, '/mss');
 declare variable $config:mpese-tei-corpus-people := concat($config:mpese-tei-corpus, '/people');
 declare variable $config:mpese-tei-corpus-places := concat($config:mpese-tei-corpus, '/places');
+declare variable $config:mpese-tei-corpus-meta := concat($config:mpese-tei-corpus, '/meta');
 declare variable $config:mpese-word-docx := concat($config:mpese-word-root, '/docx');
 declare variable $config:mpese-word-unzip := concat($config:mpese-word-root, '/unzip');
 
@@ -56,8 +57,14 @@ declare variable $config:app-abbrev := $config:project/abbr/text();
 (: tei template filename :)
 declare variable $config:tei-template-filename := 'mpese_text_template.xml';
 
+(: project metadata file :)
+declare variable $config:mpese-meta-filename := 'mpese.xml';
+
 (: tei template that can be updated by researchers :)
 declare variable $config:tei-template := concat($config:mpese-tei-templates, '/', $config:tei-template-filename);
+
+(: tei meta data that can be updated by researchers :)
+declare variable $config:tei-meta := concat($config:mpese-tei-corpus-meta, '/', $config:mpese-meta-filename);
 
 (: tei template distributed by app (copied to a place the researchers can update if the file doesn't exist :)
 declare variable $config:tei-template-app := concat($config:app-root, '/modules/', $config:tei-template-filename);
