@@ -146,7 +146,7 @@ declare %templates:wrap function dashboard-mss:details($node as node (), $model 
                                         let $url := concat('../text/', $name, '.html')
                                         return
                                             if ($type eq 't_witness') then
-                                                <a href="{$url}">Transcript of the witness</a>
+                                                <a href="{$url}">Transcript of the witness from this MS</a>
                                             else
                                                 let $label := dashboard-mss:witness-label($name)
                                                     return
