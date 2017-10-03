@@ -15,6 +15,7 @@ import module namespace mpese-mss = "http://mpese.rit.bris.ac.uk/corpus/mss/" at
 import module namespace utils = "http://mpese.rit.bris.ac.uk/utils/";
 
 declare namespace tei = 'http://www.tei-c.org/ns/1.0';
+declare namespace xi = 'http://www.w3.org/2001/XInclude';
 
 (: ---------- HELPER FUNCTIONS ----------- :)
 
@@ -22,6 +23,20 @@ declare function dashboard-mss:url($doc) {
     let $name := fn:substring-before($doc, '.xml')
     return
         fn:concat('./', $name, '.html')
+};
+
+declare function dashboard-mss:witness-label($name as xs:string) {
+
+    let $doc := doc(concat($config:mpese-tei-corpus-texts, '/', $name, '.xml'))
+    let $incl := $doc//tei:sourceDesc/tei:msDesc/xi:include
+    let $target := $incl/@href/string()
+    let $pointer := $incl/@xpointer/string()
+    let $seq := fn:tokenize($target, '/')
+    let $file := $seq[fn:last()]
+    let $mss := doc(concat($config:mpese-tei-corpus-mss, '/', $file))
+    let $desc := $mss//tei:msIdentifier[@xml:id=$pointer]
+    return
+        concat($desc//tei:repository, ', ', $desc//tei:collection, ', ', $desc//tei:idno)
 };
 
 
@@ -85,7 +100,7 @@ declare %templates:wrap function dashboard-mss:details($node as node (), $model 
                 let $auth_count := fn:count($item/tei:author)
                 return
                     if ($auth_count > 0) then
-                        <span> / {
+                        <span class='mss-entry-author'> / {
                             if ($auth_count > 1) then
                                 for $author at $pos in $item/tei:author
                                     return
@@ -121,19 +136,23 @@ declare %templates:wrap function dashboard-mss:details($node as node (), $model 
                     let $link_count := fn:count($item/tei:link)
                     return
                         if ($link_count > 0) then
-                            for $link in $item/tei:link
+                            <ul class='mss-entry-witnesses unstyled'>{
+                                for $link in $item/tei:link
                                 return
-                                    <p>{
+                                    <li class='mss-entry-witness unstyled'>{
                                         let $target := $link/@target/string()
                                         let $type := $link/@type/string()
                                         let $name := utils:name-from-uri($target)
                                         let $url := concat('../text/', $name, '.html')
                                         return
                                             if ($type eq 't_witness') then
-                                                <a href="{$url}">Transcript</a>
+                                                <a href="{$url}">Transcript of the witness</a>
                                             else
-                                                <a href="{$url}">Transcript of witness from elsewhere</a>
-                                    }</p>
+                                                let $label := dashboard-mss:witness-label($name)
+                                                    return
+                                                <a href="{$url}">Transcript of a witness from {$label}</a>
+                                    }</li>
+                            }</ul>
                         else
                             ""
                 }
