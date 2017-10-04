@@ -82,6 +82,13 @@ else if (fn:starts-with($exist:path, "/dashboard/mss/")) then
                     <forward url="{$view}"/>
                 </view>
             </dispatch>)
+else if (fn:starts-with($exist:path, "/dashboard/people/")) then
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}/dashboard/people_all.html"/>
+        <view>
+            <forward url="{$view}"/>
+        </view>
+    </dispatch>
 else if (ends-with($exist:resource, ".html")) then
     (: the html page is run through view.xql to expand templates :)
     (util:log('INFO', $exist:resource)
