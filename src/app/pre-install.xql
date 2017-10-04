@@ -55,6 +55,7 @@ declare function local:make-collections() {
     local:create-collection($config:mpese-tei-corpus-mss),
     local:create-collection($config:mpese-tei-corpus-people),
     local:create-collection($config:mpese-tei-corpus-places),
+    local:create-collection($config:mpese-tei-corpus-meta),
 
     (: docx storage  :)
     local:create-collection($config:mpese-word-docx),

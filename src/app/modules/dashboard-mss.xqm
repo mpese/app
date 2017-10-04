@@ -12,8 +12,10 @@ import module namespace config = "http://mpese.rit.bris.ac.uk/config" at "config
 import module namespace templates = "http://exist-db.org/xquery/templates";
 import module namespace functx = "http://www.functx.com" at "functx-1.0.xql";
 import module namespace mpese-mss = "http://mpese.rit.bris.ac.uk/corpus/mss/" at 'mpese-corpus-mss.xqm';
+import module namespace utils = "http://mpese.rit.bris.ac.uk/utils/";
 
 declare namespace tei = 'http://www.tei-c.org/ns/1.0';
+declare namespace xi = 'http://www.w3.org/2001/XInclude';
 
 (: ---------- HELPER FUNCTIONS ----------- :)
 
@@ -21,6 +23,20 @@ declare function dashboard-mss:url($doc) {
     let $name := fn:substring-before($doc, '.xml')
     return
         fn:concat('./', $name, '.html')
+};
+
+declare function dashboard-mss:witness-label($name as xs:string) {
+
+    let $doc := doc(concat($config:mpese-tei-corpus-texts, '/', $name, '.xml'))
+    let $incl := $doc//tei:sourceDesc/tei:msDesc/xi:include
+    let $target := $incl/@href/string()
+    let $pointer := $incl/@xpointer/string()
+    let $seq := fn:tokenize($target, '/')
+    let $file := $seq[fn:last()]
+    let $mss := doc(concat($config:mpese-tei-corpus-mss, '/', $file))
+    let $desc := $mss//tei:msIdentifier[@xml:id=$pointer]
+    return
+        concat($desc//tei:repository, ', ', $desc//tei:collection, ', ', $desc//tei:idno)
 };
 
 
@@ -66,6 +82,11 @@ declare %templates:wrap function dashboard-mss:title($node as node (), $model as
     mpese-mss:title(doc($model('mss')))
 };
 
+(: name of the mss :)
+declare %templates:wrap function dashboard-mss:name($node as node (), $model as map (*)) {
+    mpese-mss:name(doc($model('mss')))
+};
+
 declare %templates:wrap function dashboard-mss:details($node as node (), $model as map (*)) {
     let $mss_doc := doc($model('mss'))
     return
@@ -73,7 +94,67 @@ declare %templates:wrap function dashboard-mss:details($node as node (), $model 
         order by $item/@n
         return
             <div class="mss-entry">
-                <p>{$item/tei:locus/text()}</p>
-                <p>{$item/tei:title/text()} / {$item/tei:author/text()}</p>
+                <p><strong>{$item/tei:locus/text()}</strong></p>
+                <p><em>{$item/tei:title/text()}</em>
+                {
+                let $auth_count := fn:count($item/tei:author)
+                return
+                    if ($auth_count > 0) then
+                        <span class='mss-entry-author'> / {
+                            if ($auth_count > 1) then
+                                for $author at $pos in $item/tei:author
+                                    return
+                                        if ($pos eq $auth_count) then
+                                            concat(' and ', $author/text())
+                                        else
+                                            concat($author/text(), ', ')
+                            else
+                                $item/tei:author
+                        }</span>
+                    else
+                        ""
+                }</p>
+                {
+                    let $resp_count := fn:count($item/tei:respStmt)
+                    return
+                        if ($resp_count > 0) then
+                            <p>{
+                                if ($resp_count > 1) then
+                                    for $resp at $pos in $item/tei:respStmt
+                                        return
+                                            if ($pos eq $resp_count) then
+                                                concat(' and ', $resp/tei:name/text(), ' (', $resp/tei:role/text(), ')')
+                                            else
+                                                concat($resp/tei:name/text(), ' (', $resp/tei:resp/text(), ')', ', ')
+                                else
+                                    concat($item/tei:respStmt/tei:name/text(), ' (', $item/tei:respStmt/tei:resp/text(), ')')
+                        }</p>
+                        else
+                            ""
+                }
+                {
+                    let $link_count := fn:count($item/tei:link)
+                    return
+                        if ($link_count > 0) then
+                            <ul class='mss-entry-witnesses unstyled'>{
+                                for $link in $item/tei:link
+                                return
+                                    <li class='mss-entry-witness unstyled'>{
+                                        let $target := $link/@target/string()
+                                        let $type := $link/@type/string()
+                                        let $name := utils:name-from-uri($target)
+                                        let $url := concat('../text/', $name, '.html')
+                                        return
+                                            if ($type eq 't_witness') then
+                                                <a href="{$url}">Transcript of the witness from this MS</a>
+                                            else
+                                                let $label := dashboard-mss:witness-label($name)
+                                                    return
+                                                <a href="{$url}">Transcript of a witness from {$label}</a>
+                                    }</li>
+                            }</ul>
+                        else
+                            ""
+                }
             </div>
 };

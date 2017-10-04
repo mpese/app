@@ -42,6 +42,20 @@ declare function local:copy-text-template() {
         ()
 };
 
+(: Copy text metadata into storage if it doesn't exist :)
+declare function local:copy-mpese-meta() {
+
+    if (not (doc-available($config:tei-meta))) then
+        (
+            xmldb:copy(concat($config:app-root, '/modules/'), $config:mpese-tei-corpus-meta, $config:mpese-meta-filename),
+            sm:chmod(xs:anyURI($config:mpese-tei-corpus-meta), 'rwxrwxr-x'),
+            util:log('INFO', concat('Change group of ', $config:mpese-tei-corpus-meta)),
+            sm:chgrp(xs:anyURI($config:mpese-tei-corpus-meta), $config:mpese_group)
+        )
+    else
+        ()
+};
+
 util:log('INFO', ('MPESE: Running the post-installation script ...')),
 
 (: set the group owner for certain paths (recursively) :)
@@ -50,6 +64,7 @@ local:chgrp-collection($config:mpese_group, $config:mpese-tei-corpus-texts),
 local:chgrp-collection($config:mpese_group, $config:mpese-tei-corpus-mss),
 local:chgrp-collection($config:mpese_group, $config:mpese-tei-corpus-people),
 local:chgrp-collection($config:mpese_group, $config:mpese-tei-corpus-places),
+local:chgrp-collection($config:mpese_group, $config:mpese-tei-corpus-meta),
 local:chgrp-collection($config:mpese_group, $config:mpese-word-docx),
 local:chgrp-collection($config:mpese_group, $config:mpese-word-unzip),
 
@@ -62,10 +77,13 @@ sm:chmod(xs:anyURI($config:mpese-tei-corpus-texts), 'rwxrwxr-x'),
 sm:chmod(xs:anyURI($config:mpese-tei-corpus-mss), 'rwxrwxr-x'),
 sm:chmod(xs:anyURI($config:mpese-tei-corpus-people), 'rwxrwxr-x'),
 sm:chmod(xs:anyURI($config:mpese-tei-corpus-places), 'rwxrwxr-x'),
+sm:chmod(xs:anyURI($config:mpese-tei-corpus-meta), 'rwxrwxr-x'),
 sm:chmod(xs:anyURI($config:mpese-word-docx), 'rwxrwxr-x'),
 sm:chmod(xs:anyURI($config:mpese-word-unzip), 'rwxrwxr-x'),
 
 local:copy-text-template(),
+
+local:copy-mpese-meta(),
 
 (: force login ... :)
 sm:chmod(xs:anyURI($mpese-app-dashboard), 'r-xr-x---'),
