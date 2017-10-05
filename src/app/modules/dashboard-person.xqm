@@ -14,11 +14,11 @@ declare function dashboard-person:all($node as node (), $model as map (*)) {
 
     (: get all of the people :)
     let $all := mpese-person:all()
-
-    for $person in $all
-        return
-            <div class='person'>
-                {mpese-person:label($person)}
-            </div>
-
+    return
+        <ul>{
+            for $person in $all
+                let $id := $person/../@xml:id/string()
+                return
+                    <li class='person'><a href="./{$id}/">{mpese-person:label($person)}</a></li>
+        }</ul>
 };

@@ -17,102 +17,105 @@ declare function local:item_file($type) {
         concat($seq2[1], '.xml')
 };
 
-util:log('INFO', ($exist:path)),
-
-if ($exist:path eq "") then
-    <dispatch
-        xmlns="http://exist.sourceforge.net/NS/exist">
-        <redirect
-            url="{concat(request:get-uri(), '/')}"/>
-    </dispatch>
-else if ($exist:path eq "/") then
-    (: forward root path to index.xql :)
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <redirect url="index.html"/>
-    </dispatch>
-else if ($exist:path eq "/dashboard") then
-    (: forward dashboard :)
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <redirect url="{concat(request:get-uri(), '/index.html')}"/>
-    </dispatch>
-else if ($exist:path eq "/dashboard/") then
-    (: forward dashboard :)
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <redirect url="{concat(request:get-uri(), 'index.html')}"/>
-    </dispatch>
-else if (fn:starts-with($exist:path, "/dashboard/text/")) then
-    if (ends-with($exist:resource, ".xml")) then
-        let $file := local:item_file('text')
-        return
-            (util:log('INFO', (fn:concat('Dashboard text URL, looking for ', $file))),
-            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                <forward url="{$exist:controller}/dashboard/serialize_xml.xql">
-                    <set-attribute name="text" value="{$file}"/>
-                </forward>
-            </dispatch>)
-    else
-        let $file := local:item_file('text')
-        return
-            (util:log('INFO', (fn:concat('Dashboard text URL, looking for ', $file))),
-            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                <forward url="{$exist:controller}/dashboard/text_item.html">
-                    <set-attribute name="text" value="{$file}"/>
-                </forward>
-                <view>
-                    <forward url="{$view}"/>
-                </view>
-            </dispatch>)
-else if (fn:starts-with($exist:path, "/dashboard/mss/")) then
-    if ($exist:path eq "/dashboard/mss/all.html") then
-        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-            <forward url="{$exist:controller}/dashboard/mss_all.html"/>
-            <view>
-                <forward url="{$view}"/>
-            </view>
-        </dispatch>
-    else
-        let $file := local:item_file('mss')
-        return
-        (util:log('INFO', (fn:concat('Dashboard mss URL, looking for ', $file))),
-            <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-                <forward url="{$exist:controller}/dashboard/mss_item.html">
-                    <set-attribute name="mss" value="{$file}"/>
-                </forward>
-                <view>
-                    <forward url="{$view}"/>
-                </view>
-            </dispatch>)
-else if (fn:starts-with($exist:path, "/dashboard/people/")) then
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="{$exist:controller}/dashboard/people_all.html"/>
-        <view>
-            <forward url="{$view}"/>
-        </view>
-    </dispatch>
-else if (ends-with($exist:resource, ".html")) then
-    (: the html page is run through view.xql to expand templates :)
-    (util:log('INFO', $exist:resource)
-    ,
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <view>
-            <forward url="{$exist:controller}/modules/view.xql"/>
-        </view>
-        <error-handler>
-            <forward url="{$exist:controller}/error-page.html"method="get"/>
-            <forward url="{$exist:controller}/modules/view.xql"/>
-        </error-handler>
-    </dispatch>
-    )
-    (: Resource paths starting with $shared are loaded from the shared-resources app :)
-else if (contains($exist:path, "/$shared/")) then
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="/shared-resources/{substring-after($exist:path, '/$shared/')}">
-            <set-header name="Cache-Control" value="max-age=3600, must-revalidate"/>
-        </forward>
-    </dispatch>
-else
-    (: everything else is passed through :)
-    (util:log('INFO', ('Here ...')),
+(: default: everything is passed through :)
+declare function local:default() {
+    (util:log('INFO', ('local:default')),
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <cache-control cache="yes"/>
     </dispatch>)
+};
+
+(: add a / to a request and redirect :)
+declare function local:redirect-with-slash() {
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <redirect url="{concat(request:get-uri(), '/')}"/>
+    </dispatch>
+};
+
+(: forward to html page via the view :)
+declare function local:dispatch($uri as xs:string) {
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}{$uri}"/>
+        <view><forward url="{$view}"/></view>
+    </dispatch>
+};
+
+(: forward to html page via the view with attribute :)
+declare function local:dispatch-attribute($uri as xs:string, $param as xs:string, $value as xs:string) {
+    (util:log('INFO', (concat('local:dispatch-attribute', ' ', $uri, ' ', $param, ' ', $value))),
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}{$uri}">
+            <set-attribute name="{$param}" value="{$value}"/>
+        </forward>
+        <view>
+            <forward url="{$view}"/>
+        </view>
+        <error-handler>
+            <forward url="{$exist:controller}/error-page.html" method="get"/>
+            <forward url="{$exist:controller}/modules/view.xql"/>
+        </error-handler>
+     </dispatch>)
+};
+
+(: serialize some xml file :)
+declare function local:serialize-xml($file) {
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}/dashboard/serialize_xml.xql">
+            <set-attribute name="text" value="{$file}"/>
+        </forward>
+    </dispatch>
+};
+
+(: handle dashboard related urls :)
+declare function local:dashboard() {
+    (: /dashboard/ or /dashboard/index.html :)
+    if ($exist:path eq '/dashboard/' or $exist:path eq '/dashboard/index.html') then
+        (util:log('INFO', ('Dasboard homepage')),
+        local:dispatch('/dashboard/index.html'))
+    (: XML file of a text, e.g. /dashboard/text/Baconpeech.xml or /dashboard/text/Bacon%20Speech.xml :)
+    else if (fn:starts-with($exist:path , '/dashboard/text/') and fn:ends-with($exist:path, '.xml')) then
+        (util:log('INFO', ('Dashboard: text as XML')),
+        local:serialize-xml(local:item_file('text')))
+    (: HTML file of a text, e.g. /dashboard/text/BaconSpeech.html or /dashboard/text/Bacon%20Speech.html :)
+    else if (fn:starts-with($exist:path , '/dashboard/text/') and fn:ends-with($exist:path, '.html')) then
+        (util:log('INFO', ('Dashboard: text as HTML')),
+        local:dispatch-attribute('/dashboard/text_item.html', 'text', local:item_file('text')))
+    (: /dashboard/mss/all/ or /dashboard/mss/all/index.html :)
+    else if ($exist:path eq '/dashboard/mss/all.html') then
+        (util:log('INFO', ('Dashboard: display all MSS')),
+        local:dispatch('/dashboard/mss_all.html'))
+    (: HTML file of a manuscript, e.g. /dashboard/mss/BLAddMS11049.html :)
+    else if ((exists(fn:analyze-string($exist:path , '^(\/dashboard\/mss\/)(\w+|%20)+\.html$')//fn:match))) then
+        (util:log('INFO', ('Dashboard: display a MS as HTML')),
+        local:dispatch-attribute('/dashboard/mss_item.html', 'mss', local:item_file('mss')))
+    (: list people, /dashboard/people/ /dashboard/people/index.html :)
+    else if ($exist:path eq '/dashboard/people/' or $exist:path eq '/dashboard/people/index.html') then
+        (util:log('INFO', ('Dashboard: display all people')),
+        local:dispatch('/dashboard/people_all.html'))
+    else
+        (util:log('INFO', ('Dashboard: default handling')),
+        local:default())
+};
+
+util:log('INFO', ($exist:path)),
+
+(: empty path :)
+if ($exist:path eq "") then
+    (util:log('INFO', ('Homepage, no slash')),
+    local:redirect-with-slash())
+(: homepage, / or /index.html :)
+else if ($exist:path eq '/' or $exist:path eq '/index.html') then
+    (util:log('INFO', ("Hompage, / or /index.html")),
+    local:dispatch('/index.html'))
+(: handle URL that ends without a slash, eg. /dashboard :)
+else if (exists(fn:analyze-string($exist:path, '\/\w+$')//fn:match)) then
+    (util:log('INFO', ('URL without trailing slash')),
+    local:redirect-with-slash())
+else if (fn:starts-with($exist:path, "/dashboard/")) then
+    (: forward dashboard :)
+    (util:log('INFO', ('dashboard URL')),
+    local:dashboard())
+else
+    (: everything else is passed through :)
+    (util:log('INFO', ('Default handling')),
+    local:default())
