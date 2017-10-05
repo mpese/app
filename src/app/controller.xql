@@ -92,6 +92,8 @@ declare function local:dashboard() {
     else if ($exist:path eq '/dashboard/people/' or $exist:path eq '/dashboard/people/index.html') then
         (util:log('INFO', ('Dashboard: display all people')),
         local:dispatch('/dashboard/people_all.html'))
+    else if (fn:matches($exist:path, '/dashboard/people/P[0-9]{4}/$')) then
+        local:dispatch('/dashboard/person.html')
     else
         (util:log('INFO', ('Dashboard: default handling')),
         local:default())
