@@ -5,11 +5,14 @@ module namespace dashboard-person = "http://mpese.rit.bris.ac.uk/dashboard/perso
 import module namespace config = "http://mpese.rit.bris.ac.uk/config" at "config.xqm";
 import module namespace mpese-person = "http://mpese.rit.bris.ac.uk/corpus/person/" at 'mpese-corpus-person.xqm';
 
+declare namespace tei = 'http://www.tei-c.org/ns/1.0';
 
+(: total number of people :)
 declare function dashboard-person:total($node as node (), $model as map (*)) {
     mpese-person:total-count()
 };
 
+(: show all the people :)
 declare function dashboard-person:all($node as node (), $model as map (*)) {
 
     (: get all of the people :)
@@ -19,6 +22,46 @@ declare function dashboard-person:all($node as node (), $model as map (*)) {
             for $person in $all
                 let $id := $person/../@xml:id/string()
                 return
-                    <li class='person'><a href="./{$id}/">{mpese-person:label($person)}</a></li>
+                    <li class='person'><a href="./{$id}.html">{mpese-person:label($person)}</a></li>
         }</ul>
+};
+
+(: show an individual :)
+declare function dashboard-person:details($node as node (), $model as map (*), $pid as xs:string) {
+
+    let $person := mpese-person:person-by-id($pid)
+    let $title := mpese-person:label($person/tei:persName)
+    let $corresp := concat('../person.xml#', $pid)
+        return
+            <div>
+                <h2>{$title}</h2>
+                {
+                    if (not(empty($person/tei:occupation))) then
+                    <p><em>{$person/tei:occupation/string()}</em></p>
+                    else ""
+                }
+                {
+                    if (not(empty($person/tei:birth/tei:date))) then
+                        <p><strong>Birth:</strong>&#x20;{$person/tei:birth/tei:date/string()}</p>
+                    else ""
+                }
+                {
+                    if (not(empty($person/tei:death/tei:date))) then
+                        <p><strong>Death:</strong>&#x20;{$person/tei:death/tei:date/string()}</p>
+                    else ""
+                }
+                {
+                    if (count($person/tei:listBibl/tei:bibl)) then
+                        <div>
+                            <h5>Further reading</h5>
+                            <ul>{
+                                for $item in $person/tei:listBibl/tei:bibl
+                                    return
+                                        <li>{$item/string()}</li>
+                            }</ul>
+                        </div>
+                    else ""
+                }
+
+            </div>
 };

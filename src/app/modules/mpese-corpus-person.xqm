@@ -23,6 +23,16 @@ declare function mpese-person:all() {
     return $person
 };
 
+(: get a person by id :)
+declare function mpese-person:person-by-id($pid) {
+    let $results := collection($config:mpese-tei-corpus-people)//tei:person[@xml:id=$pid]
+    return
+        if (fn:count($results) > 0) then
+            $results[1]
+        else
+            ""
+};
+
 (: basic label :)
 declare function mpese-person:label($persName as node()) as xs:string {
     if (fn:exists($persName/tei:surname)) then

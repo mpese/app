@@ -9,12 +9,12 @@ declare variable $exist:root external;
 declare variable $view := concat($exist:controller, '/modules/view.xql');
 
 (: calculate the xml filename from URL path :)
-declare function local:item_file($type) {
+declare function local:item($type) {
     let $seq := fn:tokenize($exist:path, '/')
     let $file := $seq[fn:last()]
     let $seq2 := fn:tokenize($file, '\.')
     return
-        concat($seq2[1], '.xml')
+        $seq2[1]
 };
 
 (: default: everything is passed through :)
@@ -75,25 +75,26 @@ declare function local:dashboard() {
     (: XML file of a text, e.g. /dashboard/text/Baconpeech.xml or /dashboard/text/Bacon%20Speech.xml :)
     else if (fn:starts-with($exist:path , '/dashboard/text/') and fn:ends-with($exist:path, '.xml')) then
         (util:log('INFO', ('Dashboard: text as XML')),
-        local:serialize-xml(local:item_file('text')))
+        local:serialize-xml(local:item('text')))
     (: HTML file of a text, e.g. /dashboard/text/BaconSpeech.html or /dashboard/text/Bacon%20Speech.html :)
     else if (fn:starts-with($exist:path , '/dashboard/text/') and fn:ends-with($exist:path, '.html')) then
         (util:log('INFO', ('Dashboard: text as HTML')),
-        local:dispatch-attribute('/dashboard/text_item.html', 'text', local:item_file('text')))
+        local:dispatch-attribute('/dashboard/text_item.html', 'text', concat(local:item('text'), '.xml')))
     (: /dashboard/mss/all/ or /dashboard/mss/all/index.html :)
     else if ($exist:path eq '/dashboard/mss/all.html') then
         (util:log('INFO', ('Dashboard: display all MSS')),
         local:dispatch('/dashboard/mss_all.html'))
     (: HTML file of a manuscript, e.g. /dashboard/mss/BLAddMS11049.html :)
-    else if ((exists(fn:analyze-string($exist:path , '^(\/dashboard\/mss\/)(\w+|%20)+\.html$')//fn:match))) then
+    else if (fn:matches($exist:path, '(/dashboard/mss/)(\w+|%20)+\.html$')) then
         (util:log('INFO', ('Dashboard: display a MS as HTML')),
-        local:dispatch-attribute('/dashboard/mss_item.html', 'mss', local:item_file('mss')))
+        local:dispatch-attribute('/dashboard/mss_item.html', 'mss', concat(local:item('mss'), '.html')))
     (: list people, /dashboard/people/ /dashboard/people/index.html :)
     else if ($exist:path eq '/dashboard/people/' or $exist:path eq '/dashboard/people/index.html') then
         (util:log('INFO', ('Dashboard: display all people')),
         local:dispatch('/dashboard/people_all.html'))
-    else if (fn:matches($exist:path, '/dashboard/people/P[0-9]{4}/$')) then
-        local:dispatch('/dashboard/person.html')
+    else if (fn:matches($exist:path, '/dashboard/people/P[0-9]{4}\.html$')) then
+        (util:log('INFO', ('Display a person')),
+        local:dispatch-attribute('/dashboard/person.html', 'pid', local:item('pid')))
     else
         (util:log('INFO', ('Dashboard: default handling')),
         local:default())
