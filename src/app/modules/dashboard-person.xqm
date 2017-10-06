@@ -4,6 +4,7 @@ module namespace dashboard-person = "http://mpese.rit.bris.ac.uk/dashboard/perso
 
 import module namespace config = "http://mpese.rit.bris.ac.uk/config" at "config.xqm";
 import module namespace mpese-person = "http://mpese.rit.bris.ac.uk/corpus/person/" at 'mpese-corpus-person.xqm';
+import module namespace utils = "http://mpese.rit.bris.ac.uk/utils/";
 
 declare namespace tei = 'http://www.tei-c.org/ns/1.0';
 
@@ -31,7 +32,7 @@ declare function dashboard-person:details($node as node (), $model as map (*), $
 
     let $person := mpese-person:person-by-id($pid)
     let $title := mpese-person:label($person/tei:persName)
-    let $corresp := concat('../person.xml#', $pid)
+    let $corresp := concat('../people/people.xml#', $pid)
         return
             <div>
                 <h2>{$title}</h2>
@@ -49,6 +50,24 @@ declare function dashboard-person:details($node as node (), $model as map (*), $
                     if (not(empty($person/tei:death/tei:date))) then
                         <p><strong>Death:</strong>&#x20;{$person/tei:death/tei:date/string()}</p>
                     else ""
+                }
+                {
+                    let $results := collection($config:mpese-tei-corpus-texts)//tei:author[@corresp = $corresp]
+                    return
+                        if (count($results) > 0) then
+                            <div>
+                                <h5>Author</h5>
+                                <ul>{
+                                    for $result in $results
+                                        let $root := root($result)
+                                        let $uri := fn:base-uri($root)
+                                        let $name := utils:name-from-uri($uri)
+                                        let $title := $root//tei:titleStmt/tei:title/string()
+                                        return
+                                            <li><a href="../text/{$name}.html">{$title}</a></li>
+                                }</ul>
+                            </div>
+                        else ""
                 }
                 {
                     if (count($person/tei:listBibl/tei:bibl)) then
