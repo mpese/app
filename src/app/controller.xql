@@ -87,7 +87,7 @@ declare function local:dashboard() {
     (: HTML file of a manuscript, e.g. /dashboard/mss/BLAddMS11049.html :)
     else if (fn:matches($exist:path, '(/dashboard/mss/)(\w+|%20)+\.html$')) then
         (util:log('INFO', ('Dashboard: display a MS as HTML')),
-        local:dispatch-attribute('/dashboard/mss_item.html', 'mss', concat(local:item('mss'), '.html')))
+        local:dispatch-attribute('/dashboard/mss_item.html', 'mss', concat(local:item('mss'), '.xml')))
     (: list people, /dashboard/people/ /dashboard/people/index.html :)
     else if ($exist:path eq '/dashboard/people/' or $exist:path eq '/dashboard/people/index.html') then
         (util:log('INFO', ('Dashboard: display all people')),
