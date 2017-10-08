@@ -39,6 +39,13 @@ declare function dashboard-mss:witness-label($name as xs:string) {
         concat($desc//tei:repository, ', ', $desc//tei:collection, ', ', $desc//tei:idno)
 };
 
+declare function dashboard-mss:author($author) {
+    let $corresp := $author/@corresp/string()
+    let $id := fn:tokenize($corresp, '#')[2]
+    let $auth_label := $author/text()
+    return
+        <a href="../people/{$id}.html">{$auth_label}</a>
+};
 
 (: ---------- TEMPLATE FUNCTIONS ----------- :)
 
@@ -105,11 +112,11 @@ declare %templates:wrap function dashboard-mss:details($node as node (), $model 
                                 for $author at $pos in $item/tei:author
                                     return
                                         if ($pos eq $auth_count) then
-                                            concat(' and ', $author/text())
+                                            (' and ',  dashboard-mss:author($author))
                                         else
-                                            concat($author/text(), ', ')
+                                            (dashboard-mss:author($author), ', ')
                             else
-                                $item/tei:author
+                                dashboard-mss:author($item/tei:author)
                         }</span>
                     else
                         ""
