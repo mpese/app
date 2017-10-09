@@ -87,7 +87,38 @@ declare function dashboard-text:mss-identifier($file as xs:string) {
         doc($mss_full)//*[@xml:id=$include_id]
 };
 
+declare function dashboard-text:author($author) {
+    if (exists($author/@corresp)) then
+        let $corresp := $author/@corresp/string()
+        let $id := fn:tokenize($corresp, '#')[2]
+        let $auth_label := $author/text()
+        return
+            <a href="../people/{$id}.html">{$auth_label}</a>
+    else
+        $author/text()
+};
 
+(: title of the text :)
+declare function dashboard-text:author-label($file) {
+    let $authors := mpese-text:authors($file)
+    let $auth_count := fn:count($authors)
+    return
+        if ($auth_count > 0) then
+            if ($auth_count > 1) then
+                for $author at $pos in $authors
+                    return
+                        if ($pos eq $auth_count) then
+                            (' and ',  dashboard-text:author($author), ', ')
+                        else
+                            (dashboard-text:author($author), ', ')
+            else
+                if (fn:string-length($authors[1]/string()) > 0) then
+                    (dashboard-text:author($authors[1]), ', ')
+                else
+                    ""
+        else
+            ""
+};
 
 (: ---------- TEMPLATE FUNCTIONS ----------- :)
 
@@ -100,8 +131,10 @@ declare function dashboard-text:find-text($node as node (), $model as map (*), $
 
 (: title of the text :)
 declare %templates:wrap function dashboard-text:title($node as node (), $model as map (*)) {
-    mpese-text:title($model('text'))
+    (dashboard-text:author-label($model('text')), mpese-text:title($model('text')))
 };
+
+
 
 (: text type keywords :)
 declare function dashboard-text:keywords-text-type($node as node (), $model as map (*), $text as xs:string) {

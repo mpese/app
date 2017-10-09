@@ -17,6 +17,11 @@ declare function mpese-text:title($text) {
             fn:string('Untitled')
 };
 
+
+declare function mpese-text:authors($text) {
+    fn:doc($text)//tei:fileDesc/tei:titleStmt/tei:author
+};
+
 (: text type keywords :)
 declare function mpese-text:keywords-text-type($text) {
     fn:doc($text)/tei:TEI/tei:teiHeader/tei:profileDesc/tei:textClass/tei:keywords[@n='text-type']/tei:term
