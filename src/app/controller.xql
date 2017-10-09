@@ -75,7 +75,7 @@ declare function local:dashboard() {
     (: XML file of a text, e.g. /dashboard/text/Baconpeech.xml or /dashboard/text/Bacon%20Speech.xml :)
     else if (fn:starts-with($exist:path , '/dashboard/text/') and fn:ends-with($exist:path, '.xml')) then
         (util:log('INFO', ('Dashboard: text as XML')),
-        local:serialize-xml(local:item('text')))
+        local:serialize-xml(concat(local:item('text'), '.xml')))
     (: HTML file of a text, e.g. /dashboard/text/BaconSpeech.html or /dashboard/text/Bacon%20Speech.html :)
     else if (fn:starts-with($exist:path , '/dashboard/text/') and fn:ends-with($exist:path, '.html')) then
         (util:log('INFO', ('Dashboard: text as HTML')),
