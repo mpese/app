@@ -337,3 +337,9 @@ declare function dashboard:text-download-xml($node as node (), $model as map (*)
 declare function dashboard:total-person($node as node (), $model as map (*)) {
     mpese-person:total-count()
 };
+
+declare function dashboard:mss-download-xml($node as node (), $model as map (*)) {
+    let $file := request:get-attribute('mss')
+    return
+        <p><a href="./{$file}" download="{$file}">Download XML</a></p>
+};

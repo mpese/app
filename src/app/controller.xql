@@ -58,10 +58,10 @@ declare function local:dispatch-attribute($uri as xs:string, $param as xs:string
 };
 
 (: serialize some xml file :)
-declare function local:serialize-xml($file) {
+declare function local:serialize-xml($type, $file) {
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}/dashboard/serialize_xml.xql">
-            <set-attribute name="text" value="{$file}"/>
+            <set-attribute name="{$type}" value="{$file}"/>
         </forward>
     </dispatch>
 };
@@ -75,7 +75,7 @@ declare function local:dashboard() {
     (: XML file of a text, e.g. /dashboard/text/Baconpeech.xml or /dashboard/text/Bacon%20Speech.xml :)
     else if (fn:starts-with($exist:path , '/dashboard/text/') and fn:ends-with($exist:path, '.xml')) then
         (util:log('INFO', ('Dashboard: text as XML')),
-        local:serialize-xml(concat(local:item('text'), '.xml')))
+        local:serialize-xml('text', concat(local:item('text'), '.xml')))
     (: HTML file of a text, e.g. /dashboard/text/BaconSpeech.html or /dashboard/text/Bacon%20Speech.html :)
     else if (fn:starts-with($exist:path , '/dashboard/text/') and fn:ends-with($exist:path, '.html')) then
         (util:log('INFO', ('Dashboard: text as HTML')),
@@ -88,6 +88,9 @@ declare function local:dashboard() {
     else if (fn:matches($exist:path, '(/dashboard/mss/)(\w+|%20)+\.html$')) then
         (util:log('INFO', ('Dashboard: display a MS as HTML')),
         local:dispatch-attribute('/dashboard/mss_item.html', 'mss', concat(local:item('mss'), '.xml')))
+    else if (fn:matches($exist:path, '(/dashboard/mss/)(\w+|%20)+\.xml$')) then
+        (util:log('INFO', ('Dashboard: mss as XML')),
+        local:serialize-xml('mss', concat(local:item('mss'), '.xml')))
     (: list people, /dashboard/people/ /dashboard/people/index.html :)
     else if ($exist:path eq '/dashboard/people/' or $exist:path eq '/dashboard/people/index.html') then
         (util:log('INFO', ('Dashboard: display all people')),
