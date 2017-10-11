@@ -189,6 +189,18 @@ declare function dashboard:get-texts($code, $value) {
         fn:collection($config:mpese-tei-corpus-texts)
 };
 
+declare function dashboard:search-texts($phrase) {
+
+    let $search_phrase := (if ($phrase eq '') then '*:*' else $phrase)
+    let $matches := fn:collection($config:mpese-tei-corpus-texts)//tei:titleStmt/tei:title[ft:query(., $search_phrase)] |
+        fn:collection($config:mpese-tei-corpus-texts)//tei:titleStmt/tei:author[ft:query(., $search_phrase)]
+    let $docs := ( for $a in $matches return document-uri(root($a)))
+    let $distinct := fn:distinct-values($docs)
+    return
+        for $a in $distinct
+            return doc($a)
+};
+
 (: get the last-modified date of the node's document, i.e. TEI document :)
 declare function dashboard:last-modified($doc_name) {
             let $lmd := xmldb:last-modified($config:mpese-tei-corpus-texts, $doc_name)
@@ -268,12 +280,18 @@ declare function dashboard:texts_table($texts) {
 
 declare function dashboard:list_texts($node as node (), $model as map (*)) {
 
-    let $code := request:get-parameter('code', '')
-    let $value := request:get-parameter('value', '')
+    if (functx:is-value-in-sequence('search', request:get-parameter-names())) then
+        let $search := request:get-parameter('search', '')
+        return
+            dashboard:texts_table(dashboard:search-texts($search))
+    else
 
-    let $texts := dashboard:get-texts($code, $value)
-    return
-        dashboard:texts_table($texts)
+        let $code := request:get-parameter('code', '')
+        let $value := request:get-parameter('value', '')
+
+        let $texts := dashboard:get-texts($code, $value)
+            return
+            dashboard:texts_table($texts)
 };
 
 (: count the numbers of texts :)
