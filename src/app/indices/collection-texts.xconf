@@ -1,0 +1,22 @@
+<collection xmlns="http://exist-db.org/collection-config/1.0">
+    <index xmlns:tei="http://www.tei-c.org/ns/1.0">
+        <lucene>
+            <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+            <text qname="tei:author"/>
+            <text qname="tei:title"/>
+        </lucene>
+        <range>
+            <create qname="tei:term" type="xs:string" case="no"/>
+            <create qname="tei:title" type="xs:string" case="no"/>
+            <create qname="tei:author" type="xs:string" case="no"/>
+            <create qname="@rend" type="xs:string"/>
+            <create qname="@corresp" type="xs:string"/>
+            <create qname="tei:date">
+                <field name="date-when" match="@when" type="xs:string"/>
+            </create>
+            <create qname="tei:keywords">
+                <field name="keywords-n" match="@n" type="xs:string"/>
+            </create>
+        </range>
+    </index>
+</collection>

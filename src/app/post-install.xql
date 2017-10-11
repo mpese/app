@@ -56,6 +56,16 @@ declare function local:copy-mpese-meta() {
         ()
 };
 
+(: Copy indices :)
+declare function local:copy-mpese-indices() {
+    (
+    xmldb:copy(concat($config:app-root, '/indices/'),
+               concat('/db/system/config', $config:mpese-tei-corpus-texts), 'collection-texts.xconf'),
+    xmldb:rename(concat('/db/system/config', $config:mpese-tei-corpus-texts), 'collection-texts.xconf', 'collection.xconf')
+    )
+
+};
+
 util:log('INFO', ('MPESE: Running the post-installation script ...')),
 
 (: set the group owner for certain paths (recursively) :)
@@ -84,6 +94,10 @@ sm:chmod(xs:anyURI($config:mpese-word-unzip), 'rwxrwxr-x'),
 local:copy-text-template(),
 
 local:copy-mpese-meta(),
+
+local:copy-mpese-indices(),
+
+xmldb:reindex($config:mpese-tei-corpus-texts),
 
 (: force login ... :)
 sm:chmod(xs:anyURI($mpese-app-dashboard), 'r-xr-x---'),
