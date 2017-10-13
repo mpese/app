@@ -152,13 +152,14 @@ declare function dashboard:keywords_as_list($att) {
 
 
 declare function dashboard:authors($authors) {
+
     if (fn:count($authors) eq 1) then
-            $authors/text()
+            $authors/string()
         else
             for $author in $authors
             return
                 if (not($author eq functx:last-node($authors))) then
-                    concat($author/text(), '; ')
+                    concat($author/string(), '; ')
                 else
                     concat(' and ', $author)
 };
@@ -262,13 +263,21 @@ declare function dashboard:texts_table($texts) {
                     }</td>
                     <td>{
                         let $authors:= $tei/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:author
-                        return dashboard:authors($authors)
+
+                        return
+                            (util:log('INFO', (document-uri(root($tei)))),
+                            dashboard:authors($authors))
                     }</td>
                     <td>{$tei/tei:TEI/tei:teiHeader/tei:profileDesc/tei:creation/tei:date/text()}</td>
                     <td>{dashboard:last-modified($doc_name)}</td>
                 </tr>
             }</tbody>
         </table>
+
+
+
+
+
     </div>
 };
 
