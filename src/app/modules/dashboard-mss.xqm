@@ -102,7 +102,7 @@ declare %templates:wrap function dashboard-mss:details($node as node (), $model 
     let $mss_doc := doc($model('mss'))
     return
         for $item in $mss_doc/tei:TEI/tei:text/tei:body/tei:msDesc/tei:msContents/tei:msItem
-        order by $item/@n
+        order by number($item/@n)
         return
             <div class="mss-entry">
                 <p><strong>{$item/tei:locus/text()}</strong></p>
