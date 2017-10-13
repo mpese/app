@@ -31,8 +31,11 @@ declare function dashboard-person:all($node as node (), $model as map (*)) {
 declare function dashboard-person:details($node as node (), $model as map (*), $pid as xs:string) {
 
     let $person := mpese-person:person-by-id($pid)
-    let $title := mpese-person:label($person/tei:persName)
-    let $corresp := concat('../people/people.xml#', $pid)
+    return
+    if (fn:collection($config:mpese-tei-corpus-people)//*[@xml:id eq $pid]) then
+
+        let $title := mpese-person:label($person/tei:persName)
+        let $corresp := concat('../people/people.xml#', $pid)
         return
             <div>
                 <h2>{$title}</h2>
@@ -83,4 +86,6 @@ declare function dashboard-person:details($node as node (), $model as map (*), $
                 }
 
             </div>
+    else
+        <p>Not found</p>
 };

@@ -87,16 +87,17 @@ declare function dashboard-text:mss-identifier($file as xs:string) {
         doc($mss_full)//*[@xml:id=$include_id]
 };
 
-declare function dashboard-text:author($author) {
-    if (exists($author/@corresp)) then
-        let $corresp := $author/@corresp/string()
-        let $id := fn:tokenize($corresp, '#')[2]
-        let $auth_label := $author/text()
-        return
-            <a href="../people/{$id}.html">{$auth_label}</a>
-    else
-        $author/text()
+(: get a person and link to their details :)
+declare function dashboard-text:person($person) {
+    let $corresp := $person//@corresp/string()
+    return
+        if (fn:string-length($corresp) > 0) then
+            let $id := fn:tokenize($corresp, '#')[2]
+            return <a href="../people/{$id}.html">{functx:trim($person/string())}</a>
+        else
+            functx:trim($person/string())
 };
+
 
 (: title of the text :)
 declare function dashboard-text:author-label($file) {
@@ -108,12 +109,12 @@ declare function dashboard-text:author-label($file) {
                 for $author at $pos in $authors
                     return
                         if ($pos eq $auth_count) then
-                            (' and ',  dashboard-text:author($author), ', ')
+                            (' and ',  dashboard-text:person($author), ', ')
                         else
-                            (dashboard-text:author($author), ', ')
+                            (dashboard-text:person($author), ', ')
             else
                 if (fn:string-length($authors[1]/string()) > 0) then
-                    (dashboard-text:author($authors[1]), ', ')
+                    (dashboard-text:person($authors[1]), ', ')
                 else
                     ""
         else
@@ -131,7 +132,7 @@ declare function dashboard-text:find-text($node as node (), $model as map (*), $
 
 (: title of the text :)
 declare %templates:wrap function dashboard-text:title($node as node (), $model as map (*)) {
-    (dashboard-text:author-label($model('text')), mpese-text:title($model('text')))
+    (dashboard-text:author-label($model('text')), '&apos;', mpese-text:title($model('text')), '&apos;')
 };
 
 

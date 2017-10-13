@@ -187,7 +187,7 @@ declare function dashboard:get-texts($code, $value) {
     else if ($code eq '05') then
         dashboard:not-normalized-dates()
     else
-        fn:collection($config:mpese-tei-corpus-texts)
+        dashboard:search-texts('')
 };
 
 declare function dashboard:search-texts($phrase) {
@@ -199,6 +199,7 @@ declare function dashboard:search-texts($phrase) {
     let $distinct := fn:distinct-values($docs)
     return
         for $a in $distinct
+        order by doc($a)//tei:titleStmt/tei:title
             return doc($a)
 };
 
@@ -217,6 +218,7 @@ declare function dashboard:unclear-used() {
     let $distinct-missing := distinct-values($missing-biblio)
     return
         for $a in $distinct-missing
+        order by doc($a)//tei:titleStmt/tei:title
             return doc($a)
 };
 
@@ -227,6 +229,7 @@ declare function dashboard:not-normalized-dates() {
     let $distinct-missing := distinct-values($dates)
     return
         for $a in $distinct-missing
+        order by doc($a)//tei:titleStmt/tei:title
             return doc($a)
 };
 

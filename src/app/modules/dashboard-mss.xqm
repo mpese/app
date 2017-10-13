@@ -39,13 +39,17 @@ declare function dashboard-mss:witness-label($name as xs:string) {
         concat($desc//tei:repository, ', ', $desc//tei:collection, ', ', $desc//tei:idno)
 };
 
-declare function dashboard-mss:author($author) {
-    let $corresp := $author/@corresp/string()
-    let $id := fn:tokenize($corresp, '#')[2]
-    let $auth_label := $author/text()
+(: get a person and link to their details :)
+declare function dashboard-mss:person($person) {
+    let $corresp := $person//@corresp/string()
     return
-        <a href="../people/{$id}.html">{$auth_label}</a>
+        if (fn:string-length($corresp) > 0) then
+            let $id := fn:tokenize($corresp, '#')[2]
+            return <a href="../people/{$id}.html">{functx:trim($person/string())}</a>
+        else
+            functx:trim($person/string())
 };
+
 
 (: ---------- TEMPLATE FUNCTIONS ----------- :)
 
@@ -102,25 +106,26 @@ declare %templates:wrap function dashboard-mss:details($node as node (), $model 
         return
             <div class="mss-entry">
                 <p><strong>{$item/tei:locus/text()}</strong></p>
-                <p><em>{$item/tei:title/text()}</em>
+                <p>
                 {
                 let $auth_count := fn:count($item/tei:author)
                 return
                     if ($auth_count > 0) then
-                        <span class='mss-entry-author'> / {
+                        <span class='mss-entry-author'>{
                             if ($auth_count > 1) then
                                 for $author at $pos in $item/tei:author
                                     return
                                         if ($pos eq $auth_count) then
-                                            (' and ',  dashboard-mss:author($author))
+                                            (' and ',  dashboard-mss:person($author))
                                         else
-                                            (dashboard-mss:author($author), ', ')
+                                            (dashboard-mss:person($author),', ')
                             else
-                                dashboard-mss:author($item/tei:author)
-                        }</span>
+                                dashboard-mss:person($item/tei:author)},</span>
+
                     else
                         ""
-                }</p>
+                }
+                '{$item/tei:title/text()}'</p>
                 {
                     let $resp_count := fn:count($item/tei:respStmt)
                     return
@@ -130,11 +135,11 @@ declare %templates:wrap function dashboard-mss:details($node as node (), $model 
                                     for $resp at $pos in $item/tei:respStmt
                                         return
                                             if ($pos eq $resp_count) then
-                                                concat(' and ', $resp/tei:name/text(), ' (', $resp/tei:role/text(), ')')
+                                                concat(' and ', dashboard-mss:person($resp/tei:name), ' (', $resp/tei:role/string(), ')')
                                             else
-                                                concat($resp/tei:name/text(), ' (', $resp/tei:resp/text(), ')', ', ')
+                                                concat(dashboard-mss:person($resp/tei:name), ' (', $resp/tei:resp/string(), ')', ', ')
                                 else
-                                    concat($item/tei:respStmt/tei:name/text(), ' (', $item/tei:respStmt/tei:resp/text(), ')')
+                                    (dashboard-mss:person($item/tei:respStmt/tei:name), concat(' (', $item/tei:respStmt/tei:resp/string(), ')'))
                         }</p>
                         else
                             ""
