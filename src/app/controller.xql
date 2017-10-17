@@ -117,6 +117,9 @@ else if ($exist:path eq '/' or $exist:path eq '/index.html') then
 else if (exists(fn:analyze-string($exist:path, '\/\w+$')//fn:match)) then
     (util:log('INFO', ('URL without trailing slash')),
     local:redirect-with-slash())
+else if ($exist:path eq '/t/' or $exist:path eq '/t/index.html') then
+    (util:log('INFO', ('/t/ -> new text homepage')),
+    local:dispatch('/home.html'))
 else if (fn:starts-with($exist:path, "/dashboard/")) then
     (: forward dashboard :)
     (util:log('INFO', ('dashboard URL')),
