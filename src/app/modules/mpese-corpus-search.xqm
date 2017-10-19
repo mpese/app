@@ -10,6 +10,15 @@ import module namespace mpese-text = 'http://mpese.rit.bris.ac.uk/corpus/text/' 
 import module namespace functx = 'http://www.functx.com' at 'functx-1.0.xql';
 
 
+declare function mpese-search:result-title($doc) {
+    let $tmp_title := $doc//tei:fileDesc/tei:titleStmt/tei:title/string()
+    let $tmp_date := $doc//tei:profileDesc/tei:creation/tei:date[1]/string()
+    let $title := ( if (fn:string-length($tmp_title) > 0) then $tmp_title else fn:string('Untitled') )
+    let $date  := ( if (fn:string-length($tmp_date) > 0) then $tmp_date else fn:string('No date') )
+    return
+        concat($title, ', ', $date, ')')
+
+};
 
 declare function mpese-search:default-title() {
 
@@ -52,7 +61,8 @@ declare function mpese-search:default($node as node (), $model as map (*))  {
         let $results := mpese-search:default-title()
         for $item in $results
             let $uri := fn:base-uri($item)
-            let $title := ( if (fn:string-length($item/string()) > 0) then $item/string() else 'Untitled')
+            let $doc := doc($uri)
+            let $title := mpese-search:result-title($doc)
             let $authors := mpese-text:authors($uri)
             let $mss := mpese-text:mss-details($uri)
             let $mss-label := ( if (fn:string-length($mss/string()) > 0) then
