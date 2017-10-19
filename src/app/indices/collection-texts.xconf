@@ -4,6 +4,7 @@
             <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
             <text qname="tei:author"/>
             <text qname="tei:title"/>
+            <text qname="tei:p"/>
         </lucene>
         <range>
             <create qname="tei:term" type="xs:string" case="no"/>

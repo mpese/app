@@ -62,3 +62,7 @@ img.mpese-home-img-caption {
 #search-box {
     padding-top: 40px;
 }
+
+.result-entry-snippet {
+    margin: 5px 0 5px 0;
+}
