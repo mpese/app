@@ -66,3 +66,9 @@ img.mpese-home-img-caption {
 .result-entry-snippet {
     margin: 5px 0 5px 0;
 }
+
+.results-total {
+    margin: 0;
+    padding: 0;
+    font-size: larger;
+}
