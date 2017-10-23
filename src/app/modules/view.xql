@@ -16,6 +16,7 @@ import module namespace dashboard-text = "http://mpese.rit.bris.ac.uk/dashboard/
 import module namespace dashboard-mss = "http://mpese.rit.bris.ac.uk/dashboard/mss/" at "dashboard-mss.xqm";
 import module namespace dashboard-person = "http://mpese.rit.bris.ac.uk/dashboard/person/" at "dashboard-person.xqm";
 import module namespace mpese-search = "http://mpese.ac.uk/corpus/search/" at 'mpese-corpus-search.xqm';
+import module namespace mpese-text = 'http://mpese.rit.bris.ac.uk/corpus/text/' at 'mpese-corpus-text.xqm';
 
 declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
 

@@ -8,6 +8,7 @@ declare variable $exist:root external;
 
 declare variable $view := concat($exist:controller, '/modules/view.xql');
 
+
 (: calculate the xml filename from URL path :)
 declare function local:item($type) {
     let $seq := fn:tokenize($exist:path, '/')
@@ -117,9 +118,14 @@ else if ($exist:path eq '/' or $exist:path eq '/index.html') then
 else if (exists(fn:analyze-string($exist:path, '\/\w+$')//fn:match)) then
     (util:log('INFO', ('URL without trailing slash')),
     local:redirect-with-slash())
-else if ($exist:path eq '/t/' or $exist:path eq '/t/index.html') then
-    (util:log('INFO', ('/t/ -> new text homepage')),
+(: public: homepage :)
+else if ($exist:path eq '/h/' or $exist:path eq '/h/index.html') then
+    (util:log('INFO', (' new homepage')),
     local:dispatch('/home.html'))
+(: public: text details :)
+else if (fn:matches($exist:path, '^(/h/t/)(\w+|%20)+\.html$')) then
+    (util:log('INFO', (' new text homepage')),
+    local:dispatch-attribute('/text.html', 'text', concat(local:item('text'), '.xml')))
 else if (fn:starts-with($exist:path, "/dashboard/")) then
     (: forward dashboard :)
     (util:log('INFO', ('dashboard URL')),

@@ -8,6 +8,7 @@ import module namespace xmldb = 'http://exist-db.org/xquery/xmldb';
 import module namespace config = 'http://mpese.rit.bris.ac.uk/config' at 'config.xqm';
 import module namespace mpese-text = 'http://mpese.rit.bris.ac.uk/corpus/text/' at 'mpese-corpus-text';
 import module namespace functx = 'http://www.functx.com' at 'functx-1.0.xql';
+import module namespace utils = "http://mpese.rit.bris.ac.uk/utils/" at 'utils.xql';
 
 
 declare function mpese-search:result-title($doc) {
@@ -71,7 +72,7 @@ declare function mpese-search:pagination($page, $pages, $label) {
             <ul class="pagination">
                 {
                     if ($page eq 1) then
-                        <li class="page-item disabled"><a class="page-link" tabindex="-1" href="#">Previous</a></li>
+                        <li class="page-item disabled"><a class="page-link" tabindex="-1" href="">Previous</a></li>
                     else
                         <li class="page-item"><a class="page-link" href="./?page={$page - 1}">Previous</a></li>
                 }
@@ -85,7 +86,7 @@ declare function mpese-search:pagination($page, $pages, $label) {
                 }
                 {
                     if ($page eq $pages) then
-                        <li class="page-item disabled"><a class="page-link" tabindex="-1" href="#">Next</a></li>
+                        <li class="page-item disabled"><a class="page-link" tabindex="-1" href="">Next</a></li>
                     else
                         <li class="page-item"><a class="page-link" href="./?page={$page + 1}">Previous</a></li>
                 }
@@ -125,6 +126,7 @@ declare function mpese-search:default($node as node (), $model as map (*))  {
 
             for $item in $results
                 let $uri := fn:base-uri($item)
+                let $name := utils:name-from-uri($uri)
                 let $doc := doc($uri)
                 let $title := mpese-search:result-title($doc)
                 let $authors := mpese-text:authors($uri)
@@ -134,7 +136,7 @@ declare function mpese-search:default($node as node (), $model as map (*))  {
                                                 $mss/tei:idno/string()) else '')
                 let $author-label := mpese-search:author-label($authors)
                 let $text := doc($uri)//tei:text[1]/tei:body/tei:p[1]/string()
-                return <a href="#" class="list-group-item">{
+                return <a href="./t/{$name}.html" class="list-group-item">{
                     <div class="result-entry">
                         <h4 class="list-group-item-heading result-entry-title">{$title}</h4>
                         <p class="list-group-item-text result-entry-author">{$author-label}</p>
