@@ -7,7 +7,7 @@ declare namespace tei = 'http://www.tei-c.org/ns/1.0';
 import module namespace xmldb = 'http://exist-db.org/xquery/xmldb';
 import module namespace templates = "http://exist-db.org/xquery/templates";
 import module namespace config = 'http://mpese.rit.bris.ac.uk/config' at 'config.xqm';
-import module namespace mpese-text = 'http://mpese.rit.bris.ac.uk/corpus/text/' at 'mpese-corpus-text';
+import module namespace mpese-text = 'http://mpese.rit.bris.ac.uk/corpus/text/' at 'mpese-corpus-text.xqm';
 import module namespace functx = 'http://www.functx.com' at 'functx-1.0.xql';
 import module namespace utils = "http://mpese.rit.bris.ac.uk/utils/" at 'utils.xql';
 
@@ -30,7 +30,7 @@ declare function mpese-search:search-title($query) as element()* {
 };
 
 (: Search against title, author and text :)
-declare function mpese-search:search($config:mpese-tei-corpus-texts) {
+declare function mpese-search:search($phrase) {
     for $hit in collection($config:mpese-tei-corpus-texts)/*[ft:query(.,$phrase)]
     let $score := ft:score($hit)
     order by $score descending
@@ -52,33 +52,67 @@ declare function mpese-search:paginate-results($results as element()*, $start as
     return $result
 };
 
+(:
+:~
+ : Recursive function to create a formatted string of authors for a text.
+ :
+ : @param $label - the current label
+ : @param $authors - the current sequence of authors.
+ : @returns a formatted label of authors.
+:)
+declare %private function mpese-search:author-label-r($label as xs:string, $authors as node()*) as xs:string {
 
-(: title of the text :)
-declare function mpese-search:author-label($authors) {
     let $auth_count := fn:count($authors)
-    let $label :=
-            if ($auth_count > 0) then
-                if ($auth_count > 1) then
-                    for $author at $pos in $authors
-                        return
-                            if ($pos eq $auth_count) then
-                                ' and ' || functx:trim($author/string())
-                            else
-                                functx:trim($author/string()) || ', '
-                else
-                    if (fn:string-length($authors[1]/string()) > 0) then
-                        functx:trim($authors[1]/string())
-                    else
-                        ""
-            else
-                ""
-    return $label
+    return
+        if ($auth_count eq 1) then
+            $label || functx:trim($authors[1]/string())
+        else if ($auth_count eq 2) then
+            let $tmp_label := $label || functx:trim($authors[1]/string()) || ', and '
+            let $tmp_authors := fn:subsequence($authors, 2)
+            return
+                mpese-search:author-label-r($tmp_label, $tmp_authors)
+        else
+            let $tmp_label := $label || functx:trim($authors[1]/string()) || ', '
+            let $tmp_authors := fn:subsequence($authors, 2)
+            return
+                mpese-search:author-label-r($tmp_label, $tmp_authors)
 };
 
+(:
+:~
+ : For a list of <author/> elements returms a formatted string of authors.
+ :
+ : @param $authors - sequence of <author/> elements.
+ : @returns a formatted label of authors.
+:)
+declare function mpese-search:author-label($authors as node()*) as xs:string {
+
+    if (fn:count($authors) eq 0) then
+        ""
+    else
+        mpese-search:author-label-r("", $authors)
+};
+
+(:
+:~
+ : Calculate the starting point in a sequence of results based on the current page.
+ :
+ : @param $page - the current page.
+ : @param $num - items per page
+ : @returns the starting point in a sequence.
+:)
 declare function mpese-search:seq-start($page as xs:integer, $num as xs:integer) as xs:integer {
     ($page * $num) - ($num - 1)
 };
 
+(:
+:~
+ : Calculate the total number of pages based on the results.
+ :
+ : @param $total - the number of results.
+ : @param $num - items per page
+ : @returns the number of page needed for pagination.
+:)
 declare function mpese-search:pages-total($total as xs:integer, $num as xs:integer) as xs:integer {
     xs:integer(fn:ceiling($total div $num))
 };
