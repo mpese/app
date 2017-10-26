@@ -25,6 +25,7 @@ declare function mpese-text:authors($text) {
     fn:doc($text)//tei:fileDesc/tei:titleStmt/tei:author
 };
 
+(: mss details ... follow the yellow brick road :)
 declare function mpese-text:mss-details($text) {
 
     (: get the include :)
@@ -96,6 +97,12 @@ declare function mpese-text:author-label($file) {
             ""
 };
 
+declare function mpese-text:mss-details-label($text) {
+    let $mss := mpese-text:mss-details
+    return
+        concat($mss/tei:repository/string())
+};
+
 (: ---------- TEMPLATE FUNCTIONS ----------- :)
 
 (: adds the full URI of the text to the map so that it can be used by following functions  -
@@ -105,9 +112,13 @@ declare function mpese-text:text($node as node (), $model as map (*), $text as x
     map { "text" := concat($config:mpese-tei-corpus-texts, '/', $text) }
 };
 
+(: author and title :)
 declare %templates:wrap function mpese-text:author-title($node as node (), $model as map (*), $text as xs:string) {
     (mpese-text:author-label($model('text')), '&apos;', mpese-text:title($model('text')), '&apos;')
 };
+
+(: mss details :)
+
 
 (: the image :)
 declare function mpese-text:image($node as node (), $model as map (*), $text as xs:string) {

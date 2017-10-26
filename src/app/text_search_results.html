@@ -1,20 +1,19 @@
 <div xmlns="http://www.w3.org/1999/xhtml" xmlns:xf="http://www.w3.org/2002/xforms"
-     data-template="templates:surround" data-template-with="templates/sub.html"
+     data-template="templates:surround" data-template-with="templates/sub2.html"
      data-template-at="content">
-
-   <div class="row">
+    <div class="row">
         <div class="col-lg-12">
             <div id="search-box">
-                <form action="./s/" method="get">
+                <form action="." method="get">
                     <div class="input-group input-group-lg">
-                        <input name="search" type="text" class="form-control" placeholder="Search ..."/>
+                        <input type="text" class="form-control" placeholder="Search ..."/>
                         <span class="input-group-btn">
                             <button class="btn btn-secondary" type="button" aria-label="Search"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button></span>
                     </div>
                 </form>
                 <p class="text-center">Alternatively, use the <a href="">advanced search</a> or <a href="">browse</a>.</p>
             </div>
-            <div id="search-results" data-template="mpese-search:default">
+            <div id="search-results" data-template="mpese-search:search">
             </div>
         </div>
     </div>
