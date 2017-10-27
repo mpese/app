@@ -2,9 +2,9 @@
     <index xmlns:tei="http://www.tei-c.org/ns/1.0">
         <lucene>
             <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
-            <text qname="tei:author"/>
-            <text qname="tei:title"/>
-            <text qname="tei:p"/>
+            <text qname="tei:author" boost="2.0"/>
+            <text qname="tei:title" boost="5.0"/>
+            <text qname="tei:text"/>
         </lucene>
         <range>
             <create qname="tei:term" type="xs:string" case="no"/>
