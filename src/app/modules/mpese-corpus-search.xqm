@@ -299,6 +299,12 @@ declare function mpese-search:everything($page as xs:integer, $num as xs:integer
 
 (: ---------- TEMPLATE FUNCTIONS ----------- :)
 
+declare %templates:default("search", "") function mpese-search:query($node as node (), $model as map (*), $search as xs:string)  {
+    if (fn:string-length($search) eq 0) then
+        <input name="search" type="text" class="form-control" placeholder="Search ..."/>
+    else
+        <input name="search" type="text" class="form-control" value="{$search}"/>
+};
 
 (: homepage with search  :)
 declare %templates:default("page", 1) %templates:default("num", 10) %templates:default("search", "")
