@@ -3,24 +3,18 @@ xquery version "3.1";
 module namespace mpese-search = 'http://mpese.ac.uk/corpus/search/';
 
 declare namespace tei = 'http://www.tei-c.org/ns/1.0';
+declare namespace xi = 'http://www.w3.org/2001/XInclude';
+import module namespace kwic="http://exist-db.org/xquery/kwic";
 
-import module namespace xmldb = 'http://exist-db.org/xquery/xmldb';
 import module namespace templates = "http://exist-db.org/xquery/templates";
+import module namespace xmldb = 'http://exist-db.org/xquery/xmldb';
+import module namespace functx = 'http://www.functx.com' at 'functx-1.0.xql';
 import module namespace config = 'http://mpese.rit.bris.ac.uk/config' at 'config.xqm';
 import module namespace mpese-text = 'http://mpese.rit.bris.ac.uk/corpus/text/' at 'mpese-corpus-text.xqm';
-import module namespace functx = 'http://www.functx.com' at 'functx-1.0.xql';
 import module namespace utils = "http://mpese.rit.bris.ac.uk/utils/" at 'utils.xql';
 
 
-declare function mpese-search:result-title($doc) {
-    let $tmp_title := $doc//tei:fileDesc/tei:titleStmt/tei:title/string()
-    let $tmp_date := $doc//tei:profileDesc/tei:creation/tei:date[1]/string()
-    let $title := ( if (fn:string-length($tmp_title) > 0) then $tmp_title else fn:string('Untitled') )
-    let $date  := ( if (fn:string-length($tmp_date) > 0) then $tmp_date else fn:string('No date') )
-    return
-        concat($title, ' (', $date, ')')
-
-};
+(: ---------- SEARCHING AND PROCESSING RESULTS ---------- :)
 
 (: Text search against the <tei:title/> of the document. Ordered by the title. :)
 declare function mpese-search:search-title($query) as element()* {
@@ -36,7 +30,6 @@ declare function mpese-search:search($phrase) {
     order by $score descending
     return $hit
 };
-
 
 (:
 :~
@@ -78,20 +71,7 @@ declare %private function mpese-search:author-label-r($label as xs:string, $auth
                 mpese-search:author-label-r($tmp_label, $tmp_authors)
 };
 
-(:
-:~
- : For a list of <author/> elements returms a formatted string of authors.
- :
- : @param $authors - sequence of <author/> elements.
- : @returns a formatted label of authors.
-:)
-declare function mpese-search:author-label($authors as node()*) as xs:string {
 
-    if (fn:count($authors) eq 0) then
-        ""
-    else
-        mpese-search:author-label-r("", $authors)
-};
 
 (:
 :~
@@ -117,7 +97,39 @@ declare function mpese-search:pages-total($total as xs:integer, $num as xs:integ
     xs:integer(fn:ceiling($total div $num))
 };
 
-(: ---------- HELPER FUNCTION: DATA RENDERING ---------- :)
+(: ---------- DATA RENDERING ---------- :)
+
+(:
+:~
+ : Create a title for the search results
+ :
+ : @param $doc - the TEI/XML document
+ : @returns a formatted title
+:)
+declare function mpese-search:result-title($doc) {
+    let $tmp_title := $doc//tei:fileDesc/tei:titleStmt/tei:title/string()
+    let $tmp_date := $doc//tei:profileDesc/tei:creation/tei:date[1]/string()
+    let $title := ( if (fn:string-length($tmp_title) > 0) then $tmp_title else fn:string('Untitled') )
+    let $date  := ( if (fn:string-length($tmp_date) > 0) then $tmp_date else fn:string('No date') )
+    return
+        concat($title, ' (', $date, ')')
+
+};
+
+(:
+:~
+ : For a list of <author/> elements returms a formatted string of authors.
+ :
+ : @param $authors - sequence of <author/> elements.
+ : @returns a formatted label of authors.
+:)
+declare function mpese-search:author-label($authors as node()*) as xs:string {
+
+    if (fn:count($authors) eq 0) then
+        ""
+    else
+        mpese-search:author-label-r("", $authors)
+};
 
 (:
 :~
@@ -131,7 +143,7 @@ declare function mpese-search:pages-total($total as xs:integer, $num as xs:integ
  : @returns a formatted result item
 :)
 declare function mpese-search:result-entry($link as xs:string, $title as xs:string, $author as xs:string*,
-        $snippet as node(), $mss as xs:string) as node() {
+        $snippet as node()*, $mss as xs:string) as node() {
     <a href="{$link}" class="list-group-item">{
         <div class="result-entry">
             <h4 class="list-group-item-heading result-entry-title">{$title}</h4>
@@ -142,7 +154,14 @@ declare function mpese-search:result-entry($link as xs:string, $title as xs:stri
     }</a>
 };
 
-declare function mpese-search:pagination($page, $pages, $label) {
+declare function mpese-search:pagination-link($page as xs:integer, $search as xs:string?) {
+    if ($search) then
+        './?page=' || $page || '&amp;search=' || $search
+    else
+        './?page=' || $page
+};
+
+declare function mpese-search:pagination($page, $pages, $search, $label) {
     <nav id="paginaton" aria-label="{$label}">
         <div class="text-center">
             <ul class="pagination">
@@ -150,36 +169,37 @@ declare function mpese-search:pagination($page, $pages, $label) {
                     if ($page eq 1) then
                         <li class="page-item disabled"><a class="page-link" tabindex="-1" href="">Previous</a></li>
                     else
-                        <li class="page-item"><a class="page-link" href="./?page={$page - 1}">Previous</a></li>
+                        <li class="page-item"><a class="page-link" href="{mpese-search:pagination-link($page - 1, $search)}">Previous</a></li>
                 }
                 {
                     for $count in 1 to $pages
                         return
                             if ($count eq $page) then
-                                <li class="page-item active"><a class="page-link" href="./?page={$count}">{$count}</a></li>
+                                <li class="page-item active"><a class="page-link" href="{mpese-search:pagination-link($count, $search)}">{$count}</a></li>
                             else
-                                <li class="page-item"><a class="page-link" href="./?page={$count}">{$count}</a></li>
+                                <li class="page-item"><a class="page-link" href="{mpese-search:pagination-link($count,$search)}">{$count}</a></li>
                 }
                 {
                     if ($page eq $pages) then
                         <li class="page-item disabled"><a class="page-link" tabindex="-1" href="">Next</a></li>
                     else
-                        <li class="page-item"><a class="page-link" href="./?page={$page + 1}">Previous</a></li>
+                        <li class="page-item"><a class="page-link" href="{mpese-search:pagination-link($page + 1, $search)}">Next</a></li>
                 }
             </ul>
         </div>
      </nav>
 };
 
-(: ---------- TEMPLATE FUNCTIONS ----------- :)
-
-(: default search, i.e. no search results defined  :)
-declare function mpese-search:search($node as node (), $model as map (*), $search as xs:string)  {
-    <p>{$search}</p>
+declare function mpese-search:matches($result) {
+    let $matches := kwic:summarize($result, <config width="40"/>)
+    return
+        for $match in $matches
+        return $match//*
 };
 
+
 (: default search, i.e. no search results defined  :)
-declare %templates:default("page", 1) %templates:default("num", 10) function mpese-search:default($node as node (), $model as map (*), $page as xs:integer, $num as xs:integer)  {
+declare function mpese-search:titles($page as xs:integer, $num as xs:integer)  {
 
     let $start := mpese-search:seq-start($page, $num)
     let $query := '*:*'
@@ -196,7 +216,7 @@ declare %templates:default("page", 1) %templates:default("num", 10) function mpe
         <p class="text-center results-total">{$total} texts available</p>
         {
             if ($pages > 1) then
-                mpese-search:pagination($page, $pages, "Top navigation")
+                mpese-search:pagination($page, $pages, "", "Top navigation")
             else
                 ""
         }
@@ -214,16 +234,81 @@ declare %templates:default("page", 1) %templates:default("num", 10) function mpe
                                                 || $mss/tei:idno/string() else '')
                 let $author-label := mpese-search:author-label($authors)
                 let $text := doc($uri)//tei:text[1]/tei:body/tei:p[1]/string()
-                let $link := './t/{$name}.html'
+                let $link := './t/' || $name || '.html'
                 let $snippet := <em>{fn:substring($text, 1, 200)} ...</em>
                 return mpese-search:result-entry($link, $title, $author-label, $snippet, $mss-label)
         }
         </div>
         {
             if ($pages > 1) then
-                mpese-search:pagination($page, $pages, "Bottom navigation")
+                mpese-search:pagination($page, $pages, "", "Bottom navigation")
             else
                 ""
         }
     </div>
 };
+
+(: default search, i.e. no search results defined  :)
+declare function mpese-search:everything($page as xs:integer, $num as xs:integer, $search as xs:string)  {
+
+    (: unpaginated results:)
+    let $sorted-results := mpese-search:search($search)
+
+    (: work out pagnation :)
+    let $start := mpese-search:seq-start($page, $num)
+    let $total := fn:count($sorted-results)
+    let $pages := mpese-search:pages-total($total, $num)
+    let $results := mpese-search:paginate-results($sorted-results, $start, $num)
+
+    return
+
+    <div id="search-results">
+        <p class="text-center results-total">{$total} texts available</p>
+        {
+            if ($pages > 1) then
+                mpese-search:pagination($page, $pages, $search, "Top navigation")
+            else
+                ""
+        }
+        <div class="list-group">{
+
+            for $item in $results
+                let $uri := fn:base-uri($item)
+                let $name := utils:name-from-uri($uri)
+                let $title := mpese-search:result-title($item)
+                let $authors := $item//tei:fileDesc/tei:titleStmt/tei:author
+                let $mss-include := $item//tei:sourceDesc/tei:msDesc/xi:include
+                let $mss := mpese-text:mss-details-include($mss-include)
+                let $mss-label := ( if (fn:string-length($mss/string()) > 0) then
+                                        $mss/tei:repository/string() || ', ' || $mss/tei:collection/string() || ', '
+                                                || $mss/tei:idno/string() else '')
+                let $author-label := mpese-search:author-label($authors)
+                let $link := './t/' || $name || '.html'
+                let $snippet := mpese-search:matches($item)
+                return mpese-search:result-entry($link, $title, $author-label, $snippet, $mss-label)
+        }
+        </div>
+        {
+            if ($pages > 1) then
+                mpese-search:pagination($page, $pages, $search, "Bottom navigation")
+            else
+                ""
+        }
+    </div>
+};
+
+(: ---------- TEMPLATE FUNCTIONS ----------- :)
+
+
+(: homepage with search  :)
+declare %templates:default("page", 1) %templates:default("num", 10) %templates:default("search", "")
+    function mpese-search:default($node as node (), $model as map (*), $page as xs:integer, $num as xs:integer,
+                                  $search as xs:string)  {
+
+    if (fn:string-length($search) eq 0) then
+        mpese-search:titles($page, $num)
+    else
+        mpese-search:everything($page, $num, $search)
+
+};
+

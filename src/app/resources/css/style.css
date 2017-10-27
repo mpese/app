@@ -65,6 +65,7 @@ img.mpese-home-img-caption {
 
 .result-entry-snippet {
     margin: 5px 0 5px 0;
+    font-style: italic;
 }
 
 .results-total {
@@ -75,4 +76,8 @@ img.mpese-home-img-caption {
 
 .mpese-content-panel {
     margin-top: 20px;
+}
+
+span.hi {
+    background-color: yellow;
 }

@@ -64,6 +64,7 @@ declare %test:assertTrue function test-search:search() {
         fn:count($results) > 0
 };
 
+(: Test title with all details available :)
 declare %test:assertEquals("Letters to the Heads of Cambridge Colleges (June 1626)") function test-search:result-title() {
 
     let $doc := <tei:TEI>
@@ -84,4 +85,59 @@ declare %test:assertEquals("Letters to the Heads of Cambridge Colleges (June 162
     return
         mpese-search:result-title($doc)
 
+};
+
+(: Test title with no title provided but with a date  :)
+declare %test:assertEquals("Untitled (June 1626)") function test-search:result-title-missing-title() {
+
+    let $doc := <tei:TEI>
+                    <tei:teiHeader>
+                        <tei:fileDesc>
+                            <tei:titleStmt>
+                                <tei:title/>
+                            </tei:titleStmt>
+                        </tei:fileDesc>
+                        <tei:profileDesc>
+                            <tei:creation>
+                                <tei:date>June 1626</tei:date>
+                            </tei:creation>
+                        </tei:profileDesc>
+                    </tei:teiHeader>
+                </tei:TEI>
+
+    return
+        mpese-search:result-title($doc)
+
+};
+
+(: Test title with no title provided but with a date  :)
+declare %test:assertEquals("Untitled (No date)") function test-search:result-title-missing-title-date() {
+
+    let $doc := <tei:TEI>
+                    <tei:teiHeader>
+                        <tei:fileDesc>
+                            <tei:titleStmt>
+                                <tei:title/>
+                            </tei:titleStmt>
+                        </tei:fileDesc>
+                        <tei:profileDesc>
+                            <tei:creation>
+                                <tei:date/>
+                            </tei:creation>
+                        </tei:profileDesc>
+                    </tei:teiHeader>
+                </tei:TEI>
+
+    return
+        mpese-search:result-title($doc)
+
+};
+
+(: Tests getting a subset of results for paginaation :)
+declare %test:assertTrue function test-search:paginate-results() {
+    let $seq := (<result>1</result>,<result>2</result>,<result>3</result>,<result>4</result>,
+                <result>5</result>,<result>6</result>, <result>7</result>, <result>8</result>,
+                <result>9</result>, <result>10</result>)
+    let $results := mpese-search:paginate-results($seq, 2, 5)
+    return ($results[1]/text() eq '2' and $results[5]/text() eq '6')
 };

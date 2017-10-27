@@ -26,10 +26,7 @@ declare function mpese-text:authors($text) {
 };
 
 (: mss details ... follow the yellow brick road :)
-declare function mpese-text:mss-details($text) {
-
-    (: get the include :)
-    let $include := doc($text)//tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:msDesc/xi:include
+declare function mpese-text:mss-details-include($include) {
 
     (: get the path and id :)
     let $include_url := $include/@href/string()
@@ -42,6 +39,16 @@ declare function mpese-text:mss-details($text) {
     (: return the node :)
     return
         doc($mss_full)//*[@xml:id=$include_id]
+};
+
+(: mss details ... follow the yellow brick road :)
+declare function mpese-text:mss-details($text) {
+
+    (: get the include :)
+    let $include := doc($text)//tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:msDesc/xi:include
+
+    return
+        mpese-text:mss-details-include($include)
 };
 
 (: text type keywords :)
