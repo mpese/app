@@ -299,11 +299,33 @@ declare function mpese-search:everything($page as xs:integer, $num as xs:integer
 
 (: ---------- TEMPLATE FUNCTIONS ----------- :)
 
-declare %templates:default("search", "") function mpese-search:query($node as node (), $model as map (*), $search as xs:string)  {
-    if (fn:string-length($search) eq 0) then
-        <input name="search" type="text" class="form-control" placeholder="Search ..."/>
-    else
-        <input name="search" type="text" class="form-control" value="{$search}"/>
+declare %templates:default("search", "") %templates:default("results_order", "relevance")function mpese-search:form($node as node (), $model as map (*),
+        $search as xs:string, $results_order as xs:string)  {
+
+    let $rel_order := if ($results_order eq 'relevance') then
+            <input name="results_order" value="relevance" type="radio" checked="checked"/>
+        else
+            <input name="results_order" value="relevance" type="radio"/>
+
+    let $date_order := if ($results_order eq 'date') then
+            <input name="results_order" value="date" type="radio" checked="checked"/>
+        else
+            <input name="results_order" value="date" type="radio"/>
+    return
+    <form action="." method="get">
+        <div class="input-group input-group-lg">
+             <input name="search" type="text" class="form-control" placeholder="Search ..." value="{$search}" />
+            <span class="input-group-btn">
+                <button class="btn btn-secondary" type="submit" aria-label="Search"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
+            </span>
+        </div>
+            <div>
+                <p class="text-center">Order results by {$rel_order}
+                    relevance or {$date_order} date. Alternatively,
+                    use the <a href="">advanced search</a> or <a href="">browse</a>.</p>
+            </div>
+    </form>
+
 };
 
 (: homepage with search  :)
