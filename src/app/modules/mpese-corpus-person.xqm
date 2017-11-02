@@ -18,7 +18,10 @@ declare function mpese-person:all() {
         let $order_name := (
             if (fn:exists($person/tei:surname)) then
                 concat($person/tei:surname, ', ', $person/tei:forename)
-            else $person/tei:name)
+            else if (fn:exists($person/tei:name)) then
+                $person/tei:name
+            else
+                fn:normalize-space($person/string()))
     order by $order_name
     return $person
 };
@@ -34,9 +37,11 @@ declare function mpese-person:person-by-id($pid) {
 };
 
 (: basic label :)
-declare function mpese-person:label($persName as node()) as xs:string {
+declare function mpese-person:label($persName as node()?) as xs:string {
     if (fn:exists($persName/tei:surname)) then
         concat($persName/tei:surname, ', ', $persName/tei:roleName, ' ', $persName/tei:forename)
-    else
+    else if (fn:exists($persName/tei:name)) then
         $persName/tei:name
+    else
+        fn:normalize-space($persName/string())
 };
