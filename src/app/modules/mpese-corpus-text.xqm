@@ -129,7 +129,13 @@ declare %templates:wrap function mpese-text:author-title($node as node (), $mode
 
 (: the image :)
 declare function mpese-text:image($node as node (), $model as map (*), $text as xs:string) {
-    <div><p>No image</p></div>
+    let $images := fn:doc($model('text'))//tei:pb[@facs]/@facs/string()
+    let $distinct := fn:string-join(distinct-values($images), ',')
+    return
+        if ($distinct) then
+            <div data-images="{$distinct}"></div>
+        else
+            <div><p>No image</p></div>
 };
 
 (: the transcript :)
