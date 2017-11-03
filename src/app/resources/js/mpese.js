@@ -47,3 +47,40 @@ var text = {
 }
 
 text.init()
+
+var image_viewer = {
+
+    tiles: function(image_list) {
+
+        var tiles = [];
+
+        var images = image_list.split(";");
+
+        for (var i = 0; i < images.length; i++) {
+            var tmp = images[i].split('.');
+            var tile = '/images' + tmp[0] + '.dzi';
+            tiles.push(tile)
+        }
+
+        return tiles;
+    },
+
+    init: function() {
+        var image_list = $('#mss-images').data('images');
+
+        if (image_list !== undefined) {
+             var tiles = this.tiles(image_list);
+
+            var viewer = OpenSeadragon({
+                id: "openseadragon",
+                prefixUrl: "/resources/openseadragon/images/",
+                tileSources: tiles,
+                sequenceMode: true,
+                showReferenceStrip: true,
+                referenceStripScroll: 'horizontal',
+            });
+        }
+
+    }
+
+}
