@@ -75,9 +75,7 @@ var image_viewer = {
                 id: "openseadragon",
                 prefixUrl: "/resources/openseadragon/images/",
                 tileSources: tiles,
-                sequenceMode: true,
-                showReferenceStrip: true,
-                referenceStripScroll: 'horizontal',
+                sequenceMode: true
             });
         }
 
