@@ -25,10 +25,19 @@ declare function mpese-search:search-title($query) as element()* {
 
 (: Search against title, author and text :)
 declare function mpese-search:search($phrase) {
-    for $hit in collection($config:mpese-tei-corpus-texts)/*[ft:query(.,$phrase)]
-    let $score := ft:score($hit)
-    order by $score descending
-    return $hit
+    collection($config:mpese-tei-corpus-texts)/*[ft:query(.,$phrase)]
+};
+
+declare function mpese-search:search($phrase, $results_order) {
+    if ($results_order eq 'date') then
+        for $hit in mpese-search:search($phrase)
+        order by $hit//tei:creation/tei:date/@when ascending
+        return $hit
+    else
+        for $hit in mpese-search:search($phrase)
+        let $score := ft:score($hit)
+        order by $score descending
+        return $hit
 };
 
 (:
@@ -249,10 +258,10 @@ declare function mpese-search:titles($page as xs:integer, $num as xs:integer)  {
 };
 
 (: default search, i.e. no search results defined  :)
-declare function mpese-search:everything($page as xs:integer, $num as xs:integer, $search as xs:string)  {
+declare function mpese-search:everything($page as xs:integer, $num as xs:integer, $search as xs:string, $results_order as xs:string)  {
 
     (: unpaginated results:)
-    let $sorted-results := mpese-search:search($search)
+    let $sorted-results := mpese-search:search($search, $results_order)
 
     (: work out pagnation :)
     let $start := mpese-search:seq-start($page, $num)
@@ -330,13 +339,15 @@ declare %templates:default("search", "") %templates:default("results_order", "re
 
 (: homepage with search  :)
 declare %templates:default("page", 1) %templates:default("num", 10) %templates:default("search", "")
-    function mpese-search:default($node as node (), $model as map (*), $page as xs:integer, $num as xs:integer,
-                                  $search as xs:string)  {
+    %templates:default("results_order", "relevance") function mpese-search:default($node as node (), $model as map (*), $page as xs:integer, $num as xs:integer,
+                                  $search as xs:string, $results_order as xs:string)  {
 
     if (fn:string-length($search) eq 0) then
         mpese-search:titles($page, $num)
     else
-        mpese-search:everything($page, $num, $search)
-
+        (
+            util:log('INFO', ('order by ' || $results_order )),
+            mpese-search:everything($page, $num, $search, $results_order)
+        )
 };
 

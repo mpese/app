@@ -113,22 +113,17 @@ if ($exist:path eq "") then
 (: homepage, / or /index.html :)
 else if ($exist:path eq '/' or $exist:path eq '/index.html') then
     (util:log('INFO', ("Hompage, / or /index.html")),
-    local:dispatch('/index.html'))
+    local:dispatch('/home.html'))
 (: handle URL that ends without a slash, eg. /dashboard :)
 else if (exists(fn:analyze-string($exist:path, '\/\w+$')//fn:match)) then
     (util:log('INFO', ('URL without trailing slash')),
     local:redirect-with-slash())
-(: public: homepage :)
-else if ($exist:path eq '/h/' or $exist:path eq '/h/index.html') then
-    (util:log('INFO', (' new homepage')),
-    local:dispatch('/home.html'))
-else if ($exist:path eq '/h/s/' or $exist:path eq '/h/s/index.html') then
-    (util:log('INFO', (' new search')),
-    local:dispatch('/text_search_results.html'))
-(: public: text details :)
-else if (fn:matches($exist:path, '^(/h/t/)(\w+|%20)+\.html$')) then
+else if (fn:matches($exist:path, '^(/t/)(\w+|%20)+\.html$')) then
     (util:log('INFO', (' new text homepage')),
     local:dispatch-attribute('/text.html', 'text', concat(local:item('text'), '.xml')))
+else if ($exist:path eq '/about.html') then
+    (util:log('INFO', ("About page")),
+    local:dispatch('/about.html'))
 else if (fn:starts-with($exist:path, "/dashboard/")) then
     (: forward dashboard :)
     (util:log('INFO', ('dashboard URL')),
