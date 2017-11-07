@@ -99,7 +99,12 @@ local:copy-mpese-indices(),
 
 xmldb:reindex($config:mpese-tei-corpus-texts),
 
-(: force login ... :)
+(: force login for dash ... :)
 sm:chmod(xs:anyURI($mpese-app-dashboard), 'r-xr-x---'),
+
+(: force login for all (demo) ... :)
+sm:chgrp(xs:anyURI('/db/apps/mpese/'), $config:mpese_group),
+sm:chown(xs:anyURI('/db/apps/mpese/'), 'admin'),
+sm:chmod(xs:anyURI('/db/apps/mpese/'), 'r-xr-x---'),
 
 util:log('INFO', ('MPESE: The post-installation script has finished'))

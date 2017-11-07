@@ -39,7 +39,6 @@ footer p {
 
 .mpese-alert {
     text-align: center;
-    font-size: medium;
     font-weight: bold;
 }
 
@@ -49,6 +48,11 @@ footer p {
 
 .mpese-text-count {
     text-align: center;
+}
+
+.mpese-pb {
+    text-align: center;
+    font-weight: bold;
 }
 
 .unclear {

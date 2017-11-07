@@ -22,7 +22,7 @@ declare function mpese-text:title($text) {
 
 
 declare function mpese-text:authors($text) {
-    fn:doc($text)//tei:fileDesc/tei:titleStmt/tei:author
+    fn:doc($text)//tei:fileDesc/tei:titleStmt/tei:author[@role != 'signatory']
 };
 
 (: mss details ... follow the yellow brick road :)
