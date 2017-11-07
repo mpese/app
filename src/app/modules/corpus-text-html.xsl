@@ -30,7 +30,7 @@
 
     <xsl:template match="tei:p"><p><xsl:apply-templates/></p></xsl:template>
 
-    <xsl:template match="tei:lb"><br/></xsl:template>
+    <xsl:template match="tei:lb"> </xsl:template>
 
     <xsl:template match="tei:expan">
         <xsl:choose>
