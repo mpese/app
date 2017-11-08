@@ -51,7 +51,18 @@
         </xsl:choose>
     </xsl:template>
 
-    <xsl:template match="tei:pb"><p class='mpese-pb'><xsl:value-of select="@n"/></p></xsl:template>
+    <xsl:template match="tei:pb">
+        <xsl:choose>
+            <xsl:when test="@facs">
+                <p class='mpese-pb'>
+                    <xsl:attribute name="data-facs"><xsl:value-of select='@facs'/></xsl:attribute>
+                    <xsl:value-of select="@n"/><xsl:text> </xsl:text><span class="mpese-photo glyphicon glyphicon-camera small" aria-hidden="true"></span></p>
+            </xsl:when>
+            <xsl:otherwise>
+                <p class='mpese-pb'><xsl:value-of select="@n"/></p>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
 
     <xsl:template match="tei:add">[<xsl:apply-templates/>]</xsl:template>
 

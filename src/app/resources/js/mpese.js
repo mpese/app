@@ -46,7 +46,7 @@ var text = {
     }
 }
 
-text.init()
+
 
 var image_viewer = {
 
@@ -66,6 +66,9 @@ var image_viewer = {
     },
 
     init: function() {
+
+        $('span.mpese-photo').off('click');
+
         var image_list = $('#mss-images').data('images');
 
         if (image_list !== undefined) {
@@ -77,7 +80,18 @@ var image_viewer = {
                 tileSources: tiles,
                 sequenceMode: true
             });
+
+            $('span.mpese-photo').on('click', function(event) {
+                var page = $.inArray($(this).parent().data('facs'), image_list.split(';'));
+
+                if (page !== -1) {
+                    viewer.goToPage(page);
+                }
+            });
+
         }
+
+
 
     }
 

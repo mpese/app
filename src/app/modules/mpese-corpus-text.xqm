@@ -134,10 +134,10 @@ declare function mpese-text:image($node as node (), $model as map (*), $text as 
     return
         if ($distinct) then
             <div id='mss-images' data-images="{$distinct}">
-                <div id="openseadragon" style="width: 800px; height: 600px"></div>
+                <div id="openseadragon"></div>
             </div>
         else
-            <div><p>No image</p></div>
+            <div class="well well-lg"><p class="text-center font-weight-bold">No image</p></div>
 };
 
 (: the transcript :)

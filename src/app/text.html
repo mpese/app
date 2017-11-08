@@ -1,5 +1,5 @@
 <div xmlns="http://www.w3.org/1999/xhtml" xmlns:xf="http://www.w3.org/2002/xforms"
-     data-template="templates:surround" data-template-with="templates/sub2.html"
+     data-template="templates:surround" data-template-with="templates/sub_fluid.html"
      data-template-at="content">
 
     <div data-template="mpese-text:text">
@@ -11,10 +11,10 @@
         </ul>
         <div id="mpese-text-panel" class="mpese-content-panel" data-panel="mpese-text-panel">
             <div class="row">
-                <div class="col-md-6">
+                <div id="mpese-transcript" class="col-md-6">
                     <div data-template="mpese-text:transcript"/>
                 </div>
-                <div class="col-md-6">
+                <div id="mpese-image-viewer" class="col-md-6">
                     <div data-template="mpese-text:image"/>
                 </div>
             </div>
@@ -26,6 +26,12 @@
             <p>Map is here</p>
         </div>
     </div>
+
+    <!-- initiate the nav and image viewer -->
+        <script type="application/javascript">
+            text.init();
+            image_viewer.init();
+        </script>
 
 </div>
 
