@@ -105,9 +105,12 @@ declare function mpese-text:author-label($file) {
 };
 
 declare function mpese-text:mss-details-label($text) {
-    let $mss := mpese-text:mss-details
+    let $mss := mpese-text:mss-details($text)
     return
-        concat($mss/tei:repository/string())
+        if (count($mss/*) > 0) then
+            concat($mss/tei:repository, ', ', $mss/tei:collection, ', ', $mss/tei:idno)
+        else
+            "No manuscript details."
 };
 
 (: ---------- TEMPLATE FUNCTIONS ----------- :)
@@ -125,7 +128,10 @@ declare %templates:wrap function mpese-text:author-title($node as node (), $mode
 };
 
 (: mss details :)
-
+(: author and title :)
+declare %templates:wrap function mpese-text:mss($node as node (), $model as map (*), $text as xs:string) {
+    mpese-text:mss-details-label($model('text'))
+};
 
 (: the image :)
 declare function mpese-text:image($node as node (), $model as map (*), $text as xs:string) {
