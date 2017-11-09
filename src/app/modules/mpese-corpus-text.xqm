@@ -1,3 +1,8 @@
+(:
+ : Module for handling the display of a pamphlet text for the public website.
+ :
+ : @author Mike Jones (mike.a.jones@bristol.ac.uk)
+ :)
 xquery version "3.1";
 
 module namespace mpese-text = 'http://mpese.rit.bris.ac.uk/corpus/text/';
@@ -10,9 +15,14 @@ import module namespace transform = 'http://exist-db.org/xquery/transform';
 import module namespace functx = 'http://www.functx.com' at 'functx-1.0.xql';
 import module namespace config = "http://mpese.rit.bris.ac.uk/config" at "config.xqm";
 
-(: title of the text or 'untitled' :)
-declare function mpese-text:title($text) {
-    let $title := fn:doc($text)/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title/text()
+(:~
+    Provide the title of the text or 'untitled'.
+
+    @param $uri      the URI of the text document.
+    @return the title of the text of 'untitled'
+ :)
+declare function mpese-text:title($uri as xs:string) as xs:string {
+    let $title := fn:doc($uri)//tei:fileDesc/tei:titleStmt/tei:title/text()
     return
         if (not(functx:all-whitespace($title))) then
             $title
@@ -20,13 +30,23 @@ declare function mpese-text:title($text) {
             fn:string('Untitled')
 };
 
+(:~
+    The list of authors associated with a text.
+    Note: some might be signatories and not actually authors.
 
-declare function mpese-text:authors($text) {
-    fn:doc($text)//tei:fileDesc/tei:titleStmt/tei:author[@role != 'signatory']
+    @param $uri      the URI of the text document.
+    @return a list of author elements.
+ :)
+declare function mpese-text:authors($uri as xs:string) as element()* {
+    fn:doc($uri)//tei:fileDesc/tei:titleStmt/tei:author
 };
 
-(: mss details ... follow the yellow brick road :)
-declare function mpese-text:mss-details-include($include) {
+(:~
+    Get the mss details via the Xinclude.
+
+    @param $include     the Xinclude element with details of the MS.
+:)
+declare function mpese-text:mss-details-include($include as element()) as element() {
 
     (: get the path and id :)
     let $include_url := $include/@href/string()
@@ -45,7 +65,7 @@ declare function mpese-text:mss-details-include($include) {
 declare function mpese-text:mss-details($text) {
 
     (: get the include :)
-    let $include := doc($text)//tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:msDesc/xi:include
+    let $include := doc($text)//tei:sourceDesc/tei:msDesc/xi:include
 
     return
         mpese-text:mss-details-include($include)
@@ -104,22 +124,23 @@ declare function mpese-text:author-label($file) {
             ""
 };
 
-declare function mpese-text:mss-details-label($text) {
-    let $mss := mpese-text:mss-details($text)
-    return
-        if (count($mss/*) > 0) then
-            concat($mss/tei:repository, ', ', $mss/tei:collection, ', ', $mss/tei:idno)
-        else
-            "No manuscript details."
+declare function mpese-text:mss-details-label($mss) {
+    if (count($mss/*) > 0) then
+        concat($mss/tei:repository, ', ', $mss/tei:collection, ', ', $mss/tei:idno)
+    else
+        "No manuscript details."
 };
 
 (: ---------- TEMPLATE FUNCTIONS ----------- :)
 
-(: adds the full URI of the text to the map so that it can be used by following functions  -
- : the $text variable is passed in via the controller; it generates it from the requested
- : URL, which includes the name of the file :)
+(: Adds the full URI of the text and the basic details about the manuscript to the model, so that it can be
+   used by subsequent calls :)
 declare function mpese-text:text($node as node (), $model as map (*), $text as xs:string) {
-    map { "text" := concat($config:mpese-tei-corpus-texts, '/', $text) }
+
+    let $text := concat($config:mpese-tei-corpus-texts, '/', $text)
+    let $mss := mpese-text:mss-details($text)
+    return
+        map { "text" := $text, "mss" := $mss}
 };
 
 (: author and title :)
@@ -127,11 +148,19 @@ declare %templates:wrap function mpese-text:author-title($node as node (), $mode
     (mpese-text:author-label($model('text')), '&apos;', mpese-text:title($model('text')), '&apos;')
 };
 
-(: mss details :)
-(: author and title :)
+(: basic mss details :)
 declare %templates:wrap function mpese-text:mss($node as node (), $model as map (*), $text as xs:string) {
-    mpese-text:mss-details-label($model('text'))
+    mpese-text:mss-details-label($model('mss'))
 };
+
+(: mss name :)
+declare function mpese-text:mss-name($node as node (), $model as map (*)) {
+    if (not(functx:has-empty-content($model('mss')//tei:msName))) then
+        <p>{$model('mss')//tei:msName/string()}</p>
+    else
+        ""
+};
+
 
 (: the image :)
 declare function mpese-text:image($node as node (), $model as map (*), $text as xs:string) {
