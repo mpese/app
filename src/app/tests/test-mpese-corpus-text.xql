@@ -189,3 +189,26 @@ declare %test:assertXPath("$result//*:idno/string() eq 'MS 35331'") function tes
     return
         mpese-text:mss-details($doc)
 };
+
+(: Test the formatting of with 1 author :)
+declare %test:assertEquals("George Abbot") function test-text:label-one-author() {
+    let $authors := <author>George Abbot</author>
+    return
+        mpese-text:author-label($authors)
+};
+
+(: Test the formatting of with 2 authors :)
+declare %test:assertEquals("George Abbot, and James VI/I") function test-text:label-two-authors() {
+    let $authors := (<author>George Abbot</author>,<author>James VI/I</author>)
+    return
+        mpese-text:author-label($authors)
+};
+
+(: Test the formatting of with 3 authors :)
+declare %test:assertEquals("Charles I, Thomas Howard, 1st Earl of Berkshire, and George Villiers, 1st Duke of Buckingham")
+function test-text:label-many-authors() {
+    let $authors := (<author>Charles I</author>, <author>Thomas Howard, 1st Earl of Berkshire</author>,
+                     <author>George Villiers, 1st Duke of Buckingham</author>)
+    return
+        mpese-text:author-label($authors)
+};

@@ -27,29 +27,6 @@ function test-search:pages-results-1($total as xs:integer, $num as xs:integer) a
     mpese-search:pages-total($total, $num)
 };
 
-(: Test the formatting of with 1 author :)
-declare %test:assertEquals("George Abbot") function test-search:label-one-author() {
-    let $authors := <author>George Abbot</author>
-    return
-        mpese-search:author-label($authors)
-};
-
-(: Test the formatting of with 2 authors :)
-declare %test:assertEquals("George Abbot, and James VI/I") function test-search:label-two-authors() {
-    let $authors := (<author>George Abbot</author>,<author>James VI/I</author>)
-    return
-        mpese-search:author-label($authors)
-};
-
-(: Test the formatting of with 3 authors :)
-declare %test:assertEquals("Charles I, Thomas Howard, 1st Earl of Berkshire, and George Villiers, 1st Duke of Buckingham")
-function test-search:label-many-authors() {
-    let $authors := (<author>Charles I</author>, <author>Thomas Howard, 1st Earl of Berkshire</author>,
-                     <author>George Villiers, 1st Duke of Buckingham</author>)
-    return
-        mpese-search:author-label($authors)
-};
-
 (: Test searching all titles returns results :)
 declare %test:assertTrue function test-search:default-all() {
     let $results := mpese-search:all()

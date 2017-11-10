@@ -50,37 +50,9 @@ declare function mpese-search:search($phrase, $results_order) {
  : @returns a subset of results.
 :)
 declare function mpese-search:paginate-results($results as element()*, $start as xs:int, $num as xs:int) {
-    for $result at $count in subsequence($results, $start, $num)
+    for $result in subsequence($results, $start, $num)
     return $result
 };
-
-(:
-:~
- : Recursive function to create a formatted string of authors for a text.
- :
- : @param $label - the current label
- : @param $authors - the current sequence of authors.
- : @returns a formatted label of authors.
-:)
-declare %private function mpese-search:author-label-r($label as xs:string, $authors as node()*) as xs:string {
-
-    let $auth_count := fn:count($authors)
-    return
-        if ($auth_count eq 1) then
-            $label || functx:trim($authors[1]/string())
-        else if ($auth_count eq 2) then
-            let $tmp_label := $label || functx:trim($authors[1]/string()) || ', and '
-            let $tmp_authors := fn:subsequence($authors, 2)
-            return
-                mpese-search:author-label-r($tmp_label, $tmp_authors)
-        else
-            let $tmp_label := $label || functx:trim($authors[1]/string()) || ', '
-            let $tmp_authors := fn:subsequence($authors, 2)
-            return
-                mpese-search:author-label-r($tmp_label, $tmp_authors)
-};
-
-
 
 (:
 :~
@@ -123,21 +95,6 @@ declare function mpese-search:result-title($doc) {
     return
         concat($title, ' (', $date, ')')
 
-};
-
-(:
-:~
- : For a list of <author/> elements returms a formatted string of authors.
- :
- : @param $authors - sequence of <author/> elements.
- : @returns a formatted label of authors.
-:)
-declare function mpese-search:author-label($authors as node()*) as xs:string {
-
-    if (fn:count($authors) eq 0) then
-        ""
-    else
-        mpese-search:author-label-r("", $authors)
 };
 
 (:
@@ -208,7 +165,7 @@ declare function mpese-search:matches($result) {
 
 
 (: default search, i.e. no search results defined  :)
-declare function mpese-search:titles($page as xs:integer, $num as xs:integer)  {
+declare function mpese-search:all($page as xs:integer, $num as xs:integer)  {
 
     let $start := mpese-search:seq-start($page, $num)
 
@@ -237,7 +194,7 @@ declare function mpese-search:titles($page as xs:integer, $num as xs:integer)  {
                 let $authors := mpese-text:authors($item)
                 let $mss := mpese-text:mss-details($item)
                 let $mss-label := mpese-text:mss-details-label($mss)
-                let $author-label := mpese-search:author-label($authors)
+                let $author-label := mpese-text:author-label($authors)
                 let $text := doc($uri)//tei:text[1]/tei:body/tei:p[1]/string()
                 let $link := './t/' || $name || '.html'
                 let $snippet := <em>{fn:substring($text, 1, 200)} ...</em>
@@ -284,7 +241,7 @@ declare function mpese-search:everything($page as xs:integer, $num as xs:integer
                 let $authors :=  mpese-text:authors($item)
                 let $mss := mpese-text:mss-details($item)
                 let $mss-label := mpese-text:mss-details-label($mss)
-                let $author-label := mpese-search:author-label($authors)
+                let $author-label := mpese-text:author-label($authors)
                 let $link := './t/' || $name || '.html'
                 let $snippet := mpese-search:matches($item)
                 return mpese-search:result-entry($link, $title, $author-label, $snippet, $mss-label)
@@ -336,7 +293,7 @@ declare %templates:default("page", 1) %templates:default("num", 10) %templates:d
                                   $search as xs:string, $results_order as xs:string)  {
 
     if (fn:string-length($search) eq 0) then
-        mpese-search:titles($page, $num)
+        mpese-search:all($page, $num)
     else
         (
             util:log('INFO', ('order by ' || $results_order )),

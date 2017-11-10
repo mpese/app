@@ -112,10 +112,9 @@ declare function mpese-text:keywords-topic($text) {
 
 (: display the text (delegate to an xsl file) :)
 declare function mpese-text:text-body($text) {
-    let $input := doc($text)
     let $xsl := doc('corpus-text-html.xsl')
     return
-        transform:transform($input, $xsl, ())
+        transform:transform($text, $xsl, ())
 };
 
 (: ---------- HELPER FUNCTIONS FOR RENDERING CONTENT ----------- :)
@@ -131,26 +130,42 @@ declare function mpese-text:person($person) {
             fn:normalize-space($person/string())
 };
 
-(: authors of a text :)
-declare function mpese-text:author-label($file) {
-    let $authors := mpese-text:authors($file)
+(:
+:~
+ : Recursive function to create a formatted string of authors for a text.
+ :
+ : @param $label - the current label
+ : @param $authors - the current sequence of authors.
+ : @returns a formatted label of authors.
+:)
+declare function mpese-text:author-label-r($label as xs:string, $authors as node()*) as xs:string {
+
     let $auth_count := fn:count($authors)
     return
-        if ($auth_count > 0) then
-            if ($auth_count > 1) then
-                for $author at $pos in $authors
-                    return
-                        if ($pos eq $auth_count) then
-                            concat(' and ',  mpese-text:person($author), ', ')
-                        else
-                            concat(mpese-text:person($author), ', ')
-            else
-                if (fn:string-length($authors[1]/string()) > 0) then
-                    concat(mpese-text:person($authors[1]), ', ')
-                else
-                    ""
+        if ($auth_count eq 1) then
+            $label || functx:trim($authors[1]/string())
+        else if ($auth_count eq 2) then
+            let $tmp_label := $label || functx:trim($authors[1]/string()) || ', and '
+            let $tmp_authors := fn:subsequence($authors, 2)
+            return
+                mpese-text:author-label-r($tmp_label, $tmp_authors)
         else
-            ""
+            let $tmp_label := $label || functx:trim($authors[1]/string()) || ', '
+            let $tmp_authors := fn:subsequence($authors, 2)
+            return
+                mpese-text:author-label-r($tmp_label, $tmp_authors)
+};
+
+
+(:
+:~
+ : Entry point for the recursive function to create a formatted string of authors for a text.
+ :
+ : @param $authors - the current sequence of authors.
+ : @returns a formatted label of authors.
+:)
+declare function mpese-text:author-label($authors) {
+    mpese-text:author-label-r("", $authors)
 };
 
 declare function mpese-text:mss-details-label($mss) {
@@ -166,19 +181,23 @@ declare function mpese-text:mss-details-label($mss) {
    used by subsequent calls :)
 declare function mpese-text:text($node as node (), $model as map (*), $text as xs:string) {
 
-    let $text := concat($config:mpese-tei-corpus-texts, '/', $text)
-    let $mss := mpese-text:mss-details($text)
+    let $doc := doc(concat($config:mpese-tei-corpus-texts, '/', $text))//tei:TEI
+    let $mss := mpese-text:mss-details($doc)
     return
-        map { "text" := $text, "mss" := $mss}
+        map { "text" := $doc, "mss" := $mss}
 };
 
 (: author and title :)
 declare %templates:wrap function mpese-text:author-title($node as node (), $model as map (*), $text as xs:string) {
-    (mpese-text:author-label($model('text')), '&apos;', mpese-text:title($model('text')), '&apos;')
+
+    let $authors := mpese-text:authors($model('text'))
+    return
+        (mpese-text:author-label($authors), '&apos;', mpese-text:title($model('text')), '&apos;')
 };
 
 (: basic mss details :)
 declare %templates:wrap function mpese-text:mss($node as node (), $model as map (*), $text as xs:string) {
+
     mpese-text:mss-details-label($model('mss'))
 };
 
@@ -193,7 +212,7 @@ declare function mpese-text:mss-name($node as node (), $model as map (*)) {
 
 (: the image :)
 declare function mpese-text:image($node as node (), $model as map (*), $text as xs:string) {
-    let $images := fn:doc($model('text'))//tei:pb[@facs]/@facs/string()
+    let $images := $model('text')//tei:pb[@facs]/@facs/string()
     let $distinct := fn:string-join(distinct-values($images), ';')
     return
         if ($distinct) then
