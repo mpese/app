@@ -1,4 +1,4 @@
-xquery version "3.0";
+xquery version "3.1";
 
 module namespace test-search = "http://mpese.ac.uk/corpus/search/test/";
 
@@ -51,8 +51,8 @@ function test-search:label-many-authors() {
 };
 
 (: Test searching all titles returns results :)
-declare %test:assertTrue function test-search:default-search() {
-    let $results := mpese-search:search-title("*:*")
+declare %test:assertTrue function test-search:default-all() {
+    let $results := mpese-search:all()
     return
         fn:count($results) > 0
 };
@@ -64,74 +64,6 @@ declare %test:assertTrue function test-search:search() {
         fn:count($results) > 0
 };
 
-(: Test title with all details available :)
-declare %test:assertEquals("Letters to the Heads of Cambridge Colleges (June 1626)") function test-search:result-title() {
-
-    let $doc := <tei:TEI>
-                    <tei:teiHeader>
-                        <tei:fileDesc>
-                            <tei:titleStmt>
-                                <tei:title>Letters to the Heads of Cambridge Colleges</tei:title>
-                            </tei:titleStmt>
-                        </tei:fileDesc>
-                        <tei:profileDesc>
-                            <tei:creation>
-                                <tei:date>June 1626</tei:date>
-                            </tei:creation>
-                        </tei:profileDesc>
-                    </tei:teiHeader>
-                </tei:TEI>
-
-    return
-        mpese-search:result-title($doc)
-
-};
-
-(: Test title with no title provided but with a date  :)
-declare %test:assertEquals("Untitled (June 1626)") function test-search:result-title-missing-title() {
-
-    let $doc := <tei:TEI>
-                    <tei:teiHeader>
-                        <tei:fileDesc>
-                            <tei:titleStmt>
-                                <tei:title/>
-                            </tei:titleStmt>
-                        </tei:fileDesc>
-                        <tei:profileDesc>
-                            <tei:creation>
-                                <tei:date>June 1626</tei:date>
-                            </tei:creation>
-                        </tei:profileDesc>
-                    </tei:teiHeader>
-                </tei:TEI>
-
-    return
-        mpese-search:result-title($doc)
-
-};
-
-(: Test title with no title provided but with a date  :)
-declare %test:assertEquals("Untitled (No date)") function test-search:result-title-missing-title-date() {
-
-    let $doc := <tei:TEI>
-                    <tei:teiHeader>
-                        <tei:fileDesc>
-                            <tei:titleStmt>
-                                <tei:title/>
-                            </tei:titleStmt>
-                        </tei:fileDesc>
-                        <tei:profileDesc>
-                            <tei:creation>
-                                <tei:date/>
-                            </tei:creation>
-                        </tei:profileDesc>
-                    </tei:teiHeader>
-                </tei:TEI>
-
-    return
-        mpese-search:result-title($doc)
-
-};
 
 (: Tests getting a subset of results for paginaation :)
 declare %test:assertTrue function test-search:paginate-results() {

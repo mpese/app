@@ -17,9 +17,9 @@ import module namespace utils = "http://mpese.rit.bris.ac.uk/utils/" at 'utils.x
 (: ---------- SEARCHING AND PROCESSING RESULTS ---------- :)
 
 (: Text search against the <tei:title/> of the document. Ordered by the title. :)
-declare function mpese-search:search-title($query) as element()* {
-    for $result in fn:collection($config:mpese-tei-corpus-texts)//tei:titleStmt/tei:title[ft:query(., $query)]
-    order by $result/text()
+declare function mpese-search:all() as element()* {
+    for $result in fn:collection($config:mpese-tei-corpus-texts)//tei:TEI
+    order by $result//tei:titleStmt/tei:title/text()
     return $result
 };
 
@@ -211,9 +211,8 @@ declare function mpese-search:matches($result) {
 declare function mpese-search:titles($page as xs:integer, $num as xs:integer)  {
 
     let $start := mpese-search:seq-start($page, $num)
-    let $query := '*:*'
 
-    let $sorted-results := mpese-search:search-title($query)
+    let $sorted-results := mpese-search:all()
 
     let $total := fn:count($sorted-results)
     let $pages := mpese-search:pages-total($total, $num)
@@ -234,13 +233,10 @@ declare function mpese-search:titles($page as xs:integer, $num as xs:integer)  {
             for $item in $results
                 let $uri := fn:base-uri($item)
                 let $name := utils:name-from-uri($uri)
-                let $doc := doc($uri)
-                let $title := mpese-search:result-title($doc)
-                let $authors := mpese-text:authors($uri)
-                let $mss := mpese-text:mss-details($uri)
-                let $mss-label := ( if (fn:string-length($mss/string()) > 0) then
-                                        $mss/tei:repository/string() || ', ' || $mss/tei:collection/string() || ', '
-                                                || $mss/tei:idno/string() else '')
+                let $title := mpese-text:title($item)
+                let $authors := mpese-text:authors($item)
+                let $mss := mpese-text:mss-details($item)
+                let $mss-label := mpese-text:mss-details-label($mss)
                 let $author-label := mpese-search:author-label($authors)
                 let $text := doc($uri)//tei:text[1]/tei:body/tei:p[1]/string()
                 let $link := './t/' || $name || '.html'
@@ -284,13 +280,10 @@ declare function mpese-search:everything($page as xs:integer, $num as xs:integer
             for $item in $results
                 let $uri := fn:base-uri($item)
                 let $name := utils:name-from-uri($uri)
-                let $title := mpese-search:result-title($item)
-                let $authors := $item//tei:fileDesc/tei:titleStmt/tei:author
-                let $mss-include := $item//tei:sourceDesc/tei:msDesc/xi:include
-                let $mss := mpese-text:mss-details-include($mss-include)
-                let $mss-label := ( if (fn:string-length($mss/string()) > 0) then
-                                        $mss/tei:repository/string() || ', ' || $mss/tei:collection/string() || ', '
-                                                || $mss/tei:idno/string() else '')
+                let $title := mpese-text:title($item)
+                let $authors :=  mpese-text:authors($item)
+                let $mss := mpese-text:mss-details($item)
+                let $mss-label := mpese-text:mss-details-label($mss)
                 let $author-label := mpese-search:author-label($authors)
                 let $link := './t/' || $name || '.html'
                 let $snippet := mpese-search:matches($item)
