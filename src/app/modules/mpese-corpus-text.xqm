@@ -101,13 +101,13 @@ declare function mpese-text:mss-details($doc) {
 };
 
 (: text type keywords :)
-declare function mpese-text:keywords-text-type($text) {
-    fn:doc($text)/tei:TEI/tei:teiHeader/tei:profileDesc/tei:textClass/tei:keywords[@n='text-type']/tei:term
+declare function mpese-text:keywords-text-type($doc) {
+    $doc//tei:profileDesc/tei:textClass/tei:keywords[@n='text-type']/tei:term
 };
 
 (: text type keywords :)
-declare function mpese-text:keywords-topic($text) {
-    fn:doc($text)/tei:TEI/tei:teiHeader/tei:profileDesc/tei:textClass/tei:keywords[@n='topic-keyword']/tei:term
+declare function mpese-text:keywords-topic($doc) {
+    $doc//tei:profileDesc/tei:textClass/tei:keywords[@n='topic-keyword']/tei:term
 };
 
 (: display the text (delegate to an xsl file) :)
