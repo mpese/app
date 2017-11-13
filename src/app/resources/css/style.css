@@ -85,3 +85,42 @@ img.mpese-home-img-caption {
 span.hi {
     background-color: yellow;
 }
+
+div#openseadragon {
+    height: 600px;
+}
+
+/* SMARTPHONES PORTRAIT */
+@media only screen and (min-width: 300px) {
+    #mpese-image-viewer {
+        display: none;
+    }
+}
+
+/* SMARTPHONES LANDSCAPE */
+@media only screen and (min-width: 480px) {
+        #mpese-image-viewer {
+        display: none;
+    }
+}
+
+/* TABLETS PORTRAIT */
+@media only screen and (min-width: 768px) {
+    #mpese-image-viewer {
+        display: none;
+    }
+}
+
+
+/* TABLET LANDSCAPE / DESKTOP */
+@media only screen and (min-width: 1024px) {
+    #mpese-image-viewer {
+        display: block;
+    }
+
+    #mpese-transcript {
+        min-height: 300px;
+        max-height: 600px;
+        overflow-y: scroll;
+    }
+}

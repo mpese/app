@@ -16,26 +16,32 @@
         <script src="https://maxcdn.bootstrapcdn.com/js/ie10-viewport-bug-workaround.js"></script>
 
         <!-- OpenSeaDragon Image Viewer -->
-        <script src="../../resources/js/mpese.js"></script>
-
-        <!-- MPESE -->
         <script src="../../resources/openseadragon/openseadragon.min.js"></script>
 
+        <!-- MPESE -->
+        <script src="../../resources/js/mpese.js"></script>
     </head>
     <body id="body">
         <!-- navigation -->
         <nav class="navbar navbar-inverse navbar-fixed-top">
             <div class="container">
                 <div class="navbar-header">
-                    <a class="navbar-brand" href="../../">
+                    <a class="navbar-brand" href="../">
                         <span data-template="config:app-abbrev">Abbrev</span>: <span
                             class="hidden-xs"><span data-template="config:app-title">App
                                 Title</span></span>
                     </a>
                 </div>
+                        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="./about.html">About</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
             </div>
         </nav>
-        <div id="content" class="container"></div>
+
+
+        <div id="content" class="container-fluid"></div>
         <footer>
             <div class="container">
                 <p>&#169; 2017 University of Birmingham, University of Bristol.</p>
@@ -43,6 +49,8 @@
                         <span data-template="app:deployed"></span>)</p>
             </div>
         </footer>
+
+
 
     </body>
 </html>

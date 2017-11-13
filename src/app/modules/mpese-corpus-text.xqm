@@ -1,3 +1,8 @@
+(:
+ : Module for handling the display of a pamphlet text for the public website.
+ :
+ : @author Mike Jones (mike.a.jones@bristol.ac.uk)
+ :)
 xquery version "3.1";
 
 module namespace mpese-text = 'http://mpese.rit.bris.ac.uk/corpus/text/';
@@ -10,63 +15,106 @@ import module namespace transform = 'http://exist-db.org/xquery/transform';
 import module namespace functx = 'http://www.functx.com' at 'functx-1.0.xql';
 import module namespace config = "http://mpese.rit.bris.ac.uk/config" at "config.xqm";
 
-(: title of the text or 'untitled' :)
-declare function mpese-text:title($text) {
-    let $title := fn:doc($text)/tei:TEI/tei:teiHeader/tei:fileDesc/tei:titleStmt/tei:title/text()
+(:~
+ :   Provide the title of the text (with date) or 'untitled'.
+ :
+ :  @param $doc      the TEI/XML document.
+ :  @return the title of the text of 'untitled'
+ :)
+declare function mpese-text:title($doc as element()) as xs:string {
+
+    let $tmp_title := $doc//tei:fileDesc/tei:titleStmt/tei:title/string()
+    let $tmp_date := $doc//tei:profileDesc/tei:creation/tei:date[1]/string()
+    let $title := ( if (fn:string-length($tmp_title) > 0) then $tmp_title else fn:string('Untitled') )
+    let $date  := ( if (fn:string-length($tmp_date) > 0) then $tmp_date else fn:string('No date') )
     return
-        if (not(functx:all-whitespace($title))) then
-            $title
-        else
-            fn:string('Untitled')
+        concat($title, ' (', $date, ')')
 };
 
-
-declare function mpese-text:authors($text) {
-    fn:doc($text)//tei:fileDesc/tei:titleStmt/tei:author[@role != 'signatory']
+(:~
+ :  The list of authors associated with a text.
+ :  Note: some might be signatories and not actually authors.
+ :
+ :  @param $doc      the TEI/XML document.
+ :  @return a list of author elements.
+ :)
+declare function mpese-text:authors($doc as element()) as element()* {
+    $doc//tei:fileDesc/tei:titleStmt/tei:author
 };
 
-(: mss details ... follow the yellow brick road :)
-declare function mpese-text:mss-details-include($include) {
+(:~
+ :  We use an Xinclude to link a text to its MSS. This method constructs
+ :  the URI of the MSS document.
+ :
+ :  @param $include     the Xinclude element with details of the MS.
+ :)
+declare function mpese-text:mss-details-uri($include as element()?) as xs:string {
 
     (: get the path and id :)
     let $include_url := $include/@href/string()
-    let $include_id := $include/@xpointer/string()
 
-    (: get the full path for the mss :)
-    let $mss := if (fn:starts-with($include_url, '../')) then fn:substring($include_url, 3) else $include_url
-    let $mss_full := concat($config:mpese-tei-corpus, $mss)
-
-    (: return the node :)
     return
-        doc($mss_full)//*[@xml:id=$include_id]
+        if (boolean($include_url) eq false()) then
+            ""
+    else
+        (: get the full path for the mss :)
+        let $mss := if (fn:starts-with($include_url, '../')) then fn:substring($include_url, 3) else $include_url
+        let $mss_full := concat($config:mpese-tei-corpus, $mss)
+
+        return $mss_full
 };
 
-(: mss details ... follow the yellow brick road :)
-declare function mpese-text:mss-details($text) {
+(:~
+ :  We use an Xinclude to link a text to its MSS. This method pulls the
+ :  MSS details we are interested.
+ :
+ :  @param $include     the Xinclude element with details of the MS.
+ :)
+declare function mpese-text:mss-details-include($include as element()?) as element()? {
+
+    (: get the URI of the MSS :)
+    let $mss_full := mpese-text:mss-details-uri($include)
+
+    (: get the id :)
+    let $include_id := $include/@xpointer/string()
+
+    return
+
+        if (boolean($mss_full) and boolean($include_id)) then
+            doc($mss_full)//*[@xml:id=$include_id]
+        else
+            ()
+};
+
+(:~
+ : Get the MSS details for the TEI document.
+ :
+ :  @param $doc      the TEI/XML document.
+ :)
+declare function mpese-text:mss-details($doc) {
 
     (: get the include :)
-    let $include := doc($text)//tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:msDesc/xi:include
+    let $include := $doc//tei:sourceDesc/tei:msDesc/xi:include
 
     return
         mpese-text:mss-details-include($include)
 };
 
 (: text type keywords :)
-declare function mpese-text:keywords-text-type($text) {
-    fn:doc($text)/tei:TEI/tei:teiHeader/tei:profileDesc/tei:textClass/tei:keywords[@n='text-type']/tei:term
+declare function mpese-text:keywords-text-type($doc) {
+    $doc//tei:profileDesc/tei:textClass/tei:keywords[@n='text-type']/tei:term
 };
 
 (: text type keywords :)
-declare function mpese-text:keywords-topic($text) {
-    fn:doc($text)/tei:TEI/tei:teiHeader/tei:profileDesc/tei:textClass/tei:keywords[@n='topic-keyword']/tei:term
+declare function mpese-text:keywords-topic($doc) {
+    $doc//tei:profileDesc/tei:textClass/tei:keywords[@n='topic-keyword']/tei:term
 };
 
 (: display the text (delegate to an xsl file) :)
 declare function mpese-text:text-body($text) {
-    let $input := doc($text)
     let $xsl := doc('corpus-text-html.xsl')
     return
-        transform:transform($input, $xsl, ())
+        transform:transform($text, $xsl, ())
 };
 
 (: ---------- HELPER FUNCTIONS FOR RENDERING CONTENT ----------- :)
@@ -82,62 +130,97 @@ declare function mpese-text:person($person) {
             fn:normalize-space($person/string())
 };
 
-(: authors of a text :)
-declare function mpese-text:author-label($file) {
-    let $authors := mpese-text:authors($file)
+(:
+:~
+ : Recursive function to create a formatted string of authors for a text.
+ :
+ : @param $label - the current label
+ : @param $authors - the current sequence of authors.
+ : @returns a formatted label of authors.
+:)
+declare function mpese-text:author-label-r($label as xs:string, $authors as node()*) as xs:string {
+
     let $auth_count := fn:count($authors)
     return
-        if ($auth_count > 0) then
-            if ($auth_count > 1) then
-                for $author at $pos in $authors
-                    return
-                        if ($pos eq $auth_count) then
-                            concat(' and ',  mpese-text:person($author), ', ')
-                        else
-                            concat(mpese-text:person($author), ', ')
-            else
-                if (fn:string-length($authors[1]/string()) > 0) then
-                    concat(mpese-text:person($authors[1]), ', ')
-                else
-                    ""
+        if ($auth_count eq 1) then
+            $label || functx:trim($authors[1]/string())
+        else if ($auth_count eq 2) then
+            let $tmp_label := $label || functx:trim($authors[1]/string()) || ', and '
+            let $tmp_authors := fn:subsequence($authors, 2)
+            return
+                mpese-text:author-label-r($tmp_label, $tmp_authors)
         else
-            ""
+            let $tmp_label := $label || functx:trim($authors[1]/string()) || ', '
+            let $tmp_authors := fn:subsequence($authors, 2)
+            return
+                mpese-text:author-label-r($tmp_label, $tmp_authors)
 };
 
-declare function mpese-text:mss-details-label($text) {
-    let $mss := mpese-text:mss-details
-    return
-        concat($mss/tei:repository/string())
+
+(:
+:~
+ : Entry point for the recursive function to create a formatted string of authors for a text.
+ :
+ : @param $authors - the current sequence of authors.
+ : @returns a formatted label of authors.
+:)
+declare function mpese-text:author-label($authors) {
+    mpese-text:author-label-r("", $authors)
+};
+
+declare function mpese-text:mss-details-label($mss) {
+    if (count($mss/*) > 0) then
+        concat($mss/tei:repository, ', ', $mss/tei:collection, ', ', $mss/tei:idno)
+    else
+        "No manuscript details."
 };
 
 (: ---------- TEMPLATE FUNCTIONS ----------- :)
 
-(: adds the full URI of the text to the map so that it can be used by following functions  -
- : the $text variable is passed in via the controller; it generates it from the requested
- : URL, which includes the name of the file :)
+(: Adds the full URI of the text and the basic details about the manuscript to the model, so that it can be
+   used by subsequent calls :)
 declare function mpese-text:text($node as node (), $model as map (*), $text as xs:string) {
-    map { "text" := concat($config:mpese-tei-corpus-texts, '/', $text) }
+
+    let $doc := doc(concat($config:mpese-tei-corpus-texts, '/', $text))//tei:TEI
+    let $mss := mpese-text:mss-details($doc)
+    return
+        map { "text" := $doc, "mss" := $mss}
 };
 
 (: author and title :)
 declare %templates:wrap function mpese-text:author-title($node as node (), $model as map (*), $text as xs:string) {
-    (mpese-text:author-label($model('text')), '&apos;', mpese-text:title($model('text')), '&apos;')
+
+    let $authors := mpese-text:authors($model('text'))
+    return
+        (mpese-text:author-label($authors), '&apos;', mpese-text:title($model('text')), '&apos;')
 };
 
-(: mss details :)
+(: basic mss details :)
+declare %templates:wrap function mpese-text:mss($node as node (), $model as map (*), $text as xs:string) {
+
+    mpese-text:mss-details-label($model('mss'))
+};
+
+(: mss name :)
+declare function mpese-text:mss-name($node as node (), $model as map (*)) {
+    if (not(functx:has-empty-content($model('mss')//tei:msName))) then
+        <p>{$model('mss')//tei:msName/string()}</p>
+    else
+        ""
+};
 
 
 (: the image :)
 declare function mpese-text:image($node as node (), $model as map (*), $text as xs:string) {
-    let $images := fn:doc($model('text'))//tei:pb[@facs]/@facs/string()
+    let $images := $model('text')//tei:pb[@facs]/@facs/string()
     let $distinct := fn:string-join(distinct-values($images), ';')
     return
         if ($distinct) then
             <div id='mss-images' data-images="{$distinct}">
-                <div id="openseadragon" style="width: 800px; height: 600px"></div>
+                <div id="openseadragon"></div>
             </div>
         else
-            <div><p>No image</p></div>
+            <div class="well well-lg"><p class="text-center font-weight-bold">No image</p></div>
 };
 
 (: the transcript :)
