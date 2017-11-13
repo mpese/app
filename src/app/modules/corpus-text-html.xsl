@@ -16,7 +16,7 @@
     </xsl:template>
 
     <xsl:template match="tei:text">
-        <xsl:apply-templates/>
+        <div id="mpese-text-body"><xsl:apply-templates/></div>
     </xsl:template>
 
     <xsl:template match="tei:body">

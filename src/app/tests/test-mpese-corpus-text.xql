@@ -9,7 +9,7 @@ declare namespace xi = 'http://www.w3.org/2001/XInclude';
 import module namespace mpese-text = 'http://mpese.rit.bris.ac.uk/corpus/text/'  at '../modules/mpese-corpus-text.xqm';
 
 (: Test title with all details available :)
-declare %test:assertEquals("Letters to the Heads of Cambridge Colleges (June 1626)") function test-text:result-title() {
+declare %test:assertEquals("Letters to the Heads of Cambridge Colleges (June 1626)") function test-text:title-with-data() {
 
     let $doc := <tei:TEI>
                     <tei:teiHeader>
@@ -190,25 +190,126 @@ declare %test:assertXPath("$result//*:idno/string() eq 'MS 35331'") function tes
         mpese-text:mss-details($doc)
 };
 
-(: Test the formatting of with 1 author :)
-declare %test:assertEquals("George Abbot") function test-text:label-one-author() {
-    let $authors := <author>George Abbot</author>
+(: test querying for text-type keywords :)
+declare %test:assertXPath("fn:count($result) eq 1") function test-text:keywords-text-type() {
+    let $doc := <tei:TEI>
+                    <tei:teiHeader>
+                        <tei:profileDesc>
+                            <tei:textClass>
+                                <tei:keywords n="text-type">
+                                    <tei:term>legal argument</tei:term>
+                                </tei:keywords>
+                            </tei:textClass>
+                        </tei:profileDesc>
+                    </tei:teiHeader>
+                </tei:TEI>
+
     return
-        mpese-text:author-label($authors)
+        mpese-text:keywords-text-type($doc)
+};
+
+(: text querying for topic keywords :)
+declare %test:assertXPath("fn:count($result) eq 2") function test-text:keywords-topic() {
+    let $doc := <tei:TEI>
+                    <tei:teiHeader>
+                      <tei:profileDesc>
+                         <tei:textClass>
+                            <tei:keywords n="topic-keyword">
+                               <tei:term>habeas corpus</tei:term>
+                               <tei:term>bail</tei:term>
+                            </tei:keywords>
+                         </tei:textClass>
+                      </tei:profileDesc>
+                   </tei:teiHeader>
+                </tei:TEI>
+
+    return
+        mpese-text:keywords-topic($doc)
+};
+
+(: check the transform; just check we have multple p tags :)
+declare %test:assertXPath("count($result//p) > 0") function test-text:text-body() {
+
+    let $doc := doc('/db/mpese/tei/corpus/texts/HabeasCorpus1627.xml')
+
+    return
+        mpese-text:text-body($doc)
+};
+
+
+(: Test the formatting of with 1 author :)
+declare %test:assertXPath("fn:count($result//a[@href]) eq 1") function test-text:label-one-author() {
+    let $authors := <tei:author corresp="../people/people.xml#P0001">George Abbot</tei:author>
+    return
+        mpese-text:author-label($authors, true())
+};
+
+(: Test the formatting of with 1 author - no link :)
+declare %test:assertXPath("fn:count($result//a[@href]) eq 1")
+%test:assertXPath("fn:count($result//span) eq 1")
+function test-text:label-one-author-no-link() {
+    let $authors := <tei:author corresp="../people/people.xml#P0001">George Abbot</tei:author>
+    return
+        mpese-text:author-label($authors, true())
 };
 
 (: Test the formatting of with 2 authors :)
-declare %test:assertEquals("George Abbot, and James VI/I") function test-text:label-two-authors() {
-    let $authors := (<author>George Abbot</author>,<author>James VI/I</author>)
+declare %test:assertXPath("fn:count($result//a[@href]) eq 2") function test-text:label-two-authors() {
+    let $authors := (<tei:author  corresp="../people/people.xml#P0001">George Abbot</tei:author>,
+        <tei:author corresp="../people/people.xml#P0002">James VI/I</tei:author>)
     return
-        mpese-text:author-label($authors)
+        mpese-text:author-label($authors, true())
+};
+
+(: Test the formatting of with 2 authors - no link :)
+declare %test:assertXPath("fn:count($result//a[@href]) eq 0") %test:assertXPath("fn:count($result//span) eq 2")
+function test-text:label-two-authors-no-link() {
+    let $authors := (<tei:author  corresp="../people/people.xml#P0001">George Abbot</tei:author>,
+        <tei:author corresp="../people/people.xml#P0002">James VI/I</tei:author>)
+    return
+        mpese-text:author-label($authors, false())
 };
 
 (: Test the formatting of with 3 authors :)
-declare %test:assertEquals("Charles I, Thomas Howard, 1st Earl of Berkshire, and George Villiers, 1st Duke of Buckingham")
+declare %test:assertXPath("fn:count($result//a[@href]) eq 3") %test:assertXPath("fn:count($result//span) eq 3")
 function test-text:label-many-authors() {
-    let $authors := (<author>Charles I</author>, <author>Thomas Howard, 1st Earl of Berkshire</author>,
-                     <author>George Villiers, 1st Duke of Buckingham</author>)
+    let $authors := (<tei:author corresp="../people/people.xml#P0001">Charles I</tei:author>,
+                     <tei:author corresp="../people/people.xml#P0002">Thomas Howard, 1st Earl of Berkshire</tei:author>,
+                     <tei:author corresp="../people/people.xml#P0003">George Villiers, 1st Duke of Buckingham</tei:author>)
     return
-        mpese-text:author-label($authors)
+        mpese-text:author-label($authors, true())
+};
+
+(: Test the formatting of with 3 authors - no linl:)
+declare %test:assertXPath("fn:count($result//a[@href]) eq 0") %test:assertXPath("fn:count($result//span) eq 3")
+function test-text:label-many-authors-no-link() {
+    let $authors := (<tei:author corresp="../people/people.xml#P0001">Charles I</tei:author>,
+                     <tei:author corresp="../people/people.xml#P0002">Thomas Howard, 1st Earl of Berkshire</tei:author>,
+                     <tei:author corresp="../people/people.xml#P0003">George Villiers, 1st Duke of Buckingham</tei:author>)
+    return
+        mpese-text:author-label($authors, false())
+};
+
+declare %test:assertXPath("fn:count($result//a[@href]) eq 1") function test-text:person-with-attr-link() {
+    let $person := <tei:author>
+                        <tei:persName corresp="../people/people.xml#P0026">Sir John Bramston the Elder</tei:persName>
+                   </tei:author>
+    return
+        mpese-text:person($person, true())
+};
+
+declare %test:assertXPath("fn:count($result//a[@href]) eq 0") function test-text:person-with-attr-no-link() {
+    let $person := <tei:author>
+                        <tei:persName corresp="../people/people.xml#P0026">Sir John Bramston the Elder</tei:persName>
+                   </tei:author>
+    return
+        mpese-text:person($person, false())
+};
+
+declare %test:assertXPath("fn:count($result//a[@href]) eq 0") function test-text:person-without-attr() {
+    let $person := <tei:author>
+                        <tei:persName>Sir John Bramston the Elder</tei:persName>
+                   </tei:author>
+    return
+        mpese-text:person($person, true())
 };

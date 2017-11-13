@@ -15,6 +15,9 @@ import module namespace transform = 'http://exist-db.org/xquery/transform';
 import module namespace functx = 'http://www.functx.com' at 'functx-1.0.xql';
 import module namespace config = "http://mpese.rit.bris.ac.uk/config" at "config.xqm";
 
+
+(: --------- Functions that return bits of XML ---------- :)
+
 (:~
  :   Provide the title of the text (with date) or 'untitled'.
  :
@@ -91,7 +94,7 @@ declare function mpese-text:mss-details-include($include as element()?) as eleme
  :
  :  @param $doc      the TEI/XML document.
  :)
-declare function mpese-text:mss-details($doc) {
+declare function mpese-text:mss-details($doc as element()?) as element()? {
 
     (: get the include :)
     let $include := $doc//tei:sourceDesc/tei:msDesc/xi:include
@@ -100,34 +103,46 @@ declare function mpese-text:mss-details($doc) {
         mpese-text:mss-details-include($include)
 };
 
-(: text type keywords :)
-declare function mpese-text:keywords-text-type($doc) {
+(:~
+ : Get the text types associated with a text.
+ :
+ :  @param $doc      the TEI/XML document.
+ :)
+declare function mpese-text:keywords-text-type($doc as element()) as element()* {
     $doc//tei:profileDesc/tei:textClass/tei:keywords[@n='text-type']/tei:term
 };
 
-(: text type keywords :)
-declare function mpese-text:keywords-topic($doc) {
+(:~
+ : Get the keywords associated with a text.
+ :
+ :  @param $doc      the TEI/XML document.
+ :)
+declare function mpese-text:keywords-topic($doc as element()) as element()* {
     $doc//tei:profileDesc/tei:textClass/tei:keywords[@n='topic-keyword']/tei:term
 };
 
-(: display the text (delegate to an xsl file) :)
-declare function mpese-text:text-body($text) {
+(:~
+ : Display the text (delegate to an xsl file)
+ :
+ :  @param $doc      the TEI/XML document.
+ :)
+declare function mpese-text:text-body($doc as node()) as node()* {
     let $xsl := doc('corpus-text-html.xsl')
     return
-        transform:transform($text, $xsl, ())
+        transform:transform($doc, $xsl, ())
 };
 
-(: ---------- HELPER FUNCTIONS FOR RENDERING CONTENT ----------- :)
+(: ---------- Functions to help render content  ----------- :)
 
 (: get a person and link to their details :)
-declare function mpese-text:person($person) {
+declare function mpese-text:person($person, $show_link as xs:boolean) {
     let $corresp := $person//@corresp/string()
     return
-        if (fn:string-length($corresp) > 0) then
+        if (fn:string-length($corresp) > 0 and $show_link eq true()) then
             let $id := fn:tokenize($corresp, '#')[2]
-            return fn:normalize-space($person/string())
+            return <span class="mpese-person"><a href="../people/{$id}/">{fn:normalize-space($person/string())}</a></span>
         else
-            fn:normalize-space($person/string())
+            <span class="mpese-person">{fn:normalize-space($person/string())}</span>
 };
 
 (:
@@ -138,22 +153,22 @@ declare function mpese-text:person($person) {
  : @param $authors - the current sequence of authors.
  : @returns a formatted label of authors.
 :)
-declare function mpese-text:author-label-r($label as xs:string, $authors as node()*) as xs:string {
+declare function mpese-text:author-label-r($label as node()*, $authors as node()*, $show_link as xs:boolean) {
 
     let $auth_count := fn:count($authors)
     return
         if ($auth_count eq 1) then
-            $label || functx:trim($authors[1]/string())
+            ($label, mpese-text:person($authors[1], $show_link))
         else if ($auth_count eq 2) then
-            let $tmp_label := $label || functx:trim($authors[1]/string()) || ', and '
+            let $tmp_label := ($label, mpese-text:person($authors[1], $show_link) , text{', and '})
             let $tmp_authors := fn:subsequence($authors, 2)
             return
-                mpese-text:author-label-r($tmp_label, $tmp_authors)
+                mpese-text:author-label-r($tmp_label, $tmp_authors, $show_link)
         else
-            let $tmp_label := $label || functx:trim($authors[1]/string()) || ', '
+            let $tmp_label := ($label, mpese-text:person($authors[1], $show_link), text{', '})
             let $tmp_authors := fn:subsequence($authors, 2)
             return
-                mpese-text:author-label-r($tmp_label, $tmp_authors)
+                mpese-text:author-label-r($tmp_label, $tmp_authors, $show_link)
 };
 
 
@@ -165,8 +180,13 @@ declare function mpese-text:author-label-r($label as xs:string, $authors as node
  : @returns a formatted label of authors.
 :)
 declare function mpese-text:author-label($authors) {
-    mpese-text:author-label-r("", $authors)
+    <div class="mpese-author-list">{mpese-text:author-label-r((), $authors, false())}</div>
 };
+
+declare function mpese-text:author-label($authors, $show_link as xs:boolean) {
+    <div class="mpese-author-list">{mpese-text:author-label-r((), $authors, $show_link)}</div>
+};
+
 
 declare function mpese-text:mss-details-label($mss) {
     if (count($mss/*) > 0) then
