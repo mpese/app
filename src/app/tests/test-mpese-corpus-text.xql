@@ -313,3 +313,97 @@ declare %test:assertXPath("fn:count($result//a[@href]) eq 0") function test-text
     return
         mpese-text:person($person, true())
 };
+
+declare %test:assertEquals('British Library, Additional, MS 35331')function test-text:mss-details-label() {
+    let $mss := <tei:msIdentifier xml:id="BL_Add_MS_35331">
+                    <tei:country>United Kingdom</tei:country>
+                    <tei:settlement>London</tei:settlement>
+                    <tei:repository>British Library</tei:repository>
+                    <tei:collection>Additional</tei:collection>
+                    <tei:idno>MS 35331</tei:idno>
+                    <tei:msName>Diary of Walter Yonge</tei:msName>
+                 </tei:msIdentifier>
+    return
+        mpese-text:mss-details-label($mss)
+};
+
+
+declare %test:assertEquals('No manuscript details.')function test-text:mss-details-label-empty() {
+    mpese-text:mss-details-label(())
+};
+
+
+(: Check we get the text and mss and add it to the model:)
+declare %test:assertXPath("count($result?text//*:title) > 0")
+        %test:assertXPath("$result?mss//*:idno eq 'MS 35331'") function test-text:text() {
+
+    let $node := <test></test>
+    let $model := map {}
+    let $text := 'HabeasCorpus1627.xml'
+
+    return mpese-text:text($node, $model, $text)
+
+};
+
+(: check expected sample data in the author and title :)
+declare %test:assertXPath("contains($result/string(), 'Sir John Bramston the Elder') eq true()")
+        %test:assertXPath("contains($result/string(), 'The Arguments Made in the Greate Case of Habeas Corpus (22 November 1627)') eq true()")
+function test-text:author-title() {
+
+    let $node := <test></test>
+    let $model := map {}
+    let $text := 'HabeasCorpus1627.xml'
+    let $map := mpese-text:text($node, $model, $text)
+    return
+        mpese-text:author-title($node, $map)
+};
+
+(: check expected sample data manuscript details :)
+declare %test:assertXPath("contains($result/string(), 'British Library, Additional, MS 35331') eq true()")
+function test-text:mss() {
+
+    let $node := <test></test>
+    let $model := map {}
+    let $text := 'HabeasCorpus1627.xml'
+    let $map := mpese-text:text($node, $model, $text)
+    return
+        mpese-text:mss($node, $map)
+};
+
+(: check expected sample data in mss name :)
+declare %test:assertXPath("contains($result/string(), 'Diary of Walter Yonge') eq true()")
+function test-text:mss-name() {
+
+    let $node := <test></test>
+    let $model := map {}
+    let $text := 'HabeasCorpus1627.xml'
+    let $map := mpese-text:text($node, $model, $text)
+    return
+        mpese-text:mss-name($node, $map)
+};
+
+
+
+(: check expected sample data in mss name :)
+declare %test:assertXPath("count($result//div) > 0")
+function test-text:image() {
+
+    let $node := <test></test>
+    let $model := map {}
+    let $text := 'HabeasCorpus1627.xml'
+    let $map := mpese-text:text($node, $model, $text)
+    return
+        mpese-text:image($node, $map)
+};
+
+(: check sample data on the output :)
+declare %test:assertXPath("count($result//p) > 0")
+function test-text:transcript() {
+
+    let $node := <test></test>
+    let $model := map {}
+    let $text := 'HabeasCorpus1627.xml'
+    let $map := mpese-text:text($node, $model, $text)
+    return
+        mpese-text:transcript($node, $map)
+};

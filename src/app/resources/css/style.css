@@ -124,3 +124,7 @@ div#openseadragon {
         overflow-y: scroll;
     }
 }
+
+span.mpese-author-list {
+    display: inline;
+}

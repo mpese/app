@@ -71,7 +71,8 @@ declare function mpese-text:mss-details-uri($include as element()?) as xs:string
  :  We use an Xinclude to link a text to its MSS. This method pulls the
  :  MSS details we are interested.
  :
- :  @param $include     the Xinclude element with details of the MS.
+ : @param $include     the Xinclude element with details of the MS.
+ : @return the <msIdentifier/> of a MSS a text is derived, via an xinclude in the text.
  :)
 declare function mpese-text:mss-details-include($include as element()?) as element()? {
 
@@ -92,7 +93,8 @@ declare function mpese-text:mss-details-include($include as element()?) as eleme
 (:~
  : Get the MSS details for the TEI document.
  :
- :  @param $doc      the TEI/XML document.
+ : @param $doc      the TEI/XML document.
+ : @return the <msIdentifier/> of the MSS the text is derived.
  :)
 declare function mpese-text:mss-details($doc as element()?) as element()? {
 
@@ -106,7 +108,8 @@ declare function mpese-text:mss-details($doc as element()?) as element()? {
 (:~
  : Get the text types associated with a text.
  :
- :  @param $doc      the TEI/XML document.
+ : @param $doc      the TEI/XML document.
+ : @return the text types for a text
  :)
 declare function mpese-text:keywords-text-type($doc as element()) as element()* {
     $doc//tei:profileDesc/tei:textClass/tei:keywords[@n='text-type']/tei:term
@@ -115,7 +118,8 @@ declare function mpese-text:keywords-text-type($doc as element()) as element()* 
 (:~
  : Get the keywords associated with a text.
  :
- :  @param $doc      the TEI/XML document.
+ : @param $doc      the TEI/XML document.
+ : @return the keywords for a text
  :)
 declare function mpese-text:keywords-topic($doc as element()) as element()* {
     $doc//tei:profileDesc/tei:textClass/tei:keywords[@n='topic-keyword']/tei:term
@@ -125,6 +129,7 @@ declare function mpese-text:keywords-topic($doc as element()) as element()* {
  : Display the text (delegate to an xsl file)
  :
  :  @param $doc      the TEI/XML document.
+ :  @return the transcript marked up as HTML
  :)
 declare function mpese-text:text-body($doc as node()) as node()* {
     let $xsl := doc('corpus-text-html.xsl')
@@ -134,7 +139,13 @@ declare function mpese-text:text-body($doc as node()) as node()* {
 
 (: ---------- Functions to help render content  ----------- :)
 
-(: get a person and link to their details :)
+(:~
+ : Get a person and link to their details (if required)
+ :
+ : @param $person       person details
+ : @param $show_link    show a link?
+ : @return a span tag with the person's name and an optional link to theie details.
+ :)
 declare function mpese-text:person($person, $show_link as xs:boolean) {
     let $corresp := $person//@corresp/string()
     return
@@ -145,14 +156,13 @@ declare function mpese-text:person($person, $show_link as xs:boolean) {
             <span class="mpese-person">{fn:normalize-space($person/string())}</span>
 };
 
-(:
-:~
+(:~
  : Recursive function to create a formatted string of authors for a text.
  :
- : @param $label - the current label
- : @param $authors - the current sequence of authors.
- : @returns a formatted label of authors.
-:)
+ : @param $label        the current label
+ : @param $authors      the current sequence of authors.
+ : @return a formatted label of authors.
+ :)
 declare function mpese-text:author-label-r($label as node()*, $authors as node()*, $show_link as xs:boolean) {
 
     let $auth_count := fn:count($authors)
@@ -172,33 +182,53 @@ declare function mpese-text:author-label-r($label as node()*, $authors as node()
 };
 
 
-(:
-:~
+(:~
  : Entry point for the recursive function to create a formatted string of authors for a text.
+ : Don't show links to the people details.
  :
- : @param $authors - the current sequence of authors.
- : @returns a formatted label of authors.
+ : @param $authors      the current sequence of authors.
+ : @return a formatted label of authors.
+ :)
+declare function mpese-text:author-label($authors as element()*) as element() {
+    <span class="mpese-author-list">{mpese-text:author-label-r((), $authors, false())}</span>
+};
+
+(:~
+ : Entry point for the recursive function to create a formatted string of authors for a text.
+ : Option to show links to the people details.
+ :
+ : @param $authors      the current sequence of authors.
+ : @param $show_link    show a URL to the person details?
+ : @return a formatted label of authors.
 :)
-declare function mpese-text:author-label($authors) {
-    <div class="mpese-author-list">{mpese-text:author-label-r((), $authors, false())}</div>
-};
-
-declare function mpese-text:author-label($authors, $show_link as xs:boolean) {
-    <div class="mpese-author-list">{mpese-text:author-label-r((), $authors, $show_link)}</div>
+declare function mpese-text:author-label($authors as element()*, $show_link as xs:boolean) as element() {
+    <span class="mpese-author-list">{mpese-text:author-label-r((), $authors, $show_link)}</span>
 };
 
 
-declare function mpese-text:mss-details-label($mss) {
+(:~
+ : Create a label for the MSS that a tex comes from.
+ : @param $mss  the <msIdentifier/> element from the MSS.
+ : @return a string representing the MSS details
+ :)
+declare function mpese-text:mss-details-label($mss as element()?) as xs:string {
     if (count($mss/*) > 0) then
-        concat($mss/tei:repository, ', ', $mss/tei:collection, ', ', $mss/tei:idno)
+        $mss/tei:repository || ', ' || $mss/tei:collection || ', ' || $mss/tei:idno
     else
         "No manuscript details."
 };
 
 (: ---------- TEMPLATE FUNCTIONS ----------- :)
 
-(: Adds the full URI of the text and the basic details about the manuscript to the model, so that it can be
-   used by subsequent calls :)
+(:~
+ : Adds the full URI of the text and the basic details about the manuscript to the model,
+ : so that it can be used by subsequent calls
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @param $text     filename of the TEI/XML document
+ : @return a map with the TEI/XML of the text and an <msIdentifier/> fragment
+ :)
 declare function mpese-text:text($node as node (), $model as map (*), $text as xs:string) {
 
     let $doc := doc(concat($config:mpese-tei-corpus-texts, '/', $text))//tei:TEI
@@ -207,21 +237,40 @@ declare function mpese-text:text($node as node (), $model as map (*), $text as x
         map { "text" := $doc, "mss" := $mss}
 };
 
-(: author and title :)
-declare %templates:wrap function mpese-text:author-title($node as node (), $model as map (*), $text as xs:string) {
+(:~
+ : Display the author and title of the text.
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @return a the authors and title.
+ :)
+declare function mpese-text:author-title($node as node (), $model as map (*)) {
 
+    (: get the authors :)
     let $authors := mpese-text:authors($model('text'))
     return
-        (mpese-text:author-label($authors), '&apos;', mpese-text:title($model('text')), '&apos;')
+        <h2>{(mpese-text:author-label($authors), text{' &apos;'}, mpese-text:title($model('text')), text{'&apos;'})}</h2>
 };
 
-(: basic mss details :)
-declare %templates:wrap function mpese-text:mss($node as node (), $model as map (*), $text as xs:string) {
+(:~
+ : Display basic mss details
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @return the details of the manuscript
+ :)
+declare function mpese-text:mss($node as node (), $model as map (*)) {
 
-    mpese-text:mss-details-label($model('mss'))
+    <p>{mpese-text:mss-details-label($model('mss'))}</p>
 };
 
-(: mss name :)
+(:~
+ : Display the mss name
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @return the name of the manuscript
+ :)
 declare function mpese-text:mss-name($node as node (), $model as map (*)) {
     if (not(functx:has-empty-content($model('mss')//tei:msName))) then
         <p>{$model('mss')//tei:msName/string()}</p>
@@ -230,8 +279,14 @@ declare function mpese-text:mss-name($node as node (), $model as map (*)) {
 };
 
 
-(: the image :)
-declare function mpese-text:image($node as node (), $model as map (*), $text as xs:string) {
+(:~
+ : Display the tags needed for the OpenSeaDragon viewer.
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @return HTML for the viewer or a 'No image' message
+ :)
+declare function mpese-text:image($node as node (), $model as map (*)) {
     let $images := $model('text')//tei:pb[@facs]/@facs/string()
     let $distinct := fn:string-join(distinct-values($images), ';')
     return
@@ -243,7 +298,13 @@ declare function mpese-text:image($node as node (), $model as map (*), $text as 
             <div class="well well-lg"><p class="text-center font-weight-bold">No image</p></div>
 };
 
-(: the transcript :)
-declare function mpese-text:transcript($node as node (), $model as map (*), $text as xs:string) {
+(:~
+ : Display the transcript
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @return the transcript as HTML
+ :)
+declare function mpese-text:transcript($node as node (), $model as map (*)) {
     mpese-text:text-body($model('text'))
 };
