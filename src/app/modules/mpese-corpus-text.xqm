@@ -221,7 +221,7 @@ declare function mpese-text:mss-details-label($mss as element()?) as xs:string {
 (: ---------- TEMPLATE FUNCTIONS ----------- :)
 
 (:~
- : Adds the full URI of the text and the basic details about the manuscript to the model,
+ : Adds the text document and the basic details about the manuscript to the model,
  : so that it can be used by subsequent calls
  :
  : @param $node     the HTML node being processes
