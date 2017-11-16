@@ -47,10 +47,10 @@ declare function dashboard-text:mss-details($node as node()) {
 };
 
 (: Get the <msIdentifier/> for the witnesses by following xincludes under the <listBibl xml:id="witness"/> element :)
-declare function dashboard-text:witnesses-includes($uri as xs:string)  {
+declare function dashboard-text:witnesses-includes($doc)  {
 
     (: find the include nodes :)
-    let $witnesses := fn:doc($uri)//tei:listBibl[@xml:id='mss_witness']/tei:bibl/xi:include
+    let $witnesses := $doc//tei:listBibl[@xml:id='mss_witness']/tei:bibl/xi:include
 
     (: follow each include to get the manuscript details :)
     for $include in $witnesses
@@ -69,10 +69,10 @@ declare function dashboard-text:witnesses-includes($uri as xs:string)  {
 };
 
 
-declare function dashboard-text:mss-identifier($file as xs:string) {
+declare function dashboard-text:mss-identifier($file) {
 
     (: get the include :)
-    let $include := doc($file)//tei:TEI/tei:teiHeader/tei:fileDesc/tei:sourceDesc/tei:msDesc/xi:include
+    let $include := $file//tei:fileDesc/tei:sourceDesc/tei:msDesc/xi:include
 
     (: get the path and id :)
     let $include_url := $include/@href/string()
@@ -127,7 +127,10 @@ declare function dashboard-text:author-label($file) {
  : the $mss variable is passed in via the controller; it generates it from the requested
  : URL, which includes the name of the file :)
 declare function dashboard-text:find-text($node as node (), $model as map (*), $text as xs:string) {
-    map { "text" := concat($config:mpese-tei-corpus-texts, '/', $text) }
+    let $doc := doc(concat($config:mpese-tei-corpus-texts, '/', $text))//tei:TEI
+    let $mss := mpese-text:mss-details($doc)
+    return
+        map { "text" := $doc, "mss" := $mss}
 };
 
 (: title of the text :)
