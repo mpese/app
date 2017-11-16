@@ -3,6 +3,7 @@
 
     <!-- the properties file -->
     <property file="build.properties"/>
+    <property file="version."
 
     <!-- classpath with eXist jars -->
     <path id="classpath.core">
@@ -62,6 +63,15 @@
                     <propertyref name="deploy_output"/>
                 </propertyset>
             </echoproperties> 
+    </target>
+
+
+    <target name="build">
+        <copy todir="ant-build">
+            <fileset dir="src/app">
+                <exclude name="**/*.bak"/>
+            </fileset>
+        </copy>
     </target>
 
 </project>
