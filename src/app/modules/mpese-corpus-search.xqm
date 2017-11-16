@@ -11,6 +11,7 @@ import module namespace xmldb = 'http://exist-db.org/xquery/xmldb';
 import module namespace functx = 'http://www.functx.com' at 'functx-1.0.xql';
 import module namespace config = 'http://mpese.rit.bris.ac.uk/config' at 'config.xqm';
 import module namespace mpese-text = 'http://mpese.rit.bris.ac.uk/corpus/text/' at 'mpese-corpus-text.xqm';
+import module namespace mpese-mss = 'http://mpese.rit.bris.ac.uk/corpus/mss/' at 'mpese-corpus-mss.xqm';
 import module namespace utils = "http://mpese.rit.bris.ac.uk/utils/" at 'utils.xql';
 
 
@@ -193,7 +194,7 @@ declare function mpese-search:all($page as xs:integer, $num as xs:integer)  {
                 let $title := mpese-text:title($item)
                 let $authors := mpese-text:authors($item)
                 let $mss := mpese-text:mss-details($item)
-                let $mss-label := mpese-text:mss-details-label($mss)
+                let $mss-label := mpese-mss:ident-label($mss)
                 let $author-label := mpese-text:author-label($authors)
                 let $text := doc($uri)//tei:text[1]/tei:body/tei:p[1]/string()
                 let $link := './t/' || $name || '.html'
@@ -240,7 +241,7 @@ declare function mpese-search:everything($page as xs:integer, $num as xs:integer
                 let $title := mpese-text:title($item)
                 let $authors :=  mpese-text:authors($item)
                 let $mss := mpese-text:mss-details($item)
-                let $mss-label := mpese-text:mss-details-label($mss)
+                let $mss-label := mpese-mss:ident-label($mss)
                 let $author-label := mpese-text:author-label($authors)
                 let $link := './t/' || $name || '.html'
                 let $snippet := mpese-search:matches($item)

@@ -14,6 +14,8 @@ import module namespace templates = "http://exist-db.org/xquery/templates";
 import module namespace transform = 'http://exist-db.org/xquery/transform';
 import module namespace functx = 'http://www.functx.com' at 'functx-1.0.xql';
 import module namespace config = "http://mpese.rit.bris.ac.uk/config" at "config.xqm";
+import module namespace mpese-mss = 'http://mpese.rit.bris.ac.uk/corpus/mss/' at 'mpese-corpus-mss.xqm';
+import module namespace utils = 'http://mpese.rit.bris.ac.uk/utils/' at 'utils.xql';
 
 
 (: --------- Functions that return bits of XML ---------- :)
@@ -206,18 +208,6 @@ declare function mpese-text:author-label($authors as element()*, $show_link as x
 };
 
 
-(:~
- : Create a label for the MSS that a tex comes from.
- : @param $mss  the <msIdentifier/> element from the MSS.
- : @return a string representing the MSS details
- :)
-declare function mpese-text:mss-details-label($mss as element()?) as xs:string {
-    if (count($mss/*) > 0) then
-        $mss/tei:repository || ', ' || $mss/tei:collection || ', ' || $mss/tei:idno
-    else
-        "No manuscript details."
-};
-
 (: ---------- TEMPLATE FUNCTIONS ----------- :)
 
 (:~
@@ -253,15 +243,18 @@ declare function mpese-text:author-title($node as node (), $model as map (*)) {
 };
 
 (:~
- : Display basic mss details
+ : Display basic mss details with link to MSS.
  :
  : @param $node     the HTML node being processes
  : @param $model    application data
  : @return the details of the manuscript
  :)
 declare function mpese-text:mss($node as node (), $model as map (*)) {
-
-    <p>{mpese-text:mss-details-label($model('mss'))}</p>
+    let $mss := $model('mss')
+    let $mss_doc := base-uri($mss)
+    let $name := utils:name-from-uri($mss_doc)
+    return
+        <p><a href="../m/{$name}.html">{mpese-mss:ident-label($mss)}</a></p>
 };
 
 (:~

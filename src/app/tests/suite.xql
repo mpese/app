@@ -8,6 +8,7 @@ import module namespace test-text = "http://mpese.ac.uk/corpus/text/test/" at "t
 test:suite(
     (
         inspect:module-functions(xs:anyURI("test-mpese-corpus-search.xql")),
-        inspect:module-functions(xs:anyURI("test-mpese-corpus-text.xql"))
+        inspect:module-functions(xs:anyURI("test-mpese-corpus-text.xql")),
+        inspect:module-functions(xs:anyURI("test-mpese-corpus-mss.xql"))
     )
 )

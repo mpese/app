@@ -314,25 +314,6 @@ declare %test:assertXPath("fn:count($result//a[@href]) eq 0") function test-text
         mpese-text:person($person, true())
 };
 
-declare %test:assertEquals('British Library, Additional, MS 35331')function test-text:mss-details-label() {
-    let $mss := <tei:msIdentifier xml:id="BL_Add_MS_35331">
-                    <tei:country>United Kingdom</tei:country>
-                    <tei:settlement>London</tei:settlement>
-                    <tei:repository>British Library</tei:repository>
-                    <tei:collection>Additional</tei:collection>
-                    <tei:idno>MS 35331</tei:idno>
-                    <tei:msName>Diary of Walter Yonge</tei:msName>
-                 </tei:msIdentifier>
-    return
-        mpese-text:mss-details-label($mss)
-};
-
-
-declare %test:assertEquals('No manuscript details.')function test-text:mss-details-label-empty() {
-    mpese-text:mss-details-label(())
-};
-
-
 (: Check we get the text and mss and add it to the model:)
 declare %test:assertXPath("count($result?text//*:title) > 0")
         %test:assertXPath("$result?mss//*:idno eq 'MS 35331'") function test-text:text() {

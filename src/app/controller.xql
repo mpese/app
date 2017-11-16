@@ -121,6 +121,9 @@ else if (exists(fn:analyze-string($exist:path, '\/\w+$')//fn:match)) then
 else if (fn:matches($exist:path, '^(/t/)(\w+|%20)+\.html$')) then
     (util:log('INFO', (' new text homepage')),
     local:dispatch-attribute('/text.html', 'text', concat(local:item('text'), '.xml')))
+else if (fn:matches($exist:path, '^(/m/)(\w+|%20)+\.html$')) then
+    (util:log('INFO', (' new mss homepage')),
+    local:dispatch-attribute('/mss.html', 'mss', concat(local:item('mss'), '.xml')))
 else if ($exist:path eq '/about.html') then
     (util:log('INFO', ("About page")),
     local:dispatch('/about.html'))
