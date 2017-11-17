@@ -6,6 +6,7 @@ declare namespace test="http://exist-db.org/xquery/xqsuite";
 declare namespace tei = 'http://www.tei-c.org/ns/1.0';
 declare namespace xi = 'http://www.w3.org/2001/XInclude';
 
+import module namespace config = 'http://mpese.rit.bris.ac.uk/config' at '../modules/config.xqm';
 import module namespace mpese-text = 'http://mpese.rit.bris.ac.uk/corpus/text/'  at '../modules/mpese-corpus-text.xqm';
 
 (: Test title with all details available :)
@@ -314,6 +315,14 @@ declare %test:assertXPath("fn:count($result//a[@href]) eq 0") function test-text
         mpese-text:person($person, true())
 };
 
+declare %test:assertXPath("count($result) > 1") function test-text:witness-list() {
+    let $doc := doc($config:mpese-tei-corpus-texts || '/HabeasCorpus1627.xml')
+    return mpese-text:witnesses-includes($doc)
+};
+
+
+(: ---------- test template method functions ----------:)
+
 (: Check we get the text and mss and add it to the model:)
 declare %test:assertXPath("count($result?text//*:title) > 0")
         %test:assertXPath("$result?mss//*:idno eq 'MS 35331'") function test-text:text() {
@@ -387,4 +396,14 @@ function test-text:transcript() {
     let $map := mpese-text:text($node, $model, $text)
     return
         mpese-text:transcript($node, $map)
+};
+
+(: test we get a list of witnesses :)
+declare %test:assertXPath("count($result//li) > 0")
+function test-text:witnesses() {
+    let $node := <test></test>
+    let $model := map {}
+    let $text := 'HabeasCorpus1627.xml'
+    let $map := mpese-text:text($node, $model, $text)
+    return mpese-text:witnesses($node, $map)
 };

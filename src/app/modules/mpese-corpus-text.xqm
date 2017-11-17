@@ -139,6 +139,35 @@ declare function mpese-text:text-body($doc as node()) as node()* {
         transform:transform($doc, $xsl, ())
 };
 
+
+(:~
+ : Get the <msIdentifier/> for the witnesses by following xincludes under the
+ : <listBibl xml:id="witness"/> element
+ :
+ :  @param $doc      the TEI/XML document.
+ :  @return the XML for the witnesses
+ :)
+declare function mpese-text:witnesses-includes($doc as node()) as element()*  {
+
+    (: find the include nodes :)
+    let $witnesses := $doc//tei:listBibl[@xml:id='mss_witness']/tei:bibl/xi:include
+
+    (: follow each include to get the manuscript details :)
+    for $include in $witnesses
+
+        (: get the path and id :)
+        let $include_url := $include/@href/string()
+        let $include_id := $include/@xpointer/string()
+
+        (: get the full path for the mss :)
+        let $mss := if (fn:starts-with($include_url, '../')) then fn:substring($include_url, 3) else $include_url
+        let $mss_full := concat($config:mpese-tei-corpus, $mss)
+
+        (: return the node :)
+        return
+            doc($mss_full)//*[@xml:id=$include_id]
+};
+
 (: ---------- Functions to help render content  ----------- :)
 
 (:~
@@ -207,6 +236,13 @@ declare function mpese-text:author-label($authors as element()*, $show_link as x
     <span class="mpese-author-list">{mpese-text:author-label-r((), $authors, $show_link)}</span>
 };
 
+declare function mpese-text:mss-with-link($mss as element()) as element() {
+    let $mss_doc := base-uri($mss)
+    let $name := utils:name-from-uri($mss_doc)
+    return
+        <a href="../m/{$name}.html">{mpese-mss:ident-label($mss)}</a>
+};
+
 
 (: ---------- TEMPLATE FUNCTIONS ----------- :)
 
@@ -250,11 +286,7 @@ declare function mpese-text:author-title($node as node (), $model as map (*)) {
  : @return the details of the manuscript
  :)
 declare function mpese-text:mss($node as node (), $model as map (*)) {
-    let $mss := $model('mss')
-    let $mss_doc := base-uri($mss)
-    let $name := utils:name-from-uri($mss_doc)
-    return
-        <p><a href="../m/{$name}.html">{mpese-mss:ident-label($mss)}</a></p>
+    <p>{mpese-text:mss-with-link($model('mss'))}</p>
 };
 
 (:~
@@ -300,4 +332,24 @@ declare function mpese-text:image($node as node (), $model as map (*)) {
  :)
 declare function mpese-text:transcript($node as node (), $model as map (*)) {
     mpese-text:text-body($model('text'))
+};
+
+(:~
+ : Display the list of witnesses
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @return the list of witnesses or a "no witnesses" message
+ :)
+declare function mpese-text:witnesses($node as node (), $model as map (*)) {
+    let $witnesses := mpese-text:witnesses-includes($model('text'))
+    return
+        if (count($witnesses) eq 0) then
+            <p>No witnesses</p>
+        else
+            <ul class="list-unstyled">{
+                for $witness in $witnesses
+                    return
+                        <li>{mpese-text:mss-with-link($witness)}</li>
+            }</ul>
 };

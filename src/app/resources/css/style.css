@@ -128,3 +128,7 @@ div#openseadragon {
 span.mpese-author-list {
     display: inline;
 }
+
+ul.mpese-witness-list {
+    list-style: none;
+}

@@ -34,6 +34,8 @@ declare function mpese-mss:title($mss_doc) {
         concat($ident/tei:repository, ': ', $ident/tei:collection, ', ', $ident/tei:idno)
 };
 
+
+
 (: ---------- Functions to help render content  ----------- :)
 
 
