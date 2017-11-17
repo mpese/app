@@ -3,7 +3,8 @@
 
     <!-- the properties file -->
     <property file="build.properties"/>
-    <property file="version."
+    <property file="version.properties"/>
+
 
     <!-- classpath with eXist jars -->
     <path id="classpath.core">
@@ -31,8 +32,41 @@
         </input>
     </target>
 
+        <!-- clean existing build and dist -->
+    <target name="clean">
+        <delete dir="build"/>
+        <delete dir="dist"/>
+    </target>
+
+    <!-- build stage -->
+    <target name="build" depends="clean">
+        <!-- copy the app src to build -->
+        <copy todir="build">
+            <fileset dir="src/app">
+                <exclude name="**/*.bak"/>
+            </fileset>
+        </copy>
+        <!-- update the version number in the app -->
+        <replace dir="build/" includes="**/expath-pkg.xml,**/repo.xml"
+                 token="@APPVERSION@"
+                 value="${build.major}.${build.minor}.${build.patch}"/>
+    </target>
+
+    <!-- create distributable app -->
+    <target name="dist" depends="build">
+        <copy todir="dist">
+            <fileset dir="src/deploy">
+                <include name="**/*.xql"/>
+            </fileset>
+        </copy>
+        <replace dir="dist/" includes="**/deploy.xql,**/repo.xml"
+                 token="@APPVERSION@"
+                 value="${build.major}.${build.minor}.${build.patch}"/>
+        <zip destfile="dist/mpese-app-${build.major}.${build.minor}.${build.patch}.xar" basedir="build"/>
+    </target>
+
     <!-- Store the .xar file in the database -->
-    <target name="store" depends="credentials">
+    <target name="store" depends="dist,credentials">
         <xdb:store uri="${xmlrpc}/db/xar_files"
             createcollection="true" user="admin" password="${password}">
             <fileset dir="dist"> 
@@ -66,12 +100,5 @@
     </target>
 
 
-    <target name="build">
-        <copy todir="ant-build">
-            <fileset dir="src/app">
-                <exclude name="**/*.bak"/>
-            </fileset>
-        </copy>
-    </target>
 
 </project>
