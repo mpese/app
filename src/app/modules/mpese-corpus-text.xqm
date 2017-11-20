@@ -353,3 +353,31 @@ declare function mpese-text:witnesses($node as node (), $model as map (*)) {
                         <li>{mpese-text:mss-with-link($witness)}</li>
             }</ul>
 };
+
+declare function mpese-text:author-list($node as node (), $model as map (*)) {
+    let $authors := mpese-text:authors($model('text'))
+
+    return
+        if (count($authors) eq 0) then
+            <p>No authors.</p>
+        else
+            <ul class="list-unstyled">{
+                for $author in $authors
+                    return
+                        <li>{mpese-text:person($author, true())}</li>
+            }</ul>
+};
+
+declare function mpese-text:text-type($node as node (), $model as map (*)) {
+    let $text-types := mpese-text:keywords-text-type($model('text'))
+
+    return
+        if (count($text-types) eq 0) then
+            <p>No text types.</p>
+        else
+            <ul class="list-unstyled">{
+                for $type in $text-types
+                    return
+                        <li>{$type/string()}</li>
+            }</ul>
+};

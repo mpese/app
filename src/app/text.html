@@ -1,4 +1,4 @@
-<div xmlns="http://www.w3.org/1999/xhtml" xmlns:xf="http://www.w3.org/2002/xforms"
+<div xmlns:xf="http://www.w3.org/2002/xforms" xmlns="http://www.w3.org/1999/xhtml"
      data-template="templates:surround" data-template-with="templates/sub_fluid.html"
      data-template-at="content">
 
@@ -27,12 +27,15 @@
                     <p data-template="mpese-text:mss">Manuscript details</p>
                     <p data-template="mpese-text:mss-name"></p>
 
+                    <h4>Authors</h4>
+                    <ul data-template="mpese-text:author-list"></ul>
                 </div>
-            </div>
-            <div class="row">
                 <div class="col-md-4">
                     <h4>Witnesses</h4>
                     <ul data-template="mpese-text:witnesses"></ul>
+                </div>
+                <div class="col-md-4">
+                    <h4>Keywords</h4>
                 </div>
             </div>
         </div>
@@ -42,10 +45,10 @@
     </div>
 
     <!-- initiate the nav and image viewer -->
-        <script type="application/javascript">
-            text.init();
-            image_viewer.init();
-        </script>
+    <script type="application/javascript">
+        text.init();
+        image_viewer.init();
+    </script>
 
 </div>
 
