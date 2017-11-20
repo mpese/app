@@ -8,11 +8,11 @@
 
     <!-- classpath with eXist jars -->
     <path id="classpath.core">
-        <fileset dir="${server.dir}/lib/core">
+        <fileset dir="lib/">
             <include name="*.jar"/>
         </fileset>
-        <pathelement path="${server.dir}/exist.jar"/>
-        <pathelement path="${server.dir}/exist-optional.jar"/>
+        <!--<pathelement path="${server.dir}/exist.jar"/>-->
+        <!--<pathelement path="${server.dir}/exist-optional.jar"/>-->
     </path>
 
     <!-- include exist ant tasks -->
@@ -20,11 +20,11 @@
         <classpath refid="classpath.core"/>
     </typedef>
 
-    <!--
+
     <target name="resolve">
         <ivy:retrieve />
     </target>
-    -->
+
 
     <!-- Get the authentication credentials (and check we have properties)-->
     <target name="credentials">
@@ -72,7 +72,7 @@
     </target>
 
     <!-- Store the .xar file in the database -->
-    <target name="store" depends="dist,credentials">
+    <target name="store" depends="dist,resolve,credentials">
         <xdb:store uri="${xmlrpc}/db/xar_files"
             createcollection="true" user="admin" password="${password}">
             <fileset dir="dist"> 
@@ -82,7 +82,7 @@
     </target>
 
     <!-- Remove previous the application .xar -->
-    <target name="undeploy" depends="store">
+    <target name="undeploy" depends="resolve,store">
         <loadfile property="xquery_undeploy" srcFile="dist/undeploy.xql"/>
         <xdb:xquery uri="${xmlrpc}/db" user="admin" password="${password}"
                     query="${xquery_undeploy}" outputproperty="undeploy_output"/>

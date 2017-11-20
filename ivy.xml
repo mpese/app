@@ -1,7 +1,10 @@
 <ivy-module version="2.0">
     <info organisation="UoB" module="mpese"/>
     <dependencies>
-        <dependency org="org.exist-db" name="exist-core" rev="3.5.0"/>
-        <dependency org="org.exist-db" name="exist-optional" rev="3.5.0"/>
+        <dependency org="org.exist-db" name="exist-core" rev="3.5.0" transitive="true"/>
+        <dependency org="org.exist-db" name="exist-optional" rev="3.5.0" transitive="true"/>
+        <dependency org="org.exist-db.thirdparty.org.xmldb" name="xmldb-api" rev="1.0-patched" transitive="false"/>
+        <exclude org="javax.servlet"/>
+        <exclude org="org.eclipse.jetty.orbit"/>
     </dependencies>
 </ivy-module>
