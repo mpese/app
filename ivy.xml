@@ -1,0 +1,7 @@
+<ivy-module version="2.0">
+    <info organisation="UoB" module="mpese"/>
+    <dependencies>
+        <dependency org="org.exist-db" name="exist-core" rev="3.5.0"/>
+        <dependency org="org.exist-db" name="exist-optional" rev="3.5.0"/>
+    </dependencies>
+</ivy-module>

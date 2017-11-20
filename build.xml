@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xdb="http://exist-db.org/ant">
+<project xmlns:xdb="http://exist-db.org/ant" xmlns:ivy="antlib:org.apache.ivy.ant">
 
     <!-- the properties file -->
     <property file="build.properties"/>
@@ -19,6 +19,12 @@
     <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
         <classpath refid="classpath.core"/>
     </typedef>
+
+    <!--
+    <target name="resolve">
+        <ivy:retrieve />
+    </target>
+    -->
 
     <!-- Get the authentication credentials (and check we have properties)-->
     <target name="credentials">
