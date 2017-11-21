@@ -488,7 +488,7 @@ declare function mpese-text:lang($node as node (), $model as map (*)) {
     let $lang := mpese-text:languages($model('text'))
 
     return
-        if ($lang and fn:string-length(fn:normalize-space($lang/fn:string())) eq 0) then
+        if ($lang and not(empty(fn:string-join($lang)))) then
             "No details"
         else
             fn:string-join($lang, ', ')
@@ -500,7 +500,7 @@ declare function mpese-text:creation-date($node as node (), $model as map (*)) {
 
     return
 
-        if ($creation and not(functx:has-empty-content($creation))) then
+        if ($creation and not(empty(fn:string-join($creation)))) then
             mpese-text:creation-date($model('text'))
         else
             "No details"
