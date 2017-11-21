@@ -13,10 +13,10 @@
         <div id="mpese-text-panel" class="mpese-content-panel" data-panel="mpese-text-panel">
             <div class="row">
                 <div id="mpese-transcript" class="col-md-6">
-                    <div data-template="mpese-text:transcript"/>
+                    <div data-template="mpese-text:transcript"></div>
                 </div>
                 <div id="mpese-image-viewer" class="col-md-6">
-                    <div data-template="mpese-text:image"/>
+                    <div data-template="mpese-text:image"></div>
                 </div>
             </div>
         </div>
@@ -24,8 +24,9 @@
             <div class="row">
                 <div class="col-md-4">
                     <h4>Manuscript</h4>
-                    <p data-template="mpese-text:mss">Manuscript details</p>
-                    <p data-template="mpese-text:mss-name"></p>
+                    <p data-template="mpese-text:mss-name-full">Manuscript details</p>
+                    <p><strong>Languages: </strong> <span data-template="mpese-text:lang"></span></p>
+                    <p><strong>Creation date: </strong> <span data-template="mpese-text:creation-date"></span></p>
 
                     <h4>Authors</h4>
                     <ul data-template="mpese-text:author-list"></ul>
@@ -35,7 +36,10 @@
                     <ul data-template="mpese-text:witnesses"></ul>
                 </div>
                 <div class="col-md-4">
-                    <h4>Keywords</h4>
+                    <h4>Keywords (Text Type)</h4>
+                    <ul data-template="mpese-text:text-type"></ul>
+                    <h4>Keywords (Text Topics)</h4>
+                    <ul data-template="mpese-text:text-topic"></ul>
                 </div>
             </div>
         </div>

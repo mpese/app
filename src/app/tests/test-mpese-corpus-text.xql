@@ -228,6 +228,63 @@ declare %test:assertXPath("fn:count($result) eq 2") function test-text:keywords-
         mpese-text:keywords-topic($doc)
 };
 
+(: check we get a date :)
+declare %test:assertXPath("$result eq '22 November 1627'") function test-text:creation-date() {
+    let $doc := <tei:TEI>
+                    <tei:teiHeader>
+                        <tei:profileDesc>
+                            <tei:creation>
+                                <tei:date when="1627-11-22">22 November 1627</tei:date>
+                                <tei:placeName corresp="../places/places.xml#PL0010">Court of King's Bench</tei:placeName>
+                            </tei:creation>
+                        </tei:profileDesc>
+                    </tei:teiHeader>
+                </tei:TEI>
+    return
+        mpese-text:creation-date($doc)
+};
+
+(: check we get a creation place :)
+declare %test:assertXPath("contains($result/string(), 'Court of King')") function test-text:creation-place() {
+    let $doc := <tei:TEI>
+                    <tei:teiHeader>
+                        <tei:profileDesc>
+                            <tei:creation>
+                                <tei:date when="1627-11-22">22 November 1627</tei:date>
+                                <tei:placeName corresp="../places/places.xml#PL0010">Court of King's Bench</tei:placeName>
+                            </tei:creation>
+                            <tei:langUsage>
+                                <tei:language ident="EN">English</tei:language>
+                                <tei:language ident="LA">Latin</tei:language>
+                            </tei:langUsage>
+                        </tei:profileDesc>
+                    </tei:teiHeader>
+                </tei:TEI>
+    return
+        mpese-text:creation-place($doc)
+};
+
+(: check we get a list of languages :)
+declare %test:assertXPath("contains($result/string(), 'English')")
+        %test:assertXPath("contains($result/string(), 'Latin')") function test-text:languages() {
+    let $doc := <tei:TEI>
+                    <tei:teiHeader>
+                        <tei:profileDesc>
+                            <tei:creation>
+                                <tei:date when="1627-11-22">22 November 1627</tei:date>
+                                <tei:placeName corresp="../places/places.xml#PL0010">Court of King's Bench</tei:placeName>
+                            </tei:creation>
+                            <tei:langUsage>
+                                <tei:language ident="EN">English</tei:language>
+                                <tei:language ident="LA">Latin</tei:language>
+                            </tei:langUsage>
+                        </tei:profileDesc>
+                    </tei:teiHeader>
+                </tei:TEI>
+    return
+        mpese-text:languages($doc)
+};
+
 (: check the transform; just check we have multple p tags :)
 declare %test:assertXPath("count($result//p) > 0") function test-text:text-body() {
 
@@ -372,7 +429,17 @@ function test-text:mss-name() {
         mpese-text:mss-name($node, $map)
 };
 
-
+declare
+%test:assertXPath("contains($result/string(), 'British Library, Additional, MS 35331') eq true()")
+%test:assertXPath("contains($result/string(), 'Diary of Walter Yonge') eq true()")
+function test-text:mss-name-full() {
+    let $node := <test></test>
+    let $model := map {}
+    let $text := 'HabeasCorpus1627.xml'
+    let $map := mpese-text:text($node, $model, $text)
+    return
+        mpese-text:mss-name-full($node, $map)
+};
 
 (: check expected sample data in mss name :)
 declare %test:assertXPath("count($result//div) > 0")
@@ -406,4 +473,34 @@ function test-text:witnesses() {
     let $text := 'HabeasCorpus1627.xml'
     let $map := mpese-text:text($node, $model, $text)
     return mpese-text:witnesses($node, $map)
+};
+
+(: test we get a list of authors :)
+declare %test:assertXPath("count($result//li) > 0")
+function test-text:author-list() {
+    let $node := <test></test>
+    let $model := map {}
+    let $text := 'HabeasCorpus1627.xml'
+    let $map := mpese-text:text($node, $model, $text)
+    return mpese-text:author-list($node, $map)
+};
+
+(: test we get a list of text types :)
+declare %test:assertXPath("count($result//li) > 0")
+function test-text:text-type() {
+    let $node := <test></test>
+    let $model := map {}
+    let $text := 'HabeasCorpus1627.xml'
+    let $map := mpese-text:text($node, $model, $text)
+    return mpese-text:text-type($node, $map)
+};
+
+(: test we get a list of topics :)
+declare %test:assertXPath("count($result//li) > 0")
+function test-text:text-topic() {
+    let $node := <test></test>
+    let $model := map {}
+    let $text := 'HabeasCorpus1627.xml'
+    let $map := mpese-text:text($node, $model, $text)
+    return mpese-text:text-topic($node, $map)
 };

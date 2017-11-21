@@ -168,6 +168,36 @@ declare function mpese-text:witnesses-includes($doc as node()) as element()*  {
             doc($mss_full)//*[@xml:id=$include_id]
 };
 
+(:~
+ : Get the creation date of a document
+ :
+ :  @param $doc      the TEI/XML document.
+ :  @return the creation date of the document
+ :)
+declare function mpese-text:creation-date($doc as node()) as xs:string? {
+    $doc//tei:profileDesc/tei:creation/tei:date/string()
+};
+
+(:~
+ : Get the place the document was created.
+ :
+ : @param $doc      the TEI/XML document.
+ : @return the creation place of the document
+ :)
+declare function mpese-text:creation-place($doc as node()) as element()* {
+    $doc//tei:profileDesc/tei:creation/tei:placeName
+};
+
+(:~
+ : Languages used in the document.
+ :
+ : @param $doc      the TEI/XML document.
+ : @return the languages used in the document
+ :)
+declare function mpese-text:languages($doc as node()) as element()* {
+    $doc//tei:profileDesc/tei:langUsage/tei:language
+};
+
 (: ---------- Functions to help render content  ----------- :)
 
 (:~
@@ -236,13 +266,15 @@ declare function mpese-text:author-label($authors as element()*, $show_link as x
     <span class="mpese-author-list">{mpese-text:author-label-r((), $authors, $show_link)}</span>
 };
 
-declare function mpese-text:mss-with-link($mss as element()) as element() {
-    let $mss_doc := base-uri($mss)
-    let $name := utils:name-from-uri($mss_doc)
-    return
-        <a href="../m/{$name}.html">{mpese-mss:ident-label($mss)}</a>
+declare function mpese-text:mss-with-link($mss as element()?) as element()? {
+    if ($mss) then
+        let $mss_doc := base-uri($mss)
+        let $name := utils:name-from-uri($mss_doc)
+        return
+            <a href="../m/{$name}.html">{mpese-mss:ident-label($mss)}</a>
+    else
+        ()
 };
-
 
 (: ---------- TEMPLATE FUNCTIONS ----------- :)
 
@@ -303,6 +335,27 @@ declare function mpese-text:mss-name($node as node (), $model as map (*)) {
         ""
 };
 
+(:~
+ : Display basic mss details with link to MSS and the mss name
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @return the name of the manuscript
+ :)
+declare function mpese-text:mss-name-full($node as node (), $model as map (*)) {
+
+    let $mss := $model('mss')
+    return
+        if ($mss) then
+            <p>{mpese-text:mss-with-link($model('mss')),
+                if (not(functx:has-empty-content($model('mss')//tei:msName))) then
+                    (text{', '},($model('mss')//tei:msName/string()))
+                else
+                    ""
+            }</p>
+        else
+            <p>No manuscript details</p>
+};
 
 (:~
  : Display the tags needed for the OpenSeaDragon viewer.
@@ -354,6 +407,13 @@ declare function mpese-text:witnesses($node as node (), $model as map (*)) {
             }</ul>
 };
 
+(:~
+ : Display a list of authors.
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @return the list of authors
+ :)
 declare function mpese-text:author-list($node as node (), $model as map (*)) {
     let $authors := mpese-text:authors($model('text'))
 
@@ -368,6 +428,13 @@ declare function mpese-text:author-list($node as node (), $model as map (*)) {
             }</ul>
 };
 
+(:~
+ : Display a list of text type keywords.
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @return the list of text type keywords
+ :)
 declare function mpese-text:text-type($node as node (), $model as map (*)) {
     let $text-types := mpese-text:keywords-text-type($model('text'))
 
@@ -375,9 +442,67 @@ declare function mpese-text:text-type($node as node (), $model as map (*)) {
         if (count($text-types) eq 0) then
             <p>No text types.</p>
         else
-            <ul class="list-unstyled">{
+            <ul class="list-inline">{
                 for $type in $text-types
                     return
-                        <li>{$type/string()}</li>
+                        if (not(functx:has-empty-content($type))) then
+                            <li>{$type/string()}</li>
+                        else
+                            ()
             }</ul>
+};
+
+(:~
+ : Display a list of text topic keywords.
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @return the list of text topic keywords
+ :)
+declare function mpese-text:text-topic($node as node (), $model as map (*)) {
+    let $text-types := mpese-text:keywords-topic($model('text'))
+
+    return
+        if (count($text-types) eq 0) then
+            <p>No text types.</p>
+        else
+            <ul class="list-inline">{
+                for $type in $text-types
+                    return
+                        if (not(functx:has-empty-content($type))) then
+                            <li>{$type/string()}</li>
+                        else
+                            ()
+            }</ul>
+};
+
+(:~
+ : Display a list of text topic keywords.
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @return the list of text topic keywords
+ :)
+declare function mpese-text:lang($node as node (), $model as map (*)) {
+
+    let $lang := mpese-text:languages($model('text'))
+
+    return
+        if ($lang and fn:string-length(fn:normalize-space($lang/fn:string())) eq 0) then
+            "No details"
+        else
+            fn:string-join($lang, ', ')
+};
+
+declare function mpese-text:creation-date($node as node (), $model as map (*)) {
+
+    let $creation := mpese-text:creation-date($model('text'))
+
+    return
+
+        if ($creation and not(functx:has-empty-content($creation))) then
+            mpese-text:creation-date($model('text'))
+        else
+            "No details"
+
 };
