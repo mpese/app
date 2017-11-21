@@ -57,7 +57,6 @@
 
     <!-- Get the authentication credentials (and check we have properties)-->
     <target name="credentials">
-        <fail unless="server.dir">No exist install directory, i.e. property 'server.dir'!</fail>
         <fail unless="xmlrpc">No exist xmlprc, i,e. property 'xmlrpc'!</fail>
         <!-- get the username and password -->
         <echo>${xmlrpc}</echo>
@@ -132,6 +131,10 @@
                 <propertyref name="deploy_output"/>
             </propertyset>
         </echoproperties>
+
+        <get src="${test.url}" dest="test-results.xml" />
+        <loadfile property="test-results" srcFile="test-results.xml" />
+        <echo>${test-results}</echo>
     </target>
 
 

@@ -9,3 +9,4 @@ node_modules/
 .exist_query_history
 build.properties
 .idea
+test-results.xml
