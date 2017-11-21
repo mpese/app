@@ -5,14 +5,23 @@
     <property file="build.properties"/>
     <property file="version.properties"/>
 
+    <!-- hold jars for running ant tasks -->
+    <property name="lib" value="lib"/>
 
-    <!-- classpath with eXist jars -->
+    <!-- ivy installation -->
+    <property name="ivy.install.version" value="2.1.0-rc2"/>
+    <condition property="ivy.home" value="${env.IVY_HOME}">
+        <isset property="env.IVY_HOME"/>
+    </condition>
+    <property name="ivy.home" value="${user.home}/.ant"/>
+    <property name="ivy.jar.dir" value="${ivy.home}/lib"/>
+    <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
+
+    <!-- needed to run ant tasks -->
     <path id="classpath.core">
-        <fileset dir="lib/">
+        <fileset dir="${lib}">
             <include name="*.jar"/>
         </fileset>
-        <!--<pathelement path="${server.dir}/exist.jar"/>-->
-        <!--<pathelement path="${server.dir}/exist-optional.jar"/>-->
     </path>
 
     <!-- include exist ant tasks -->
@@ -20,9 +29,29 @@
         <classpath refid="classpath.core"/>
     </typedef>
 
+    <!-- create lib for holding jars needed for running ant tasks -->
+    <target name="init">
+        <mkdir dir="${lib}"/>
+    </target>
 
-    <target name="resolve">
-        <ivy:retrieve />
+    <!-- download ivy -->
+    <target name="download-ivy" unless="offline">
+        <mkdir dir="${ivy.jar.dir}"/>
+        <get src="http://repo2.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar"
+             dest="${ivy.jar.file}" usetimestamp="true"/>
+    </target>
+
+    <target name="init-ivy" depends="download-ivy">
+        <path id="ivy.lib.path">
+            <fileset dir="${ivy.jar.dir}" includes="*.jar"/>
+        </path>
+        <taskdef resource="org/apache/ivy/ant/antlib.xml"
+                 uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path"/>
+    </target>
+
+    <!-- download files needed for running the eXist ant tasks -->
+    <target name="resolve" depends="init,init-ivy">
+        <ivy:retrieve/>
     </target>
 
 
@@ -34,11 +63,11 @@
         <echo>${xmlrpc}</echo>
         <input message="Enter username:" addproperty="username"/>
         <input message="Enter password:" addproperty="password">
-            <handler classname="org.apache.tools.ant.input.SecureInputHandler" />
+            <handler classname="org.apache.tools.ant.input.SecureInputHandler"/>
         </input>
     </target>
 
-        <!-- clean existing build and dist -->
+    <!-- clean existing build and dist -->
     <target name="clean">
         <delete dir="build"/>
         <delete dir="dist"/>
@@ -74,8 +103,8 @@
     <!-- Store the .xar file in the database -->
     <target name="store" depends="dist,resolve,credentials">
         <xdb:store uri="${xmlrpc}/db/xar_files"
-            createcollection="true" user="admin" password="${password}">
-            <fileset dir="dist"> 
+                   createcollection="true" user="admin" password="${password}">
+            <fileset dir="dist">
                 <include name="*.xar"/>
             </fileset>
         </xdb:store>
@@ -86,11 +115,11 @@
         <loadfile property="xquery_undeploy" srcFile="dist/undeploy.xql"/>
         <xdb:xquery uri="${xmlrpc}/db" user="admin" password="${password}"
                     query="${xquery_undeploy}" outputproperty="undeploy_output"/>
-            <echoproperties>
-                <propertyset>
-                    <propertyref name="undeploy_output"/>
-                </propertyset>
-            </echoproperties> 
+        <echoproperties>
+            <propertyset>
+                <propertyref name="undeploy_output"/>
+            </propertyset>
+        </echoproperties>
     </target>
 
     <!-- Deploy the application .xar -->
@@ -98,13 +127,12 @@
         <loadfile property="xquery_deploy" srcFile="dist/deploy.xql"/>
         <xdb:xquery uri="${xmlrpc}/db" user="admin" password="${password}"
                     query="${xquery_deploy}" outputproperty="deploy_output"/>
-            <echoproperties>
-                <propertyset>
-                    <propertyref name="deploy_output"/>
-                </propertyset>
-            </echoproperties> 
+        <echoproperties>
+            <propertyset>
+                <propertyref name="deploy_output"/>
+            </propertyset>
+        </echoproperties>
     </target>
-
 
 
 </project>

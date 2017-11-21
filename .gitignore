@@ -2,7 +2,7 @@
 .DS_Store
 build/
 dist/
-lib/
+lib/*.jar
 node_modules/
 *.bak
 .exist_history
