@@ -212,9 +212,9 @@ declare function mpese-text:person($person, $show_link as xs:boolean) {
     return
         if (fn:string-length($corresp) > 0 and $show_link eq true()) then
             let $id := fn:tokenize($corresp, '#')[2]
-            return <span class="mpese-person"><a href="../people/{$id}/">{fn:normalize-space($person/string())}</a></span>
+            return <span class="mpese-person"><a href="../people/{$id}/">{fn:normalize-space(fn:string-join($person/descendant-or-self::*[not(*)], ' '))}</a></span>
         else
-            <span class="mpese-person">{fn:normalize-space($person/string())}</span>
+            <span class="mpese-person">{fn:normalize-space(fn:string-join($person/descendant-or-self::*[not(*)], ' '))}</span>
 };
 
 (:~
@@ -266,6 +266,13 @@ declare function mpese-text:author-label($authors as element()*, $show_link as x
     <span class="mpese-author-list">{mpese-text:author-label-r((), $authors, $show_link)}</span>
 };
 
+(:~
+ : Show the text details with a link to the text.
+ :
+ : @param $mss          the manuscript details.
+ : @param $show_link    show a URL to the manuscript details?
+ : @return details with a link to the text
+ :)
 declare function mpese-text:mss-with-link($mss as element()?) as element()? {
     if ($mss) then
         let $mss_doc := base-uri($mss)
@@ -275,6 +282,114 @@ declare function mpese-text:mss-with-link($mss as element()?) as element()? {
     else
         ()
 };
+
+(:~
+ : Author section of a printed bibliographical item
+ :
+ : @param $bibl         a bibliographical element
+ : @param $show_link    show a URL to the person?
+ : @return the author section of a printed bibliographical item
+ :)
+declare function mpese-text:bibl-author($bibl as element()) as element()? {
+    if ($bibl/tei:author and not(functx:has-empty-content($bibl/tei:author))) then
+        mpese-text:author-label-r((), $bibl/tei:author, true())
+    else
+        ()
+};
+
+(:~
+ : Title section of a printed bibliographical item
+ :
+ : @param $bibl         a bibliographical element
+ : @return the title section of a printed bibliographical item
+ :)
+declare function mpese-text:bibl-title($bibl as element()) as element()? {
+    if ($bibl/tei:title and not(functx:has-empty-content($bibl/tei:title))) then
+        <em>{$bibl/tei:title/string()}</em>
+    else
+        ()
+};
+
+(:~
+ : Publication section of a printed bibliographical item
+ :
+ : @param $bibl         a bibliographical element
+ : @return the publication section
+ :)
+declare function mpese-text:bibl-pub($bibl as element()) as xs:string {
+    let $pub := string-join(($bibl/tei:pubPlace, $bibl/tei:date), ', ')
+    return
+        if ($pub) then
+            '(' || $pub || ')'
+        else
+            ""
+};
+
+(:~
+ : Identification section of a printed bibliographical item
+ :
+ : @param $bibl         a bibliographical element
+ : @return the identification section
+ :)
+declare function mpese-text:bibl-idno($bibl as element()) as xs:string {
+    let $id := string-join(($bibl/tei:idno/@type/string(), $bibl/tei:idno), ' ')
+    return
+        if ($id) then
+            '[' || $id || ']'
+        else
+            ""
+};
+
+(:~
+ : Pages and sigs ... are the to and from attribute vales the same?
+ :
+ : @param $scope         a <biblScope/> element
+ : @return true() if the same otherwise false()
+ :)
+declare function mpese-text:sameBiblScopeVal($scope) as xs:boolean {
+    $scope/@from/string() eq $scope/@to/string()
+};
+
+(:~
+ : Workout the page or sig prefix.
+ :
+ : @param $type         page or sig?
+ : @param $plural       more than one?
+ : @return 'p.', 'pp.', 'sig.' or 'sigs.'
+ :)
+declare function mpese-text:bibloScopePrefix($type as xs:string, $plural as xs:boolean) as xs:string {
+    if ($type eq 'page') then
+        if ($plural) then 'pp. ' else 'p. '
+    else if ($type eq 'sigs') then
+        if ($plural) then 'sigs. ' else 'sig. '
+    else
+        ""
+};
+
+declare function mpese-text:biblScopePrefix($scope_list, $type) {
+    if (count($scope_list) eq 0) then
+        ""
+    else if (count($scope_list) > 1) then
+        mpese-text:bibloScopePrefix($type, true())
+    else
+        if ($scope_list[1]/@from and $scope_list[1]/@to) then
+            if (not(mpese-text:sameBiblScopeVal($scope_list[1]))) then
+               mpese-text:bibloScopePrefix($type, true())
+        else
+            mpese-text:bibloScopePrefix($type, true())
+    else
+       mpese-text:bibloScopePrefix($type, false())
+};
+
+declare function mpese-text:outputScope($scope_list) {
+    let $ranges :=
+            for $range in $scope_list
+                let $f := string-join(($range/@from/string(),$range/@to/string()), '-')
+                return $f
+    return
+        string-join($ranges, ', ')
+};
+
 
 (: ---------- TEMPLATE FUNCTIONS ----------- :)
 
@@ -494,6 +609,13 @@ declare function mpese-text:lang($node as node (), $model as map (*)) {
             fn:string-join($lang, ', ')
 };
 
+(:~
+ : Display the creation date.
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @return the creation date or a 'No details' message
+ :)
 declare function mpese-text:creation-date($node as node (), $model as map (*)) {
 
     let $creation := mpese-text:creation-date($model('text'))

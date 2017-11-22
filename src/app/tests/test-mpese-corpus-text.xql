@@ -377,6 +377,120 @@ declare %test:assertXPath("count($result) > 1") function test-text:witness-list(
     return mpese-text:witnesses-includes($doc)
 };
 
+(: check we get an author from a bibliography :)
+declare %test:assertXPath("contains($result, 'J[ohn] M[ilton]')") function test-text:bibl-author() {
+
+    let $bibl := <tei:bibl>
+                    <tei:author role="signatory">
+                        <tei:persName corresp="../people/people.xml#P0060">
+                            <tei:forename>J[ohn]</tei:forename>
+                            <tei:surname>M[ilton]</tei:surname>
+                        </tei:persName>
+                    </tei:author>
+                </tei:bibl>
+
+    return mpese-text:bibl-author($bibl)
+};
+
+(: check we get an author from a bibliography :)
+declare %test:assertEmpty function test-text:bibl-no-author() {
+
+    let $bibl := <tei:bibl/>
+
+    return mpese-text:bibl-author($bibl)
+};
+
+(: check we get a title from a bibliography :)
+declare %test:assertXPath("<em>Newes from Hell, Rome and the Inns of Court</em>") function test-text:bibl-title() {
+
+    let $bibl := <tei:bibl>
+                    <tei:title>Newes from Hell, Rome and the Inns of Court</tei:title>
+                 </tei:bibl>
+
+    return mpese-text:bibl-title($bibl)
+};
+
+(: no title bibliography :)
+declare %test:assertEmpty function test-text:bibl-no-title() {
+
+    let $bibl := <tei:bibl/>
+
+    return mpese-text:bibl-title($bibl)
+};
+
+(: full publication details :)
+declare %test:assertEquals("(London, 1641)")function test-text:bibl-pub-full() {
+    let $bibl := <tei:bibl>
+                   <tei:date when="1641">1641</tei:date>
+                   <tei:pubPlace>London</tei:pubPlace>
+                 </tei:bibl>
+    return mpese-text:bibl-pub($bibl)
+};
+
+(: publication date only :)
+declare %test:assertEquals("(1641)")function test-text:bibl-pub-date() {
+    let $bibl := <tei:bibl>
+                   <tei:date when="1641">1641</tei:date>
+                 </tei:bibl>
+    return mpese-text:bibl-pub($bibl)
+};
+
+(: publication place details :)
+declare %test:assertEquals("(London)")function test-text:bibl-pub-place() {
+    let $bibl := <tei:bibl>
+                   <tei:pubPlace>London</tei:pubPlace>
+                 </tei:bibl>
+    return mpese-text:bibl-pub($bibl)
+};
+
+(: no publication details :)
+declare %test:assertEquals("") function test-text:bibl-pub-empty() {
+    let $bibl := <tei:bibl/>
+    return mpese-text:bibl-pub($bibl)
+};
+
+(: full idno details :)
+declare %test:assertEquals("[Wing M42A]")function test-text:bibl-idno-full() {
+    let $bibl := <tei:bibl>
+                    <tei:idno type="Wing">M42A</tei:idno>
+                 </tei:bibl>
+    return mpese-text:bibl-idno($bibl)
+};
+
+(: idno with no type :)
+declare %test:assertEquals("[M42A]")function test-text:bibl-idno-no-type() {
+    let $bibl := <tei:bibl>
+                   <tei:idno>M42A</tei:idno>
+                 </tei:bibl>
+    return mpese-text:bibl-idno($bibl)
+};
+
+(: no idno :)
+declare %test:assertEquals("") function test-text:bibl-idno-empty() {
+    let $bibl := <tei:bibl/>
+    return mpese-text:bibl-idno($bibl)
+};
+
+
+declare %test:assertTrue function test-text:sameValueInScope-true() {
+    let $scope := <tei:biblScope unit="page" from="8" to="8"></tei:biblScope>
+    return mpese-text:sameBiblScopeVal($scope)
+};
+
+declare %test:assertFalse function test-text:sameValueInScope-false() {
+    let $scope := <tei:biblScope unit="page" from="8" to="10">8-10</tei:biblScope>
+    return mpese-text:sameBiblScopeVal($scope)
+};
+
+
+declare
+%test:arg('type', 'page') %test:arg('plural', 'true') %test:assertEquals('pp. ')
+%test:arg('type', 'page') %test:arg('plural', 'false') %test:assertEquals('p. ')
+%test:arg('type', 'sigs') %test:arg('plural', 'true') %test:assertEquals('sigs. ')
+%test:arg('type', 'sigs') %test:arg('plural', 'false') %test:assertEquals('sig. ')
+function test-text:bibloScopePrefix($type as xs:string, $plural as xs:boolean) {
+    mpese-text:bibloScopePrefix($type, $plural)
+};
 
 (: ---------- test template method functions ----------:)
 
