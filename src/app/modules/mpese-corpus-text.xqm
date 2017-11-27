@@ -320,7 +320,7 @@ declare function mpese-text:bibl-pub($bibl as element()) as xs:string {
     let $pub := string-join(($bibl/tei:pubPlace, $bibl/tei:date), ', ')
     return
         if ($pub) then
-            '(' || $pub || ')'
+            ' (' || $pub || ')'
         else
             ""
 };
@@ -335,13 +335,13 @@ declare function mpese-text:bibl-idno($bibl as element()) as xs:string {
     let $id := string-join(($bibl/tei:idno/@type/string(), $bibl/tei:idno), ' ')
     return
         if ($id) then
-            '[' || $id || ']'
+            ' [' || $id || ']'
         else
             ""
 };
 
 (:~
- : Pages and sigs ... are the to and from attribute vales the same?
+ : Pages and sigs ... are the 'to' and 'from' attribute vales the same?
  :
  : @param $scope         a <biblScope/> element
  : @return true() if the same otherwise false()
@@ -351,7 +351,7 @@ declare function mpese-text:sameBiblScopeVal($scope) as xs:boolean {
 };
 
 (:~
- : Workout the page or sig prefix.
+ : Do we need a page or sig prefix.
  :
  : @param $type         page or sig?
  : @param $plural       more than one?
@@ -359,13 +359,19 @@ declare function mpese-text:sameBiblScopeVal($scope) as xs:boolean {
  :)
 declare function mpese-text:bibloScopePrefix($type as xs:string, $plural as xs:boolean) as xs:string {
     if ($type eq 'page') then
-        if ($plural) then 'pp. ' else 'p. '
+        if ($plural) then ', pp. ' else ', p. '
     else if ($type eq 'sigs') then
-        if ($plural) then 'sigs. ' else 'sig. '
+        if ($plural) then ', sigs. ' else ', sig. '
     else
         ""
 };
 
+(:~
+ : Work out the prefix needed (eg. pp.) for the bibliography.
+ :
+ : @scope_list          a list of <tei:biblScope/> elements
+ : @type                'page' or 'sigs'
+ :)
 declare function mpese-text:biblScopePrefix($scope_list, $type) {
     if (count($scope_list) eq 0) then
         ""
@@ -381,13 +387,57 @@ declare function mpese-text:biblScopePrefix($scope_list, $type) {
        mpese-text:bibloScopePrefix($type, false())
 };
 
+declare function mpese-text:biblScopePrefix($bibl as element()) {
+
+    if (boolean($bibl/tei:biblScope[@unit = 'page'])) then
+        (mpese-text:biblScopePrefix($bibl/tei:biblScope[@unit = 'page'], 'page'),
+        mpese-text:outputScope($bibl/tei:biblScope[@unit = 'page']))
+    else if (boolean($bibl/tei:biblScope[@unit = 'sigs'])) then
+        (mpese-text:biblScopePrefix($bibl/tei:biblScope[@unit = 'sigs'], 'sigs'),
+        mpese-text:outputScope($bibl/tei:biblScope[@unit = 'sigs']))
+    else
+        ""
+
+};
+
+(:~
+ : Create a comma separated list of pages, sigs etc from the <tei:biblScope/> elements.
+ :)
 declare function mpese-text:outputScope($scope_list) {
     let $ranges :=
             for $range in $scope_list
-                let $f := string-join(($range/@from/string(),$range/@to/string()), '-')
+                let $f := string-join(($range/@from/string(),$range/@to/string()), '–')
                 return $f
     return
         string-join($ranges, ', ')
+};
+
+declare function mpese-text:bibliography($biblio_list) {
+
+    if (count($biblio_list) eq 0) then
+        <p>No bibliography</p>
+    else
+        <ul>{
+            for $item in $biblio_list
+                return
+                    <li>{
+                        let $authors := mpese-text:bibl-author($item)
+                        let $title := mpese-text:bibl-title($item)
+                        let $pub := mpese-text:bibl-pub($item)
+                        let $id := mpese-text:bibl-idno($item)
+                        let $seq := ($authors, $title)
+                        let $f := for $item at $pos in $seq
+                            return
+                                if ($item and $seq[$pos + 1]) then
+                                    ($item, text { ', '})
+                                else
+                                    $item
+                        let $scope := mpese-text:biblScopePrefix($item)
+                        return
+                            ($f, fn:string-join(($pub, $id, $scope), ''))
+                    }</li>
+        }</ul>
+
 };
 
 
@@ -627,4 +677,20 @@ declare function mpese-text:creation-date($node as node (), $model as map (*)) {
         else
             "No details"
 
+};
+
+declare function mpese-text:contemporary-witnesses($node as node (), $model as map (*)) {
+
+    let $witnesses := $model('text')//tei:sourceDesc/tei:listBibl[@xml:id = 'C17_print_witness']/tei:bibl
+
+    return
+        mpese-text:bibliography($witnesses)
+};
+
+declare function mpese-text:modern-witnesses($node as node (), $model as map (*)) {
+
+    let $witnesses := $model('text')//tei:sourceDesc/tei:listBibl[@xml:id = 'modern_print_witness']/tei:bibl
+
+    return
+        mpese-text:bibliography($witnesses)
 };

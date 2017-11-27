@@ -419,7 +419,7 @@ declare %test:assertEmpty function test-text:bibl-no-title() {
 };
 
 (: full publication details :)
-declare %test:assertEquals("(London, 1641)")function test-text:bibl-pub-full() {
+declare %test:assertEquals(" (London, 1641)")function test-text:bibl-pub-full() {
     let $bibl := <tei:bibl>
                    <tei:date when="1641">1641</tei:date>
                    <tei:pubPlace>London</tei:pubPlace>
@@ -428,7 +428,7 @@ declare %test:assertEquals("(London, 1641)")function test-text:bibl-pub-full() {
 };
 
 (: publication date only :)
-declare %test:assertEquals("(1641)")function test-text:bibl-pub-date() {
+declare %test:assertEquals(" (1641)")function test-text:bibl-pub-date() {
     let $bibl := <tei:bibl>
                    <tei:date when="1641">1641</tei:date>
                  </tei:bibl>
@@ -436,7 +436,7 @@ declare %test:assertEquals("(1641)")function test-text:bibl-pub-date() {
 };
 
 (: publication place details :)
-declare %test:assertEquals("(London)")function test-text:bibl-pub-place() {
+declare %test:assertEquals(" (London)")function test-text:bibl-pub-place() {
     let $bibl := <tei:bibl>
                    <tei:pubPlace>London</tei:pubPlace>
                  </tei:bibl>
@@ -450,7 +450,7 @@ declare %test:assertEquals("") function test-text:bibl-pub-empty() {
 };
 
 (: full idno details :)
-declare %test:assertEquals("[Wing M42A]")function test-text:bibl-idno-full() {
+declare %test:assertEquals(" [Wing M42A]")function test-text:bibl-idno-full() {
     let $bibl := <tei:bibl>
                     <tei:idno type="Wing">M42A</tei:idno>
                  </tei:bibl>
@@ -458,7 +458,7 @@ declare %test:assertEquals("[Wing M42A]")function test-text:bibl-idno-full() {
 };
 
 (: idno with no type :)
-declare %test:assertEquals("[M42A]")function test-text:bibl-idno-no-type() {
+declare %test:assertEquals(" [M42A]")function test-text:bibl-idno-no-type() {
     let $bibl := <tei:bibl>
                    <tei:idno>M42A</tei:idno>
                  </tei:bibl>
@@ -482,12 +482,38 @@ declare %test:assertFalse function test-text:sameValueInScope-false() {
     return mpese-text:sameBiblScopeVal($scope)
 };
 
+declare %test:assertEquals("") function test-text:biblScopePrefix-empty() {
+    let $scope := ()
+    return mpese-text:biblScopePrefix($scope, 'page')
+};
+
+declare %test:assertEquals(", pp. ") function test-text:biblScopePrefix-one() {
+    let $scope := (<tei:biblScope unit="page" from="8" to="10">8-10</tei:biblScope>)
+    return mpese-text:biblScopePrefix($scope, 'page')
+};
+
+declare %test:assertEquals(", pp. ") function test-text:biblScopePrefix-two() {
+    let $scope := (<tei:biblScope unit="page" from="8" to="10">8-10</tei:biblScope>,
+    <tei:biblScope unit="page" from="12" to="14">8-10</tei:biblScope>)
+    return mpese-text:biblScopePrefix($scope, 'page')
+};
+
+declare %test:assertEquals("8–10") function test-text:outputScope-one() {
+    let $scope := (<tei:biblScope unit="page" from="8" to="10">8-10</tei:biblScope>)
+    return mpese-text:outputScope($scope)
+};
+
+declare %test:assertEquals("8–10, 12–14") function test-text:outputScope-two() {
+    let $scope := (<tei:biblScope unit="page" from="8" to="10">8-10</tei:biblScope>,
+    <tei:biblScope unit="page" from="12" to="14">12-14</tei:biblScope>)
+    return mpese-text:outputScope($scope)
+};
 
 declare
-%test:arg('type', 'page') %test:arg('plural', 'true') %test:assertEquals('pp. ')
-%test:arg('type', 'page') %test:arg('plural', 'false') %test:assertEquals('p. ')
-%test:arg('type', 'sigs') %test:arg('plural', 'true') %test:assertEquals('sigs. ')
-%test:arg('type', 'sigs') %test:arg('plural', 'false') %test:assertEquals('sig. ')
+%test:arg('type', 'page') %test:arg('plural', 'true') %test:assertEquals(', pp. ')
+%test:arg('type', 'page') %test:arg('plural', 'false') %test:assertEquals(', p. ')
+%test:arg('type', 'sigs') %test:arg('plural', 'true') %test:assertEquals(', sigs. ')
+%test:arg('type', 'sigs') %test:arg('plural', 'false') %test:assertEquals(', sig. ')
 function test-text:bibloScopePrefix($type as xs:string, $plural as xs:boolean) {
     mpese-text:bibloScopePrefix($type, $plural)
 };
