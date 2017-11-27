@@ -317,7 +317,7 @@ declare function mpese-text:bibl-title($bibl as element()) as element()? {
  : @return the publication section
  :)
 declare function mpese-text:bibl-pub($bibl as element()) as xs:string {
-    let $pub := string-join(($bibl/tei:pubPlace, $bibl/tei:date), ', ')
+    let $pub := string-join(($bibl/tei:edition, $bibl/tei:pubPlace, $bibl/tei:date), ', ')
     return
         if ($pub) then
             ' (' || $pub || ')'
@@ -338,6 +338,18 @@ declare function mpese-text:bibl-idno($bibl as element()) as xs:string {
             ' [' || $id || ']'
         else
             ""
+};
+
+declare function mpese-text:biblio-vol($bibl as element()) as xs:string {
+    if (boolean($bibl/tei:biblScope[@unit="volume"])) then
+        let $vols := $bibl/tei:biblScope[@unit="volume"]
+            return
+                if (count($vols) > 1) then
+                    ", vols. " || fn:string-join($bibl/tei:biblScope[@unit="volume"], ", ")
+                else
+                    ", vol. " || $bibl/tei:biblScope[@unit="volume"]/string()
+    else
+        ""
 };
 
 (:~
@@ -425,6 +437,7 @@ declare function mpese-text:bibliography($biblio_list) {
                         let $title := mpese-text:bibl-title($item)
                         let $pub := mpese-text:bibl-pub($item)
                         let $id := mpese-text:bibl-idno($item)
+                        let $vols := mpese-text:biblio-vol($item)
                         let $seq := ($authors, $title)
                         let $f := for $item at $pos in $seq
                             return
@@ -434,7 +447,7 @@ declare function mpese-text:bibliography($biblio_list) {
                                     $item
                         let $scope := mpese-text:biblScopePrefix($item)
                         return
-                            ($f, fn:string-join(($pub, $id, $scope), ''))
+                            ($f, fn:string-join(($pub, $id, $vols, $scope), ''))
                     }</li>
         }</ul>
 
@@ -565,7 +578,7 @@ declare function mpese-text:witnesses($node as node (), $model as map (*)) {
         if (count($witnesses) eq 0) then
             <p>No witnesses</p>
         else
-            <ul class="list-unstyled">{
+            <ul>{
                 for $witness in $witnesses
                     return
                         <li>{mpese-text:mss-with-link($witness)}</li>
@@ -586,7 +599,7 @@ declare function mpese-text:author-list($node as node (), $model as map (*)) {
         if (count($authors) eq 0) then
             <p>No authors.</p>
         else
-            <ul class="list-unstyled">{
+            <ul>{
                 for $author in $authors
                     return
                         <li>{mpese-text:person($author, true())}</li>
