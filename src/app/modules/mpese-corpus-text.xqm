@@ -689,9 +689,15 @@ declare function mpese-text:creation-date($node as node (), $model as map (*)) {
             mpese-text:creation-date($model('text'))
         else
             "No details"
-
 };
 
+(:~
+ : Display the contemporary printed witnesses.
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @return the list of contemporary witnesses.
+:)
 declare function mpese-text:contemporary-witnesses($node as node (), $model as map (*)) {
 
     let $witnesses := $model('text')//tei:sourceDesc/tei:listBibl[@xml:id = 'C17_print_witness']/tei:bibl
@@ -700,6 +706,13 @@ declare function mpese-text:contemporary-witnesses($node as node (), $model as m
         mpese-text:bibliography($witnesses)
 };
 
+(:~
+ : Display the modern printed witnesses.
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @return the list of modern print witnesses.
+:)
 declare function mpese-text:modern-witnesses($node as node (), $model as map (*)) {
 
     let $witnesses := $model('text')//tei:sourceDesc/tei:listBibl[@xml:id = 'modern_print_witness']/tei:bibl

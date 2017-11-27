@@ -644,3 +644,23 @@ function test-text:text-topic() {
     let $map := mpese-text:text($node, $model, $text)
     return mpese-text:text-topic($node, $map)
 };
+
+(: test we get a list of contemporary printed witnesses :)
+declare %test:assertXPath("count($result//li) > 0")
+function test-text:contemporary-witnesses() {
+    let $node := <test></test>
+    let $model := map {}
+    let $text := 'HabeasCorpus1627.xml'
+    let $map := mpese-text:text($node, $model, $text)
+    return mpese-text:contemporary-witnesses($node, $map)
+};
+
+(: test we get a list of modern printed witnesses :)
+declare %test:assertXPath("count($result//li) > 0")
+function test-text:modern-witnesses() {
+    let $node := <test></test>
+    let $model := map {}
+    let $text := 'HabeasCorpus1627.xml'
+    let $map := mpese-text:text($node, $model, $text)
+    return mpese-text:modern-witnesses($node, $map)
+};
