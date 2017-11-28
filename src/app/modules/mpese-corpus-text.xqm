@@ -23,13 +23,13 @@ import module namespace utils = 'http://mpese.rit.bris.ac.uk/utils/' at 'utils.x
 (:~
  :   Provide the title of the text (with date) or 'untitled'.
  :
- :  @param $doc      the TEI/XML document.
+ :  @param $text      the TEI/XML document.
  :  @return the title of the text of 'untitled'
  :)
-declare function mpese-text:title($doc as element()) as xs:string {
+declare function mpese-text:title($text as xs:string) as xs:string {
 
-    let $tmp_title := $doc//tei:fileDesc/tei:titleStmt/tei:title/string()
-    let $tmp_date := $doc//tei:profileDesc/tei:creation/tei:date[1]/string()
+    let $tmp_title := doc($text)//tei:fileDesc/tei:titleStmt/tei:title/string()
+    let $tmp_date := doc($text)//tei:profileDesc/tei:creation/tei:date[1]/string()
     let $title := ( if (fn:string-length($tmp_title) > 0) then $tmp_title else fn:string('Untitled') )
     let $date  := ( if (fn:string-length($tmp_date) > 0) then $tmp_date else fn:string('No date') )
     return
@@ -40,11 +40,11 @@ declare function mpese-text:title($doc as element()) as xs:string {
  :  The list of authors associated with a text.
  :  Note: some might be signatories and not actually authors.
  :
- :  @param $doc      the TEI/XML document.
+ :  @param $text      the TEI/XML document.
  :  @return a list of author elements.
  :)
-declare function mpese-text:authors($doc as element()) as element()* {
-        $doc//tei:fileDesc/tei:titleStmt/tei:author
+declare function mpese-text:authors($text as xs:string) as element()* {
+        doc($text)//tei:fileDesc/tei:titleStmt/tei:author
 };
 
 (:~
@@ -98,10 +98,10 @@ declare function mpese-text:mss-details-include($include as element()?) as eleme
  : @param $doc      the TEI/XML document.
  : @return the <msIdentifier/> of the MSS the text is derived.
  :)
-declare function mpese-text:mss-details($doc as element()?) as element()? {
+declare function mpese-text:mss-details($text as xs:string) as element()? {
 
     (: get the include :)
-    let $include := $doc//tei:sourceDesc/tei:msDesc/xi:include
+    let $include := doc($text)//tei:sourceDesc/tei:msDesc/xi:include
 
     return
         mpese-text:mss-details-include($include)
@@ -110,33 +110,34 @@ declare function mpese-text:mss-details($doc as element()?) as element()? {
 (:~
  : Get the text types associated with a text.
  :
- : @param $doc      the TEI/XML document.
+ : @param $text      the TEI/XML document.
  : @return the text types for a text
  :)
-declare function mpese-text:keywords-text-type($doc as element()) as element()* {
-    $doc//tei:profileDesc/tei:textClass/tei:keywords[@n='text-type']/tei:term
+declare function mpese-text:keywords-text-type($text as xs:string) as element()* {
+    doc($text)//tei:profileDesc/tei:textClass/tei:keywords[@n='text-type']/tei:term
 };
 
 (:~
  : Get the keywords associated with a text.
  :
- : @param $doc      the TEI/XML document.
+ : @param $text      the TEI/XML document.
  : @return the keywords for a text
  :)
-declare function mpese-text:keywords-topic($doc as element()) as element()* {
-    $doc//tei:profileDesc/tei:textClass/tei:keywords[@n='topic-keyword']/tei:term
+declare function mpese-text:keywords-topic($text as xs:string) as element()* {
+    doc($text)//tei:profileDesc/tei:textClass/tei:keywords[@n='topic-keyword']/tei:term
 };
 
 (:~
  : Display the text (delegate to an xsl file)
  :
- :  @param $doc      the TEI/XML document.
+ :  @param $text      the TEI/XML document.
  :  @return the transcript marked up as HTML
  :)
-declare function mpese-text:text-body($doc as node()) as node()* {
+declare function mpese-text:text-body($text as xs:string) as node()* {
     let $xsl := doc('corpus-text-html.xsl')
+    let $transcript := doc($text)
     return
-        transform:transform($doc, $xsl, ())
+        transform:transform($transcript, $xsl, ())
 };
 
 
@@ -144,13 +145,13 @@ declare function mpese-text:text-body($doc as node()) as node()* {
  : Get the <msIdentifier/> for the witnesses by following xincludes under the
  : <listBibl xml:id="witness"/> element
  :
- :  @param $doc      the TEI/XML document.
+ :  @param $text      the TEI/XML document.
  :  @return the XML for the witnesses
  :)
-declare function mpese-text:witnesses-includes($doc as node()) as element()*  {
+declare function mpese-text:witnesses-includes($text as xs:string) as element()*  {
 
     (: find the include nodes :)
-    let $witnesses := $doc//tei:listBibl[@xml:id='mss_witness']/tei:bibl/xi:include
+    let $witnesses := doc($text)//tei:listBibl[@xml:id='mss_witness']/tei:bibl/xi:include
 
     (: follow each include to get the manuscript details :)
     for $include in $witnesses
@@ -171,11 +172,11 @@ declare function mpese-text:witnesses-includes($doc as node()) as element()*  {
 (:~
  : Get the creation date of a document
  :
- :  @param $doc      the TEI/XML document.
+ :  @param $text      the TEI/XML document.
  :  @return the creation date of the document
  :)
-declare function mpese-text:creation-date($doc as node()) as element()* {
-    $doc//tei:profileDesc/tei:creation/tei:date
+declare function mpese-text:creation-date($text as xs:string) as element()* {
+    doc($text)//tei:profileDesc/tei:creation/tei:date
 };
 
 (:~
@@ -191,11 +192,11 @@ declare function mpese-text:creation-place($doc as node()) as element()* {
 (:~
  : Languages used in the document.
  :
- : @param $doc      the TEI/XML document.
+ : @param $text      the TEI/XML document.
  : @return the languages used in the document
  :)
-declare function mpese-text:languages($doc as node()) as element()* {
-    $doc//tei:profileDesc/tei:langUsage/tei:language
+declare function mpese-text:languages($text as xs:string) as element()* {
+    doc($text)//tei:profileDesc/tei:langUsage/tei:language
 };
 
 (: ---------- Functions to help render content  ----------- :)
@@ -457,6 +458,57 @@ declare function mpese-text:bibliography($biblio_list) {
 
 };
 
+(:~
+ : Display the creation date.
+ :
+ : @param $date_list     the list of dates
+ : @return the creation date or a 'No details' message
+ :)
+declare function mpese-text:creation-date-label($date_list as element()*) {
+
+    let $dates :=
+        for $date in $date_list
+        return
+            let $val := if ($date/string()) then
+                $date/string()
+            else if ($date/@when/string()) then
+                    $date/@when/string()
+                else
+                    ""
+            return
+                if ($date/@type/string()) then
+                    $val || ' (' || $date/@type/string() || ')'
+                else
+                    $val
+    let $val := string-join($dates, ', ')
+    return
+        if ($val) then
+            $val
+        else
+            "No details"
+};
+
+
+(:~
+ : Display a list of text topic keywords.
+ :
+ : @param $text-types     XML list
+ : @return the list of text topic keywords as HTML
+ :)
+declare function mpese-text:keywords-label($keywords) {
+    if (count($keywords) eq 0) then
+        <p>No text types.</p>
+    else
+        <ul class="list-inline">{
+            for $type in $keywords
+                return
+                    if (not(functx:has-empty-content($type))) then
+                        <li>{$type/string()}</li>
+                    else
+                        ()
+        }</ul>
+};
+
 
 (: ---------- TEMPLATE FUNCTIONS ----------- :)
 
@@ -471,10 +523,10 @@ declare function mpese-text:bibliography($biblio_list) {
  :)
 declare function mpese-text:text($node as node (), $model as map (*), $text as xs:string) {
 
-    let $doc := doc(concat($config:mpese-tei-corpus-texts, '/', $text))//tei:TEI
-    let $mss := mpese-text:mss-details($doc)
+    let $text := $config:mpese-tei-corpus-texts || '/' || $text
+    let $mss := mpese-text:mss-details($text)
     return
-        map { "text" := $doc, "mss" := $mss}
+        map { "text" := $text, "mss" := $mss}
 };
 
 (:~
@@ -503,19 +555,39 @@ declare function mpese-text:mss($node as node (), $model as map (*)) {
     <p>{mpese-text:mss-with-link($model('mss'))}</p>
 };
 
+(: ----- Main text tab -----:)
+
 (:~
- : Display the mss name
+ : Display the transcript
  :
  : @param $node     the HTML node being processes
  : @param $model    application data
- : @return the name of the manuscript
+ : @return the transcript as HTML
  :)
-declare function mpese-text:mss-name($node as node (), $model as map (*)) {
-    if (not(functx:has-empty-content($model('mss')//tei:msName))) then
-        <p>{$model('mss')//tei:msName/string()}</p>
-    else
-        ""
+declare function mpese-text:transcript($node as node (), $model as map (*)) {
+    mpese-text:text-body($model('text'))
 };
+
+(:~
+ : Display the tags needed for the OpenSeaDragon viewer.
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @return HTML for the viewer or a 'No image' message
+ :)
+declare function mpese-text:image($node as node (), $model as map (*)) {
+    let $images := doc($model('text'))//tei:pb[@facs]/@facs/string()
+    let $distinct := fn:string-join(distinct-values($images), ';')
+    return
+        if ($distinct) then
+            <div id='mss-images' data-images="{$distinct}">
+                <div id="openseadragon"></div>
+            </div>
+        else
+            <div class="well well-lg"><p class="text-center font-weight-bold">No image</p></div>
+};
+
+(: ----- Text details tab -----:)
 
 (:~
  : Display basic mss details with link to MSS and the mss name
@@ -537,127 +609,6 @@ declare function mpese-text:mss-name-full($node as node (), $model as map (*)) {
             }</p>
         else
             <p>No manuscript details</p>
-};
-
-(:~
- : Display the tags needed for the OpenSeaDragon viewer.
- :
- : @param $node     the HTML node being processes
- : @param $model    application data
- : @return HTML for the viewer or a 'No image' message
- :)
-declare function mpese-text:image($node as node (), $model as map (*)) {
-    let $images := $model('text')//tei:pb[@facs]/@facs/string()
-    let $distinct := fn:string-join(distinct-values($images), ';')
-    return
-        if ($distinct) then
-            <div id='mss-images' data-images="{$distinct}">
-                <div id="openseadragon"></div>
-            </div>
-        else
-            <div class="well well-lg"><p class="text-center font-weight-bold">No image</p></div>
-};
-
-(:~
- : Display the transcript
- :
- : @param $node     the HTML node being processes
- : @param $model    application data
- : @return the transcript as HTML
- :)
-declare function mpese-text:transcript($node as node (), $model as map (*)) {
-    mpese-text:text-body($model('text'))
-};
-
-(:~
- : Display the list of witnesses
- :
- : @param $node     the HTML node being processes
- : @param $model    application data
- : @return the list of witnesses or a "no witnesses" message
- :)
-declare function mpese-text:witnesses($node as node (), $model as map (*)) {
-    let $witnesses := mpese-text:witnesses-includes($model('text'))
-    return
-        if (count($witnesses) eq 0) then
-            <p>No witnesses</p>
-        else
-            <ul>{
-                for $witness in $witnesses
-                    return
-                        <li>{mpese-text:mss-with-link($witness)}</li>
-            }</ul>
-};
-
-(:~
- : Display a list of authors.
- :
- : @param $node     the HTML node being processes
- : @param $model    application data
- : @return the list of authors
- :)
-declare function mpese-text:author-list($node as node (), $model as map (*)) {
-    let $authors := mpese-text:authors($model('text'))
-
-    return
-        (: Check if we have a list or the first item of the list is empty (usually a comment saying
-           content nees to be added :)
-        if (count($authors) eq 0 or functx:has-empty-content($authors[1])) then
-            <p>No authors.</p>
-        else
-            <ul>{
-                for $author in $authors
-                    return
-                        <li>{mpese-text:person($author, true())}</li>
-            }</ul>
-};
-
-(:~
- : Display a list of text type keywords.
- :
- : @param $node     the HTML node being processes
- : @param $model    application data
- : @return the list of text type keywords
- :)
-declare function mpese-text:text-type($node as node (), $model as map (*)) {
-    let $text-types := mpese-text:keywords-text-type($model('text'))
-
-    return
-        if (count($text-types) eq 0) then
-            <p>No text types.</p>
-        else
-            <ul class="list-inline">{
-                for $type in $text-types
-                    return
-                        if (not(functx:has-empty-content($type))) then
-                            <li>{$type/string()}</li>
-                        else
-                            ()
-            }</ul>
-};
-
-(:~
- : Display a list of text topic keywords.
- :
- : @param $node     the HTML node being processes
- : @param $model    application data
- : @return the list of text topic keywords
- :)
-declare function mpese-text:text-topic($node as node (), $model as map (*)) {
-    let $text-types := mpese-text:keywords-topic($model('text'))
-
-    return
-        if (count($text-types) eq 0) then
-            <p>No text types.</p>
-        else
-            <ul class="list-inline">{
-                for $type in $text-types
-                    return
-                        if (not(functx:has-empty-content($type))) then
-                            <li>{$type/string()}</li>
-                        else
-                            ()
-            }</ul>
 };
 
 (:~
@@ -688,26 +639,52 @@ declare function mpese-text:lang($node as node (), $model as map (*)) {
 declare function mpese-text:creation-date($node as node (), $model as map (*)) {
 
     let $date_list := mpese-text:creation-date($model('text'))
-    let $dates :=
-                for $date in $date_list
-                    return
-                        let $val := if ($date/string()) then
-                                        $date/string()
-                                    else if ($date/@when/string()) then
-                                        $date/@when/string()
-                                    else
-                                        ""
-                        return
-                            if ($date/@type/string()) then
-                                $val || ' (' || $date/@type/string() || ')'
-                            else
-                                $val
-    let $val := string-join($dates, ', ')
     return
-        if ($val) then
-            $val
+        mpese-text:creation-date-label($date_list)
+};
+
+(:~
+ : Display a list of authors.
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @return the list of authors
+ :)
+declare function mpese-text:author-list($node as node (), $model as map (*)) {
+    let $authors := mpese-text:authors($model('text'))
+
+    return
+        (: Check if we have a list or the first item of the list is empty (usually a comment saying
+           content nees to be added :)
+        if (count($authors) eq 0 or functx:has-empty-content($authors[1])) then
+            <p>No authors.</p>
         else
-            "No details"
+            <ul>{
+                for $author in $authors
+                    let $role := if ($author/@role/string()) then ' (' || $author/@role/string() || ')' else ""
+                    return
+                        <li>{mpese-text:person($author, true())}{$role}</li>
+            }</ul>
+};
+
+(:~
+ : Display the list of witnesses
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @return the list of witnesses or a "no witnesses" message
+ :)
+declare function mpese-text:witnesses($node as node (), $model as map (*)) {
+    let $witnesses := mpese-text:witnesses-includes($model('text'))
+    return
+        if (count($witnesses) eq 0) then
+            <p>No witnesses</p>
+        else
+            <ul>{
+                for $witness in $witnesses
+                    return
+                        <li>{mpese-text:mss-with-link($witness)}</li>
+            }</ul>
 };
 
 (:~
@@ -719,7 +696,7 @@ declare function mpese-text:creation-date($node as node (), $model as map (*)) {
 :)
 declare function mpese-text:contemporary-witnesses($node as node (), $model as map (*)) {
 
-    let $witnesses := $model('text')//tei:sourceDesc/tei:listBibl[@xml:id = 'C17_print_witness']/tei:bibl
+    let $witnesses := doc($model('text'))//tei:sourceDesc/tei:listBibl[@xml:id = 'C17_print_witness']/tei:bibl
 
     return
         mpese-text:bibliography($witnesses)
@@ -734,8 +711,36 @@ declare function mpese-text:contemporary-witnesses($node as node (), $model as m
 :)
 declare function mpese-text:modern-witnesses($node as node (), $model as map (*)) {
 
-    let $witnesses := $model('text')//tei:sourceDesc/tei:listBibl[@xml:id = 'modern_print_witness']/tei:bibl
+    let $witnesses := doc($model('text'))//tei:sourceDesc/tei:listBibl[@xml:id = 'modern_print_witness']/tei:bibl
 
     return
         mpese-text:bibliography($witnesses)
+};
+
+(:~
+ : Display a list of text type keywords.
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @return the list of text type keywords
+ :)
+declare function mpese-text:text-type($node as node (), $model as map (*)) {
+    let $text-types := mpese-text:keywords-text-type($model('text'))
+
+    return
+        mpese-text:keywords-label($text-types)
+};
+
+(:~
+ : Display a list of text topic keywords.
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @return the list of text topic keywords
+ :)
+declare function mpese-text:text-topic($node as node (), $model as map (*)) {
+    let $text-types := mpese-text:keywords-topic($model('text'))
+
+    return
+        mpese-text:keywords-label($text-types)
 };

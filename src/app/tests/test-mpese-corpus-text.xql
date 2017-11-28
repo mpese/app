@@ -33,117 +33,100 @@ declare %test:assertEquals("Letters to the Heads of Cambridge Colleges (June 162
 };
 
 (: Test title with no title provided but with a date  :)
-declare %test:assertEquals("Untitled (June 1626)") function test-text:result-title-missing-title() {
+(:declare %test:assertEquals("Untitled (June 1626)") function test-text:result-title-missing-title() {:)
 
-    let $doc := <tei:TEI>
-                    <tei:teiHeader>
-                        <tei:fileDesc>
-                            <tei:titleStmt>
-                                <tei:title/>
-                            </tei:titleStmt>
-                        </tei:fileDesc>
-                        <tei:profileDesc>
-                            <tei:creation>
-                                <tei:date>June 1626</tei:date>
-                            </tei:creation>
-                        </tei:profileDesc>
-                    </tei:teiHeader>
-                </tei:TEI>
+    (:let $doc := <tei:TEI>:)
+                    (:<tei:teiHeader>:)
+                        (:<tei:fileDesc>:)
+                            (:<tei:titleStmt>:)
+                                (:<tei:title/>:)
+                            (:</tei:titleStmt>:)
+                        (:</tei:fileDesc>:)
+                        (:<tei:profileDesc>:)
+                            (:<tei:creation>:)
+                                (:<tei:date>June 1626</tei:date>:)
+                            (:</tei:creation>:)
+                        (:</tei:profileDesc>:)
+                    (:</tei:teiHeader>:)
+                (:</tei:TEI>:)
 
-    return
-        mpese-text:title($doc)
+    (:return:)
+        (:mpese-text:title($doc):)
 
-};
+(:};:)
 
 (: Test title with no title provided but with a date  :)
-declare %test:assertEquals("Untitled (No date)") function test-text:result-title-missing-title-date() {
+(:declare %test:assertEquals("Untitled (No date)") function test-text:result-title-missing-title-date() {:)
 
-    let $doc := <tei:TEI>
-                    <tei:teiHeader>
-                        <tei:fileDesc>
-                            <tei:titleStmt>
-                                <tei:title/>
-                            </tei:titleStmt>
-                        </tei:fileDesc>
-                        <tei:profileDesc>
-                            <tei:creation>
-                                <tei:date/>
-                            </tei:creation>
-                        </tei:profileDesc>
-                    </tei:teiHeader>
-                </tei:TEI>
+    (:let $doc := <tei:TEI>:)
+                    (:<tei:teiHeader>:)
+                        (:<tei:fileDesc>:)
+                            (:<tei:titleStmt>:)
+                                (:<tei:title/>:)
+                            (:</tei:titleStmt>:)
+                        (:</tei:fileDesc>:)
+                        (:<tei:profileDesc>:)
+                            (:<tei:creation>:)
+                                (:<tei:date/>:)
+                            (:</tei:creation>:)
+                        (:</tei:profileDesc>:)
+                    (:</tei:teiHeader>:)
+                (:</tei:TEI>:)
 
-    return
-        mpese-text:title($doc)
+    (:return:)
+        (:mpese-text:title($doc):)
 
-};
+(:};:)
 
-declare %test:assertXPath('count($result) eq 1') function test-text:one-author() {
+(:x:)
+(:};:)
 
-        let $doc := <tei:TEI>
-                    <tei:teiHeader>
-                        <tei:fileDesc>
-                            <tei:titleStmt>
-                                <tei:author>
-                                    <tei:persName corresp="../people/people.xml#P0026">Sir John Bramston the Elder</tei:persName>
-                                </tei:author>
-                            </tei:titleStmt>
-                        </tei:fileDesc>
-                    </tei:teiHeader>
-                </tei:TEI>
+(:declare %test:assertXPath('count($result) eq 2') function test-text:two-author() {:)
 
-        return
+        (:let $doc := <tei:TEI>:)
+                    (:<tei:teiHeader>:)
+                        (:<tei:fileDesc>:)
+                            (:<tei:titleStmt>:)
+                                (:<tei:author>:)
+                                    (:<tei:persName corresp="../people/people.xml#P0026">Sir John Bramston the Elder</tei:persName>:)
+                                (:</tei:author>:)
+                                (:<tei:author>:)
+                                    (:<tei:persName corresp="../people/people.xml#P0027">William Noy</tei:persName>:)
+                                (:</tei:author>:)
+                            (:</tei:titleStmt>:)
+                        (:</tei:fileDesc>:)
+                    (:</tei:teiHeader>:)
+                (:</tei:TEI>:)
 
-            mpese-text:authors($doc)
+        (:return:)
 
-};
+            (:mpese-text:authors($doc):)
+(:};:)
 
-declare %test:assertXPath('count($result) eq 2') function test-text:two-author() {
+(:declare %test:assertXPath('count($result) eq 3') function test-text:three-author() {:)
 
-        let $doc := <tei:TEI>
-                    <tei:teiHeader>
-                        <tei:fileDesc>
-                            <tei:titleStmt>
-                                <tei:author>
-                                    <tei:persName corresp="../people/people.xml#P0026">Sir John Bramston the Elder</tei:persName>
-                                </tei:author>
-                                <tei:author>
-                                    <tei:persName corresp="../people/people.xml#P0027">William Noy</tei:persName>
-                                </tei:author>
-                            </tei:titleStmt>
-                        </tei:fileDesc>
-                    </tei:teiHeader>
-                </tei:TEI>
+        (:let $doc := <tei:TEI>:)
+                    (:<tei:teiHeader>:)
+                        (:<tei:fileDesc>:)
+                            (:<tei:titleStmt>:)
+                                (:<tei:author>:)
+                                    (:<tei:persName corresp="../people/people.xml#P0026">Sir John Bramston the Elder</tei:persName>:)
+                                (:</tei:author>:)
+                                (:<tei:author>:)
+                                    (:<tei:persName corresp="../people/people.xml#P0027">William Noy</tei:persName>:)
+                                (:</tei:author>:)
+                                (:<tei:author>:)
+                                    (:<tei:persName corresp="../people/people.xml#P0028">Sir Henry Calthorpe</tei:persName>:)
+                                (:</tei:author>:)
+                            (:</tei:titleStmt>:)
+                        (:</tei:fileDesc>:)
+                    (:</tei:teiHeader>:)
+                (:</tei:TEI>:)
 
-        return
+        (:return:)
 
-            mpese-text:authors($doc)
-};
-
-declare %test:assertXPath('count($result) eq 3') function test-text:three-author() {
-
-        let $doc := <tei:TEI>
-                    <tei:teiHeader>
-                        <tei:fileDesc>
-                            <tei:titleStmt>
-                                <tei:author>
-                                    <tei:persName corresp="../people/people.xml#P0026">Sir John Bramston the Elder</tei:persName>
-                                </tei:author>
-                                <tei:author>
-                                    <tei:persName corresp="../people/people.xml#P0027">William Noy</tei:persName>
-                                </tei:author>
-                                <tei:author>
-                                    <tei:persName corresp="../people/people.xml#P0028">Sir Henry Calthorpe</tei:persName>
-                                </tei:author>
-                            </tei:titleStmt>
-                        </tei:fileDesc>
-                    </tei:teiHeader>
-                </tei:TEI>
-
-        return
-
-            mpese-text:authors($doc)
-};
+            (:mpese-text:authors($doc):)
+(:};:)
 
 (: Test getting the MSS URI for an include - normal :)
 declare %test:assertEquals('/db/mpese/tei/corpus/mss/BLAddMS35331.xml') function test-text:mss-details-uri() {
@@ -177,71 +160,41 @@ declare %test:assertXPath("$result//*:idno/string() eq 'MS 35331'") function tes
 };
 
 
-declare %test:assertXPath("$result//*:idno/string() eq 'MS 35331'") function test-text:mss-details() {
-    let $doc := <tei:TEI>
-                    <tei:teiHeader>
-                        <tei:sourceDesc>
-                            <tei:msDesc corresp="../mss/BLAddMS35331.xml">
-                                <xi:include href="../mss/BLAddMS35331.xml" xpointer="BL_Add_MS_35331"/>
-                            </tei:msDesc>
-                        </tei:sourceDesc>
-                    </tei:teiHeader>
-                </tei:TEI>
-    return
-        mpese-text:mss-details($doc)
-};
+(:declare %test:assertXPath("$result//*:idno/string() eq 'MS 35331'") function test-text:mss-details() {:)
+    (:let $doc := <tei:TEI>:)
+                    (:<tei:teiHeader>:)
+                        (:<tei:sourceDesc>:)
+                            (:<tei:msDesc corresp="../mss/BLAddMS35331.xml">:)
+                                (:<xi:include href="../mss/BLAddMS35331.xml" xpointer="BL_Add_MS_35331"/>:)
+                            (:</tei:msDesc>:)
+                        (:</tei:sourceDesc>:)
+                    (:</tei:teiHeader>:)
+                (:</tei:TEI>:)
+    (:return:)
+        (:mpese-text:mss-details($doc):)
+(:};:)
 
 (: test querying for text-type keywords :)
-declare %test:assertXPath("fn:count($result) eq 1") function test-text:keywords-text-type() {
-    let $doc := <tei:TEI>
-                    <tei:teiHeader>
-                        <tei:profileDesc>
-                            <tei:textClass>
-                                <tei:keywords n="text-type">
-                                    <tei:term>legal argument</tei:term>
-                                </tei:keywords>
-                            </tei:textClass>
-                        </tei:profileDesc>
-                    </tei:teiHeader>
-                </tei:TEI>
+declare %test:assertXPath("fn:count($result//li) eq 1") function test-text:keywords-text-type() {
+    let $list := (<tei:term>legal argument</tei:term>)
 
     return
-        mpese-text:keywords-text-type($doc)
+        mpese-text:keywords-label($list)
 };
 
 (: text querying for topic keywords :)
-declare %test:assertXPath("fn:count($result) eq 2") function test-text:keywords-topic() {
-    let $doc := <tei:TEI>
-                    <tei:teiHeader>
-                      <tei:profileDesc>
-                         <tei:textClass>
-                            <tei:keywords n="topic-keyword">
-                               <tei:term>habeas corpus</tei:term>
-                               <tei:term>bail</tei:term>
-                            </tei:keywords>
-                         </tei:textClass>
-                      </tei:profileDesc>
-                   </tei:teiHeader>
-                </tei:TEI>
+declare %test:assertXPath("fn:count($result//li) eq 2") function test-text:keywords-topic() {
+    let $list := (<tei:term>habeas corpus</tei:term>, <tei:term>bail</tei:term>)
 
     return
-        mpese-text:keywords-topic($doc)
+        mpese-text:keywords-label($list)
 };
 
 (: check we get a date :)
-declare %test:assertXPath("$result eq '22 November 1627'") function test-text:creation-date() {
-    let $doc := <tei:TEI>
-                    <tei:teiHeader>
-                        <tei:profileDesc>
-                            <tei:creation>
-                                <tei:date when="1627-11-22">22 November 1627</tei:date>
-                                <tei:placeName corresp="../places/places.xml#PL0010">Court of King's Bench</tei:placeName>
-                            </tei:creation>
-                        </tei:profileDesc>
-                    </tei:teiHeader>
-                </tei:TEI>
+declare %test:assertXPath("$result eq '22 November 1627'") function test-text:creation-date-label() {
+    let $list := (<tei:date when="1627-11-22">22 November 1627</tei:date>)
     return
-        mpese-text:creation-date($doc)
+        mpese-text:creation-date-label($list)
 };
 
 
@@ -266,25 +219,25 @@ declare %test:assertXPath("contains($result/string(), 'Court of King')") functio
 };
 
 (: check we get a list of languages :)
-declare %test:assertXPath("contains($result/string(), 'English')")
-        %test:assertXPath("contains($result/string(), 'Latin')") function test-text:languages() {
-    let $doc := <tei:TEI>
-                    <tei:teiHeader>
-                        <tei:profileDesc>
-                            <tei:creation>
-                                <tei:date when="1627-11-22">22 November 1627</tei:date>
-                                <tei:placeName corresp="../places/places.xml#PL0010">Court of King's Bench</tei:placeName>
-                            </tei:creation>
-                            <tei:langUsage>
-                                <tei:language ident="EN">English</tei:language>
-                                <tei:language ident="LA">Latin</tei:language>
-                            </tei:langUsage>
-                        </tei:profileDesc>
-                    </tei:teiHeader>
-                </tei:TEI>
-    return
-        mpese-text:languages($doc)
-};
+(:declare %test:assertXPath("contains($result/string(), 'English')"):)
+        (:%test:assertXPath("contains($result/string(), 'Latin')") function test-text:languages() {:)
+    (:let $doc := <tei:TEI>:)
+                    (:<tei:teiHeader>:)
+                        (:<tei:profileDesc>:)
+                            (:<tei:creation>:)
+                                (:<tei:date when="1627-11-22">22 November 1627</tei:date>:)
+                                (:<tei:placeName corresp="../places/places.xml#PL0010">Court of King's Bench</tei:placeName>:)
+                            (:</tei:creation>:)
+                            (:<tei:langUsage>:)
+                                (:<tei:language ident="EN">English</tei:language>:)
+                                (:<tei:language ident="LA">Latin</tei:language>:)
+                            (:</tei:langUsage>:)
+                        (:</tei:profileDesc>:)
+                    (:</tei:teiHeader>:)
+                (:</tei:TEI>:)
+    (:return:)
+        (:mpese-text:languages($doc):)
+(:};:)
 
 (: check the transform; just check we have multple p tags :)
 declare %test:assertXPath("count($result//p) > 0") function test-text:text-body() {
@@ -519,6 +472,43 @@ function test-text:bibloScopePrefix($type as xs:string, $plural as xs:boolean) {
     mpese-text:bibloScopePrefix($type, $plural)
 };
 
+
+(: test we get a list of contemporary printed witnesses :)
+declare %test:assertXPath("count($result//li) > 0")
+function test-text:bibliogaphy-contemporary-witnesses() {
+
+    let $list := (<tei:bibl>
+                    <tei:author>
+                        <tei:persName corresp="../people/people.xml#P0060">
+                            <tei:forename>J[ohn]</tei:forename>
+                            <tei:surname>M[ilton]</tei:surname>
+                        </tei:persName>
+                    </tei:author>
+                    <tei:title>Newes from Hell, Rome and the Inns of Court</tei:title>
+                    <tei:date when="1641">1641</tei:date>
+                    <tei:idno type="Wing">M42A</tei:idno>
+                    <tei:biblScope unit="page" from="8" to="10">8-10</tei:biblScope>
+                    <tei:biblScope unit="sigs" from="B1v" to="B2v">B1v-B2v</tei:biblScope>
+                </tei:bibl>)
+    return mpese-text:bibliography($list)
+};
+
+(: test we get a list of modern printed witnesses :)
+declare %test:assertXPath("count($result//li) > 0")
+function test-text:bibliography-modern-witnesses() {
+
+    let $list := ( <tei:bibl>
+                      <tei:title type="shorttitle">The Harleian Miscellany</tei:title>
+                      <tei:edition>1st ed.</tei:edition>
+                      <tei:biblScope unit="volume">7</tei:biblScope>
+                      <tei:biblScope unit="page" from="205" to="206">205-206</tei:biblScope>
+                      <tei:note>From J.M., News from Hell (1641)</tei:note>
+                   </tei:bibl>)
+    return mpese-text:bibliography($list)
+};
+
+
+
 (: ---------- test template method functions ----------:)
 
 (: Check we get the text and mss and add it to the model:)
@@ -606,18 +596,6 @@ declare %test:assertXPath("$result eq '1623, 1485 (claimed)'") function test-tex
         mpese-text:creation-date($node, $map)
 };
 
-(: check expected sample data in mss name :)
-declare %test:assertXPath("contains($result/string(), 'Diary of Walter Yonge') eq true()")
-function test-text:mss-name() {
-
-    let $node := <test></test>
-    let $model := map {}
-    let $text := 'HabeasCorpus1627.xml'
-    let $map := mpese-text:text($node, $model, $text)
-    return
-        mpese-text:mss-name($node, $map)
-};
-
 declare
 %test:assertXPath("contains($result/string(), 'British Library, Additional, MS 35331') eq true()")
 %test:assertXPath("contains($result/string(), 'Diary of Walter Yonge') eq true()")
@@ -694,59 +672,3 @@ function test-text:text-topic() {
     return mpese-text:text-topic($node, $map)
 };
 
-(: test we get a list of contemporary printed witnesses :)
-declare %test:assertXPath("count($result//li) > 0")
-function test-text:contemporary-witnesses() {
-    let $node := <test></test>
-
-    let $text := <tei:TEI>
-                   <tei:teiHeader>
-                      <tei:fileDesc>
-                         <tei:sourceDesc>
-                            <tei:listBibl xml:id="C17_print_witness">
-                                <tei:bibl>
-                                    <tei:author>
-                                        <tei:persName corresp="../people/people.xml#P0060">
-                                            <tei:forename>J[ohn]</tei:forename>
-                                            <tei:surname>M[ilton]</tei:surname>
-                                        </tei:persName>
-                                    </tei:author>
-                                    <tei:title>Newes from Hell, Rome and the Inns of Court</tei:title>
-                                    <tei:date when="1641">1641</tei:date>
-                                    <tei:idno type="Wing">M42A</tei:idno>
-                                    <tei:biblScope unit="page" from="8" to="10">8-10</tei:biblScope>
-                                    <tei:biblScope unit="sigs" from="B1v" to="B2v">B1v-B2v</tei:biblScope>
-                                </tei:bibl>
-                            </tei:listBibl>
-                         </tei:sourceDesc>
-                      </tei:fileDesc>
-                   </tei:teiHeader>
-                </tei:TEI>
-    let $map := map { 'text' := $text }
-    return mpese-text:contemporary-witnesses($node, $map)
-};
-
-(: test we get a list of modern printed witnesses :)
-declare %test:assertXPath("count($result//li) > 0")
-function test-text:modern-witnesses() {
-    let $node := <test></test>
-    let $text := <tei:TEI>
-                   <tei:teiHeader>
-                      <tei:fileDesc>
-                         <tei:sourceDesc>
-                            <tei:listBibl xml:id="modern_print_witness">
-                               <tei:bibl>
-                                  <tei:title type="shorttitle">The Harleian Miscellany</tei:title>
-                                  <tei:edition>1st ed.</tei:edition>
-                                  <tei:biblScope unit="volume">7</tei:biblScope>
-                                  <tei:biblScope unit="page" from="205" to="206">205-206</tei:biblScope>
-                                  <tei:note>From J.M., News from Hell (1641)</tei:note>
-                               </tei:bibl>
-                            </tei:listBibl>
-                         </tei:sourceDesc>
-                      </tei:fileDesc>
-                   </tei:teiHeader>
-                </tei:TEI>
-    let $map := map { 'text' := $text }
-    return mpese-text:modern-witnesses($node, $map)
-};
