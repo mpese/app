@@ -44,7 +44,7 @@ declare function mpese-text:title($doc as element()) as xs:string {
  :  @return a list of author elements.
  :)
 declare function mpese-text:authors($doc as element()) as element()* {
-    $doc//tei:fileDesc/tei:titleStmt/tei:author
+        $doc//tei:fileDesc/tei:titleStmt/tei:author
 };
 
 (:~
@@ -174,8 +174,8 @@ declare function mpese-text:witnesses-includes($doc as node()) as element()*  {
  :  @param $doc      the TEI/XML document.
  :  @return the creation date of the document
  :)
-declare function mpese-text:creation-date($doc as node()) as xs:string? {
-    $doc//tei:profileDesc/tei:creation/tei:date/string()
+declare function mpese-text:creation-date($doc as node()) as element()* {
+    $doc//tei:profileDesc/tei:creation/tei:date
 };
 
 (:~
@@ -419,14 +419,18 @@ declare function mpese-text:outputScope($scope_list) {
     let $ranges :=
             for $range in $scope_list
                 let $f := string-join(($range/@from/string(),$range/@to/string()), '–')
-                return $f
+                return
+                    if ($f) then
+                        $f
+                    else
+                        $range/string()
     return
         string-join($ranges, ', ')
 };
 
 declare function mpese-text:bibliography($biblio_list) {
 
-    if (count($biblio_list) eq 0) then
+    if (count($biblio_list) eq 0 or functx:has-empty-content($biblio_list[1])) then
         <p>No bibliography</p>
     else
         <ul>{
@@ -596,7 +600,9 @@ declare function mpese-text:author-list($node as node (), $model as map (*)) {
     let $authors := mpese-text:authors($model('text'))
 
     return
-        if (count($authors) eq 0) then
+        (: Check if we have a list or the first item of the list is empty (usually a comment saying
+           content nees to be added :)
+        if (count($authors) eq 0 or functx:has-empty-content($authors[1])) then
             <p>No authors.</p>
         else
             <ul>{
@@ -681,12 +687,25 @@ declare function mpese-text:lang($node as node (), $model as map (*)) {
  :)
 declare function mpese-text:creation-date($node as node (), $model as map (*)) {
 
-    let $creation := mpese-text:creation-date($model('text'))
-
+    let $date_list := mpese-text:creation-date($model('text'))
+    let $dates :=
+                for $date in $date_list
+                    return
+                        let $val := if ($date/string()) then
+                                        $date/string()
+                                    else if ($date/@when/string()) then
+                                        $date/@when/string()
+                                    else
+                                        ""
+                        return
+                            if ($date/@type/string()) then
+                                $val || ' (' || $date/@type/string() || ')'
+                            else
+                                $val
+    let $val := string-join($dates, ', ')
     return
-
-        if ($creation and not(empty(fn:string-join($creation)))) then
-            mpese-text:creation-date($model('text'))
+        if ($val) then
+            $val
         else
             "No details"
 };

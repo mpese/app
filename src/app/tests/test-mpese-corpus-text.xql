@@ -244,6 +244,7 @@ declare %test:assertXPath("$result eq '22 November 1627'") function test-text:cr
         mpese-text:creation-date($doc)
 };
 
+
 (: check we get a creation place :)
 declare %test:assertXPath("contains($result/string(), 'Court of King')") function test-text:creation-place() {
     let $doc := <tei:TEI>
@@ -557,6 +558,54 @@ function test-text:mss() {
         mpese-text:mss($node, $map)
 };
 
+
+(: check creation date :)
+declare %test:assertXPath("$result eq 'June 1626'") function test-text:templ-creation-date() {
+
+    let $node := <test></test>
+    let $text := <tei:TEI>
+                    <tei:teiHeader>
+                        <tei:fileDesc>
+                            <tei:titleStmt>
+                                <tei:title/>
+                            </tei:titleStmt>
+                        </tei:fileDesc>
+                        <tei:profileDesc>
+                            <tei:creation>
+                                <tei:date>June 1626</tei:date>
+                            </tei:creation>
+                        </tei:profileDesc>
+                    </tei:teiHeader>
+                </tei:TEI>
+    let $map := map { 'text' := $text}
+    return
+        mpese-text:creation-date($node, $map)
+};
+
+(: check creation date :)
+declare %test:assertXPath("$result eq '1623, 1485 (claimed)'") function test-text:templ-creation-date-attr() {
+
+    let $node := <test></test>
+    let $text := <tei:TEI>
+                    <tei:teiHeader>
+                        <tei:fileDesc>
+                            <tei:titleStmt>
+                                <tei:title/>
+                            </tei:titleStmt>
+                        </tei:fileDesc>
+                        <tei:profileDesc>
+                            <tei:creation>
+                                <tei:date when="1623"/>
+                                <tei:date cert="low" type="claimed" when="1485"/>
+                            </tei:creation>
+                        </tei:profileDesc>
+                    </tei:teiHeader>
+                </tei:TEI>
+    let $map := map { 'text' := $text}
+    return
+        mpese-text:creation-date($node, $map)
+};
+
 (: check expected sample data in mss name :)
 declare %test:assertXPath("contains($result/string(), 'Diary of Walter Yonge') eq true()")
 function test-text:mss-name() {
@@ -649,9 +698,31 @@ function test-text:text-topic() {
 declare %test:assertXPath("count($result//li) > 0")
 function test-text:contemporary-witnesses() {
     let $node := <test></test>
-    let $model := map {}
-    let $text := 'HabeasCorpus1627.xml'
-    let $map := mpese-text:text($node, $model, $text)
+
+    let $text := <tei:TEI>
+                   <tei:teiHeader>
+                      <tei:fileDesc>
+                         <tei:sourceDesc>
+                            <tei:listBibl xml:id="C17_print_witness">
+                                <tei:bibl>
+                                    <tei:author>
+                                        <tei:persName corresp="../people/people.xml#P0060">
+                                            <tei:forename>J[ohn]</tei:forename>
+                                            <tei:surname>M[ilton]</tei:surname>
+                                        </tei:persName>
+                                    </tei:author>
+                                    <tei:title>Newes from Hell, Rome and the Inns of Court</tei:title>
+                                    <tei:date when="1641">1641</tei:date>
+                                    <tei:idno type="Wing">M42A</tei:idno>
+                                    <tei:biblScope unit="page" from="8" to="10">8-10</tei:biblScope>
+                                    <tei:biblScope unit="sigs" from="B1v" to="B2v">B1v-B2v</tei:biblScope>
+                                </tei:bibl>
+                            </tei:listBibl>
+                         </tei:sourceDesc>
+                      </tei:fileDesc>
+                   </tei:teiHeader>
+                </tei:TEI>
+    let $map := map { 'text' := $text }
     return mpese-text:contemporary-witnesses($node, $map)
 };
 
@@ -659,8 +730,23 @@ function test-text:contemporary-witnesses() {
 declare %test:assertXPath("count($result//li) > 0")
 function test-text:modern-witnesses() {
     let $node := <test></test>
-    let $model := map {}
-    let $text := 'HabeasCorpus1627.xml'
-    let $map := mpese-text:text($node, $model, $text)
+    let $text := <tei:TEI>
+                   <tei:teiHeader>
+                      <tei:fileDesc>
+                         <tei:sourceDesc>
+                            <tei:listBibl xml:id="modern_print_witness">
+                               <tei:bibl>
+                                  <tei:title type="shorttitle">The Harleian Miscellany</tei:title>
+                                  <tei:edition>1st ed.</tei:edition>
+                                  <tei:biblScope unit="volume">7</tei:biblScope>
+                                  <tei:biblScope unit="page" from="205" to="206">205-206</tei:biblScope>
+                                  <tei:note>From J.M., News from Hell (1641)</tei:note>
+                               </tei:bibl>
+                            </tei:listBibl>
+                         </tei:sourceDesc>
+                      </tei:fileDesc>
+                   </tei:teiHeader>
+                </tei:TEI>
+    let $map := map { 'text' := $text }
     return mpese-text:modern-witnesses($node, $map)
 };
