@@ -539,7 +539,7 @@ declare function mpese-text:keywords-label($keywords) {
 declare function mpese-text:text($node as node (), $model as map (*), $text as xs:string) {
 
     let $text := $config:mpese-tei-corpus-texts || '/' || $text
-    let $mss := mpese-text:mss-details(doc($text)//tei:TEI)
+    let $mss := mpese-text:mss-details(doc($text)//tei:TEI/tei:teiHeader/tei:fileDesc)
     return
         map { "text" := $text, "mss" := $mss}
 };
