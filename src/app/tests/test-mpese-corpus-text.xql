@@ -78,56 +78,6 @@ declare %test:assertEquals("Untitled (No date)") function test-text:result-title
 
 };
 
-(:x:)
-(:};:)
-
-(:declare %test:assertXPath('count($result) eq 2') function test-text:two-author() {:)
-
-        (:let $doc := <tei:TEI>:)
-                    (:<tei:teiHeader>:)
-                        (:<tei:fileDesc>:)
-                            (:<tei:titleStmt>:)
-                                (:<tei:author>:)
-                                    (:<tei:persName corresp="../people/people.xml#P0026">Sir John Bramston the Elder</tei:persName>:)
-                                (:</tei:author>:)
-                                (:<tei:author>:)
-                                    (:<tei:persName corresp="../people/people.xml#P0027">William Noy</tei:persName>:)
-                                (:</tei:author>:)
-                            (:</tei:titleStmt>:)
-                        (:</tei:fileDesc>:)
-                    (:</tei:teiHeader>:)
-                (:</tei:TEI>:)
-
-        (:return:)
-
-            (:mpese-text:authors($doc):)
-(:};:)
-
-(:declare %test:assertXPath('count($result) eq 3') function test-text:three-author() {:)
-
-        (:let $doc := <tei:TEI>:)
-                    (:<tei:teiHeader>:)
-                        (:<tei:fileDesc>:)
-                            (:<tei:titleStmt>:)
-                                (:<tei:author>:)
-                                    (:<tei:persName corresp="../people/people.xml#P0026">Sir John Bramston the Elder</tei:persName>:)
-                                (:</tei:author>:)
-                                (:<tei:author>:)
-                                    (:<tei:persName corresp="../people/people.xml#P0027">William Noy</tei:persName>:)
-                                (:</tei:author>:)
-                                (:<tei:author>:)
-                                    (:<tei:persName corresp="../people/people.xml#P0028">Sir Henry Calthorpe</tei:persName>:)
-                                (:</tei:author>:)
-                            (:</tei:titleStmt>:)
-                        (:</tei:fileDesc>:)
-                    (:</tei:teiHeader>:)
-                (:</tei:TEI>:)
-
-        (:return:)
-
-            (:mpese-text:authors($doc):)
-(:};:)
-
 (: Test getting the MSS URI for an include - normal :)
 declare %test:assertEquals('/db/mpese/tei/corpus/mss/BLAddMS35331.xml') function test-text:mss-details-uri() {
 
@@ -159,20 +109,19 @@ declare %test:assertXPath("$result//*:idno/string() eq 'MS 35331'") function tes
         mpese-text:mss-details-include($inc)
 };
 
-
-(:declare %test:assertXPath("$result//*:idno/string() eq 'MS 35331'") function test-text:mss-details() {:)
-    (:let $doc := <tei:TEI>:)
-                    (:<tei:teiHeader>:)
-                        (:<tei:sourceDesc>:)
-                            (:<tei:msDesc corresp="../mss/BLAddMS35331.xml">:)
-                                (:<xi:include href="../mss/BLAddMS35331.xml" xpointer="BL_Add_MS_35331"/>:)
-                            (:</tei:msDesc>:)
-                        (:</tei:sourceDesc>:)
-                    (:</tei:teiHeader>:)
-                (:</tei:TEI>:)
-    (:return:)
-        (:mpese-text:mss-details($doc):)
-(:};:)
+declare %test:assertXPath("$result//*:idno/string() eq 'MS 35331'") function test-text:mss-details() {
+    let $doc := <tei:TEI>
+                    <tei:teiHeader>
+                        <tei:sourceDesc>
+                            <tei:msDesc corresp="../mss/BLAddMS35331.xml">
+                                <xi:include href="../mss/BLAddMS35331.xml" xpointer="BL_Add_MS_35331"/>
+                            </tei:msDesc>
+                        </tei:sourceDesc>
+                    </tei:teiHeader>
+                </tei:TEI>
+    return
+        mpese-text:mss-details($doc)
+};
 
 (: test querying for text-type keywords :)
 declare %test:assertXPath("fn:count($result//li) eq 1") function test-text:keywords-text-type() {
