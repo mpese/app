@@ -124,6 +124,9 @@ else if (fn:matches($exist:path, '^(/t/)(\w+|%20)+\.html$')) then
 else if (fn:matches($exist:path, '^(/m/)(\w+|%20)+\.html$')) then
     (util:log('INFO', (' new mss homepage')),
     local:dispatch-attribute('/mss.html', 'mss', concat(local:item('mss'), '.xml')))
+else if (fn:matches($exist:path, '^(/p/)(\w+|%20)+\.html$')) then
+    (util:log('INFO', (' new person homepage')),
+    local:dispatch-attribute('/person.html', 'person_id', local:item('person_id')))
 else if ($exist:path eq '/about.html') then
     (util:log('INFO', ("About page")),
     local:dispatch('/about.html'))

@@ -226,7 +226,7 @@ declare function mpese-text:person($person, $show_link as xs:boolean) {
     return
         if (fn:string-length($corresp) > 0 and $show_link eq true()) then
             let $id := fn:tokenize($corresp, '#')[2]
-            return <span class="mpese-person"><a href="../people/{$id}/">{fn:normalize-space(fn:string-join($person/descendant-or-self::*[not(*)], ' '))}</a></span>
+            return <span class="mpese-person"><a href="../p/{$id}.html">{fn:normalize-space(fn:string-join($person/descendant-or-self::*[not(*)], ' '))}</a></span>
         else
             <span class="mpese-person">{fn:normalize-space(fn:string-join($person/descendant-or-self::*[not(*)], ' '))}</span>
 };

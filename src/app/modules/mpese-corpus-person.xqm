@@ -45,3 +45,36 @@ declare function mpese-person:label($persName as node()?) as xs:string {
     else
         fn:normalize-space($persName/string())
 };
+
+(: ---------- TEMPLATE FUNCTIONS ----------- :)
+
+(:~
+ : Adds the person details and makes them available to other methods.
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @param $text     the ID of the person.
+ : @return a map with the TEI/XML of the <person/>
+ :)
+declare function mpese-person:person($node as node (), $model as map (*), $person_id as xs:string) {
+
+    let $person := mpese-person:person-by-id($person_id)
+
+    return
+        map { "person" := $person}
+};
+
+(:~
+ : Provide a title for the person page.
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @return a map with the TEI/XML of the <person/>
+ :)
+declare function mpese-person:title($node as node (), $model as map (*)) {
+
+    let $person := $model('person')
+
+    return
+        <h2>{fn:string-join($person//tei:persName/*/string(), ' ')}</h2>
+};

@@ -132,9 +132,9 @@
             </propertyset>
         </echoproperties>
 
-        <!--<get src="${test.url}" dest="test-results.xml" />-->
-        <!--<loadfile property="test-results" srcFile="test-results.xml" />-->
-        <!--<echo>${test-results}</echo>-->
+        <get src="${test.url}" dest="test-results.xml" />
+        <loadfile property="test-results" srcFile="test-results.xml" />
+        <echo>${test-results}</echo>
     </target>
 
 
