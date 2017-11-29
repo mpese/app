@@ -28,55 +28,55 @@ declare %test:assertEquals("Letters to the Heads of Cambridge Colleges (June 162
                 </tei:TEI>
 
     return
-        mpese-text:title($doc)
+        mpese-text:title-label($doc)
 
 };
 
-(: Test title with no title provided but with a date  :)
-(:declare %test:assertEquals("Untitled (June 1626)") function test-text:result-title-missing-title() {:)
+ (:Test title with no title provided but with a date:)
+declare %test:assertEquals("Untitled (June 1626)") function test-text:result-title-missing-title() {
 
-    (:let $doc := <tei:TEI>:)
-                    (:<tei:teiHeader>:)
-                        (:<tei:fileDesc>:)
-                            (:<tei:titleStmt>:)
-                                (:<tei:title/>:)
-                            (:</tei:titleStmt>:)
-                        (:</tei:fileDesc>:)
-                        (:<tei:profileDesc>:)
-                            (:<tei:creation>:)
-                                (:<tei:date>June 1626</tei:date>:)
-                            (:</tei:creation>:)
-                        (:</tei:profileDesc>:)
-                    (:</tei:teiHeader>:)
-                (:</tei:TEI>:)
+    let $doc := <tei:TEI>
+                    <tei:teiHeader>
+                        <tei:fileDesc>
+                            <tei:titleStmt>
+                                <tei:title/>
+                            </tei:titleStmt>
+                        </tei:fileDesc>
+                        <tei:profileDesc>
+                            <tei:creation>
+                                <tei:date>June 1626</tei:date>
+                            </tei:creation>
+                        </tei:profileDesc>
+                    </tei:teiHeader>
+                </tei:TEI>
 
-    (:return:)
-        (:mpese-text:title($doc):)
+    return
+        mpese-text:title-label($doc)
 
-(:};:)
+};
 
-(: Test title with no title provided but with a date  :)
-(:declare %test:assertEquals("Untitled (No date)") function test-text:result-title-missing-title-date() {:)
+ (:Test title with no title provided but with a date:)
+declare %test:assertEquals("Untitled (No date)") function test-text:result-title-missing-title-date() {
 
-    (:let $doc := <tei:TEI>:)
-                    (:<tei:teiHeader>:)
-                        (:<tei:fileDesc>:)
-                            (:<tei:titleStmt>:)
-                                (:<tei:title/>:)
-                            (:</tei:titleStmt>:)
-                        (:</tei:fileDesc>:)
-                        (:<tei:profileDesc>:)
-                            (:<tei:creation>:)
-                                (:<tei:date/>:)
-                            (:</tei:creation>:)
-                        (:</tei:profileDesc>:)
-                    (:</tei:teiHeader>:)
-                (:</tei:TEI>:)
+    let $doc := <tei:TEI>
+                    <tei:teiHeader>
+                        <tei:fileDesc>
+                            <tei:titleStmt>
+                                <tei:title/>
+                            </tei:titleStmt>
+                        </tei:fileDesc>
+                        <tei:profileDesc>
+                            <tei:creation>
+                                <tei:date/>
+                            </tei:creation>
+                        </tei:profileDesc>
+                    </tei:teiHeader>
+                </tei:TEI>
 
-    (:return:)
-        (:mpese-text:title($doc):)
+    return
+        mpese-text:title-label($doc)
 
-(:};:)
+};
 
 (:x:)
 (:};:)
@@ -242,7 +242,7 @@ declare %test:assertXPath("contains($result/string(), 'Court of King')") functio
 (: check the transform; just check we have multple p tags :)
 declare %test:assertXPath("count($result//p) > 0") function test-text:text-body() {
 
-    let $doc := doc('/db/mpese/tei/corpus/texts/HabeasCorpus1627.xml')
+    let $doc := '/db/mpese/tei/corpus/texts/HabeasCorpus1627.xml'
 
     return
         mpese-text:text-body($doc)
@@ -327,7 +327,7 @@ declare %test:assertXPath("fn:count($result//a[@href]) eq 0") function test-text
 };
 
 declare %test:assertXPath("count($result) > 1") function test-text:witness-list() {
-    let $doc := doc($config:mpese-tei-corpus-texts || '/HabeasCorpus1627.xml')
+    let $doc := $config:mpese-tei-corpus-texts || '/HabeasCorpus1627.xml'
     return mpese-text:witnesses-includes($doc)
 };
 
@@ -512,7 +512,7 @@ function test-text:bibliography-modern-witnesses() {
 (: ---------- test template method functions ----------:)
 
 (: Check we get the text and mss and add it to the model:)
-declare %test:assertXPath("count($result?text//*:title) > 0")
+declare %test:assertXPath("count(doc($result?text)//*:title) > 0")
         %test:assertXPath("$result?mss//*:idno eq 'MS 35331'") function test-text:text() {
 
     let $node := <test></test>
@@ -550,48 +550,22 @@ function test-text:mss() {
 
 
 (: check creation date :)
-declare %test:assertXPath("$result eq 'June 1626'") function test-text:templ-creation-date() {
+declare %test:assertXPath("$result eq '22 November 1627'") function test-text:templ-creation-date() {
 
     let $node := <test></test>
-    let $text := <tei:TEI>
-                    <tei:teiHeader>
-                        <tei:fileDesc>
-                            <tei:titleStmt>
-                                <tei:title/>
-                            </tei:titleStmt>
-                        </tei:fileDesc>
-                        <tei:profileDesc>
-                            <tei:creation>
-                                <tei:date>June 1626</tei:date>
-                            </tei:creation>
-                        </tei:profileDesc>
-                    </tei:teiHeader>
-                </tei:TEI>
-    let $map := map { 'text' := $text}
+    let $model := map {}
+    let $text := 'HabeasCorpus1627.xml'
+    let $map := mpese-text:text($node, $model, $text)
     return
         mpese-text:creation-date($node, $map)
 };
 
 (: check creation date :)
 declare %test:assertXPath("$result eq '1623, 1485 (claimed)'") function test-text:templ-creation-date-attr() {
-
     let $node := <test></test>
-    let $text := <tei:TEI>
-                    <tei:teiHeader>
-                        <tei:fileDesc>
-                            <tei:titleStmt>
-                                <tei:title/>
-                            </tei:titleStmt>
-                        </tei:fileDesc>
-                        <tei:profileDesc>
-                            <tei:creation>
-                                <tei:date when="1623"/>
-                                <tei:date cert="low" type="claimed" when="1485"/>
-                            </tei:creation>
-                        </tei:profileDesc>
-                    </tei:teiHeader>
-                </tei:TEI>
-    let $map := map { 'text' := $text}
+    let $model := map {}
+    let $text := 'ProphecyAbbeyNorfolk1623.xml'
+    let $map := mpese-text:text($node, $model, $text)
     return
         mpese-text:creation-date($node, $map)
 };

@@ -191,8 +191,8 @@ declare function mpese-search:all($page as xs:integer, $num as xs:integer)  {
             for $item in $results
                 let $uri := fn:base-uri($item)
                 let $name := utils:name-from-uri($uri)
-                let $title := mpese-text:title($item)
-                let $authors := mpese-text:authors($item)
+                let $title := mpese-text:title-label($item)
+                let $authors := $item//tei:fileDesc/tei:titleStmt/tei:author[not(@role)]
                 let $mss := mpese-text:mss-details($item)
                 let $mss-label := mpese-mss:ident-label($mss)
                 let $author-label := mpese-text:author-label($authors)
@@ -238,8 +238,8 @@ declare function mpese-search:everything($page as xs:integer, $num as xs:integer
             for $item in $results
                 let $uri := fn:base-uri($item)
                 let $name := utils:name-from-uri($uri)
-                let $title := mpese-text:title($item)
-                let $authors :=  mpese-text:authors($item)
+                let $title := mpese-text:title-label($item)
+                let $authors :=  $item//tei:fileDesc/tei:titleStmt/tei:author[not(@role)]
                 let $mss := mpese-text:mss-details($item)
                 let $mss-label := mpese-mss:ident-label($mss)
                 let $author-label := mpese-text:author-label($authors)

@@ -101,7 +101,7 @@ declare function dashboard-text:person($person) {
 
 (: title of the text :)
 declare function dashboard-text:author-label($file) {
-    let $authors := mpese-text:authors($file)
+    let $authors := mpese-text:authors($file, false())
     let $auth_count := fn:count($authors)
     return
         if ($auth_count > 0) then

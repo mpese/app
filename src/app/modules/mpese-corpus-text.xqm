@@ -23,13 +23,13 @@ import module namespace utils = 'http://mpese.rit.bris.ac.uk/utils/' at 'utils.x
 (:~
  :   Provide the title of the text (with date) or 'untitled'.
  :
- :  @param $text      the TEI/XML document.
+ :  @param $doc      the TEI/XML document.
  :  @return the title of the text of 'untitled'
  :)
-declare function mpese-text:title($text as xs:string) as xs:string {
+declare function mpese-text:title-label($doc) as xs:string {
 
-    let $tmp_title := doc($text)//tei:fileDesc/tei:titleStmt/tei:title/string()
-    let $tmp_date := doc($text)//tei:profileDesc/tei:creation/tei:date[1]/string()
+    let $tmp_title := $doc//tei:fileDesc/tei:titleStmt/tei:title/string()
+    let $tmp_date := $doc//tei:profileDesc/tei:creation/tei:date[1]/string()
     let $title := ( if (fn:string-length($tmp_title) > 0) then $tmp_title else fn:string('Untitled') )
     let $date  := ( if (fn:string-length($tmp_date) > 0) then $tmp_date else fn:string('No date') )
     return
@@ -37,14 +37,27 @@ declare function mpese-text:title($text as xs:string) as xs:string {
 };
 
 (:~
+ :   Provide the title of the text (with date) or 'untitled'.
+ :
+ :  @param $text      the TEI/XML document.
+ :  @return the title of the text of 'untitled'
+ :)
+declare function mpese-text:title($text as xs:string) as xs:string {
+    mpese-text:title-label(doc($text)//tei:TEI)
+};
+
+(:~
  :  The list of authors associated with a text.
  :  Note: some might be signatories and not actually authors.
  :
- :  @param $text      the TEI/XML document.
+ :  @param $doc      the TEI/XML document.
  :  @return a list of author elements.
  :)
-declare function mpese-text:authors($text as xs:string) as element()* {
-        doc($text)//tei:fileDesc/tei:titleStmt/tei:author
+declare function mpese-text:authors($text as xs:string, $has_roles as xs:boolean) as element()* {
+        if ($has_roles) then
+            doc($text)//tei:fileDesc/tei:titleStmt/tei:author
+        else
+            doc($text)//tei:fileDesc/tei:titleStmt/tei:author[not(@role)]
 };
 
 (:~
@@ -98,10 +111,10 @@ declare function mpese-text:mss-details-include($include as element()?) as eleme
  : @param $doc      the TEI/XML document.
  : @return the <msIdentifier/> of the MSS the text is derived.
  :)
-declare function mpese-text:mss-details($text as xs:string) as element()? {
+declare function mpese-text:mss-details($doc as element()) as element()? {
 
     (: get the include :)
-    let $include := doc($text)//tei:sourceDesc/tei:msDesc/xi:include
+    let $include := $doc//tei:sourceDesc/tei:msDesc/xi:include
 
     return
         mpese-text:mss-details-include($include)
@@ -229,7 +242,9 @@ declare function mpese-text:author-label-r($label as node()*, $authors as node()
 
     let $auth_count := fn:count($authors)
     return
-        if ($auth_count eq 1) then
+        if ($auth_count eq 0) then
+            ()
+        else if ($auth_count eq 1) then
             ($label, mpese-text:person($authors[1], $show_link))
         else if ($auth_count eq 2) then
             let $tmp_label := ($label, mpese-text:person($authors[1], $show_link) , text{', and '})
@@ -524,7 +539,7 @@ declare function mpese-text:keywords-label($keywords) {
 declare function mpese-text:text($node as node (), $model as map (*), $text as xs:string) {
 
     let $text := $config:mpese-tei-corpus-texts || '/' || $text
-    let $mss := mpese-text:mss-details($text)
+    let $mss := mpese-text:mss-details(doc($text)//tei:TEI)
     return
         map { "text" := $text, "mss" := $mss}
 };
@@ -539,7 +554,7 @@ declare function mpese-text:text($node as node (), $model as map (*), $text as x
 declare function mpese-text:author-title($node as node (), $model as map (*)) {
 
     (: get the authors :)
-    let $authors := mpese-text:authors($model('text'))
+    let $authors := mpese-text:authors($model('text'), false())
     return
         <h2>{(mpese-text:author-label($authors), text{' &apos;'}, mpese-text:title($model('text')), text{'&apos;'})}</h2>
 };
@@ -651,7 +666,7 @@ declare function mpese-text:creation-date($node as node (), $model as map (*)) {
  : @return the list of authors
  :)
 declare function mpese-text:author-list($node as node (), $model as map (*)) {
-    let $authors := mpese-text:authors($model('text'))
+    let $authors := mpese-text:authors($model('text'), true())
 
     return
         (: Check if we have a list or the first item of the list is empty (usually a comment saying
