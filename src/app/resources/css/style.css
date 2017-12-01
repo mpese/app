@@ -132,3 +132,8 @@ span.mpese-author-list {
 ul.mpese-witness-list {
     list-style: none;
 }
+
+.mss-item-locus {
+    font-weight: bold;
+    font-size: 1.1em;
+}
