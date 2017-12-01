@@ -74,6 +74,54 @@ declare function mpese-mss:ident-label($msIdentifier as element()?) as xs:string
         "No manuscript details."
 };
 
+(:~
+ : Get a label for the manuscript of a related witness ... we need to query the witness to
+ : get the link to the MS, then query the MS directly!
+ :
+ : @param $name     the name of the file (minus .xml) that has the witness
+ : @return the name of the MS that the witness belong to
+ :)
+declare function local:witness-label($name as xs:string) {
+
+    (: get the text (witness) :)
+    let $doc := doc(concat($config:mpese-tei-corpus-texts, '/', $name, '.xml'))
+
+    (: get the details from the xi:include and create the file path :)
+    let $incl := $doc//tei:sourceDesc/tei:msDesc/xi:include
+    let $target := $incl/@href/string()
+    let $pointer := $incl/@xpointer/string()
+    let $seq := fn:tokenize($target, '/')
+    let $file := $seq[fn:last()]
+
+    (: open the ms file to get its details :)
+    let $mss := doc(concat($config:mpese-tei-corpus-mss, '/', $file))
+    let $desc := $mss//tei:msIdentifier[@xml:id=$pointer]
+
+    (: return man:)
+    return
+        concat($desc//tei:repository, ', ', $desc//tei:collection, ', ', $desc//tei:idno)
+};
+
+(:~
+ : Get a label for a person, i.e. author or scribe. If there is a link to a person ID, create
+ : a href so that person can be viewed.
+ :
+ : @param the element holding the person details
+ : @return a label with a possible link.
+ :)
+declare function mpese-mss:person($person) {
+
+    if ($person/tei:persName and $person/tei:persName/@corresp) then
+        let $link := $person/tei:persName/@corresp/string()
+        let $id := fn:substring-after($link, '#')
+            return
+                if ($id) then
+                    <span class='mss-item-person'><a href="../p/{$id}.html">{fn:normalize-space($person/string())}</a></span>
+                else
+                    <span class='mss-item-person'>{fn:normalize-space($person/string())}</span>
+    else
+        <span class='mss-item-person'>{fn:normalize-space($person/string())}</span>
+};
 
 (: ---------- TEMPLATE FUNCTIONS ----------- :)
 
@@ -160,110 +208,93 @@ declare function mpese-mss:history($node as node (), $model as map (*)) {
         }</div>
 };
 
-declare function local:witness-label($name as xs:string) {
 
-    let $doc := doc(concat($config:mpese-tei-corpus-texts, '/', $name, '.xml'))
-    let $incl := $doc//tei:sourceDesc/tei:msDesc/xi:include
-    let $target := $incl/@href/string()
-    let $pointer := $incl/@xpointer/string()
-    let $seq := fn:tokenize($target, '/')
-    let $file := $seq[fn:last()]
-    let $mss := doc(concat($config:mpese-tei-corpus-mss, '/', $file))
-    let $desc := $mss//tei:msIdentifier[@xml:id=$pointer]
-    return
-        concat($desc//tei:repository, ', ', $desc//tei:collection, ', ', $desc//tei:idno)
-};
 
-declare function local:person($author) {
-    if ($author/tei:persName and $author/tei:persName/@corresp) then
-        let $link := $author/tei:persName/@corresp/string()
-        let $id := fn:substring-after($link, '#')
-            return
-                if ($id) then
-                    <span class='mss-item-person'><a href="../p/{$id}.html">{fn:normalize-space($author/string())}</a></span>
-                else
-                    <span class='mss-item-person'>{fn:normalize-space($author/string())}</span>
-    else
-        <span class='mss-item-person'>{fn:normalize-space($author/string())}</span>
-};
-
+(:~
+ : Give details on the contents of the manuscript.
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @param $mss      filename of the TEI/XML document
+ : @return details on the contents of the manuscript.
+ :)
 declare function mpese-mss:contents($node as node (), $model as map (*)) {
 
-let $results := for $item in doc($model('mss'))//tei:body/tei:msDesc/tei:msContents/tei:msItem
-                order by $item/@n
-                return if (not(functx:has-empty-content($item))) then $item else ()
+    let $results := for $item in doc($model('mss'))//tei:body/tei:msDesc/tei:msContents/tei:msItem
+                    order by $item/@n
+                    return if (not(functx:has-empty-content($item))) then $item else ()
 
-return
-    <div id="mss-contents">{
-        for $item in $results
+    return
+        <div id="mss-contents">{
+            for $item in $results
 
-            (: item locus :)
-            let $locus := <p class="mss-item-locus">{$item/tei:locus/string()}</p>
+                (: item locus :)
+                let $locus := <p class="mss-item-locus">{$item/tei:locus/string()}</p>
 
-            (: item title :)
-            let $title := if ($item/tei:title) then <span>{(text {"'"}, $item/tei:title/string(), text {"'"})}</span> else ()
+                (: item title :)
+                let $title := if ($item/tei:title) then <span>{(text {"'"}, $item/tei:title/string(), text {"'"})}</span> else ()
 
-            (: authors :)
-            let $authors := for $author in $item/tei:author
-                                return if (not(functx:has-empty-content($author))) then $author else ()
-            let $author_list := if (count($authors) eq 0) then ()
-                                else
-                                    if (count($authors) eq 1) then
-                                        (text {' by '},local:person($authors[1]))
+                (: authors :)
+                let $authors := for $author in $item/tei:author
+                                    return if (not(functx:has-empty-content($author))) then $author else ()
+                let $author_list := if (count($authors) eq 0) then ()
                                     else
-                                        (text {' by '},
-                                        for $author at $pos in $authors
-                                            return
-                                                if ($pos eq count($authors)) then
-                                                    (' and ',  local:person($author))
+                                        if (count($authors) eq 1) then
+                                            (text {' by '},mpese-mss:person($authors[1]))
                                         else
-                                            (local:person($author),', ')
-                                         )
+                                            (text {' by '},
+                                            for $author at $pos in $authors
+                                                return
+                                                    if ($pos eq count($authors)) then
+                                                        (' and ',  mpese-mss:person($author))
+                                            else
+                                                (mpese-mss:person($author),', ')
+                                             )
 
 
-            (: scribes and others responsible for the item :)
-            let $resps := for $resp in $item/tei:respStmt
-                          return if (not(functx:has-empty-content($resp))) then $resp else ()
-            let $resp_list := if (count($resps) eq 0) then ()
-                                else <span class="mss-resp-list"><em>Responsibility:</em>  {
-                                    if (count($resps) eq 1) then
-                                        (text { ' ' }, local:person($resps[1]/tei:name), ' (' || $resps[1]/tei:resp/string() || ')')
-                                    else
-                                        (text { ' ' },
-                                        for $resp at $pos in $resps
-                                            return
-                                                if ($pos eq count($resps)) then
-                                                    (' and ',  local:person($resp/tei:name), ' (' || $resp/tei:resp/string() || ')')
+                (: scribes and others responsible for the item :)
+                let $resps := for $resp in $item/tei:respStmt
+                              return if (not(functx:has-empty-content($resp))) then $resp else ()
+                let $resp_list := if (count($resps) eq 0) then ()
+                                    else <span class="mss-resp-list"><em>Responsibility:</em>  {
+                                        if (count($resps) eq 1) then
+                                            (text { ' ' }, mpese-mss:person($resps[1]/tei:name), ' (' || $resps[1]/tei:resp/string() || ')')
                                         else
-                                            (local:person($resp/tei:name), ' (' || $resp/tei:resp/string() || ')',', ')
-                                        )}</span>
+                                            (text { ' ' },
+                                            for $resp at $pos in $resps
+                                                return
+                                                    if ($pos eq count($resps)) then
+                                                        (' and ',  mpese-mss:person($resp/tei:name), ' (' || $resp/tei:resp/string() || ')')
+                                            else
+                                                (mpese-mss:person($resp/tei:name), ' (' || $resp/tei:resp/string() || ')',', ')
+                                            )}</span>
 
-            (: links to transcripts :)
-            let $links := $item/tei:link[@type = 'witness' or @type = 't_witness']
-            let $links_list := if (count($links) eq 0) then ()
-                                    else <ul class="mss-link-list">{
-                                        for $link in $links
-                                            let $name := utils:name-from-uri($link/@target/string())
-                                            return
-                                                if ($name and $link/@type/string() eq 't_witness') then
-                                                    <li><a href="../t/{$name}.html">Witness from this MS</a></li>
-                                                else if ($name and $link/@type/string() eq 'witness') then
-                                                    let $label := local:witness-label($name)
-                                                    return
-                                                        <li><a href="../t/{$name}.html">Witness from {$label}</a></li>
-                                                else
-                                                    ()
-                                    }</ul>
+                (: links to transcripts :)
+                let $links := $item/tei:link[@type = 'witness' or @type = 't_witness']
+                let $links_list := if (count($links) eq 0) then ()
+                                        else <ul class="mss-link-list">{
+                                            for $link in $links
+                                                let $name := utils:name-from-uri($link/@target/string())
+                                                return
+                                                    if ($name and $link/@type/string() eq 't_witness') then
+                                                        <li><a href="../t/{$name}.html">Witness from this MS</a></li>
+                                                    else if ($name and $link/@type/string() eq 'witness') then
+                                                        let $label := local:witness-label($name)
+                                                        return
+                                                            <li><a href="../t/{$name}.html">Witness from {$label}</a></li>
+                                                    else
+                                                        ()
+                                        }</ul>
 
 
-            let $history := if (fn:string-length(fn:normalize-space($item/tei:msDesc/tei:history/string())) eq 0) then ()
-                            else <span><em>History:</em> {text { ' ' }, fn:normalize-space($item/tei:msDesc/tei:history/string())}</span>
+                let $history := if (fn:string-length(fn:normalize-space($item/tei:msDesc/tei:history/string())) eq 0) then ()
+                                else <span><em>History:</em> {text { ' ' }, fn:normalize-space($item/tei:msDesc/tei:history/string())}</span>
 
-            let $notes := if ($resp_list or $history) then <p>{$history, text {' '}, $resp_list}</p> else ()
+                let $notes := if ($resp_list or $history) then <p>{$history, text {' '}, $resp_list}</p> else ()
 
-            return
-                <div class="mss-item">{
-                    ($locus, <p>{$title, $author_list}</p>, $notes, $links_list)
-                }</div>
-    }</div>
+                return
+                    <div class="mss-item">{
+                        ($locus, <p>{$title, $author_list}</p>, $notes, $links_list)
+                    }</div>
+        }</div>
 };
