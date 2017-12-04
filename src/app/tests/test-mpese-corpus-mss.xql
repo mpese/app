@@ -27,15 +27,15 @@ declare %test:assertEquals('No manuscript details.')function test-mss:mss-detail
     mpese-mss:ident-label(())
 };
 
-(: Check we get the text and mss and add it to the model:)
-declare %test:assertXPath("count($result?mss//*:title) > 0") function test-mss:mss() {
+declare %test:assertXPath("deep-equal($result, <<span class='mss-item-person'><a href='../p/P0027.html'>William Noy</a></span>)")
+function test-mss:person-with-link() {
 
-    let $node := <test></test>
-    let $model := map {}
-    let $mss := 'BLAddMS35331.xml'
-
-    return mpese-mss:mss($node, $model, $mss)
+    let $person := <tei:author><tei:persName corresp="../people/people.xml#P0027">William Noy</tei:persName></tei:author>
+    return mpese-mss:person($person)
 };
+
+
+(: --------- Test template functions ---------- :)
 
 (: Check we get the text and mss and add it to the model:)
 declare %test:assertXPath("deep-equal($result, <h2>British Library, Additional, MS 35331</h2>)")
@@ -48,3 +48,51 @@ function test-mss:mss-ident() {
 
     return mpese-mss:mss-ident($node, $map)
 };
+
+
+(: Check we get the foliation details :)
+declare %test:assertTrue("$result//div[@id='foliation-details]/p")
+function test-mss:foliation() {
+    let $node := <test></test>
+    let $model := map {}
+    let $mss := 'BLAddMS35331.xml'
+    let $map := mpese-mss:mss($node, $model, $mss)
+
+    return mpese-mss:foliation($node, $map)
+};
+
+(: Check we a list of 'hands' :)
+declare %test:assertXPath("count($result//li) > 1")
+function test-mss:hand-notes() {
+    let $node := <test></test>
+    let $model := map {}
+    let $mss := 'BLAddMS35331.xml'
+    let $map := mpese-mss:mss($node, $model, $mss)
+
+    return mpese-mss:hand-notes($node, $map)
+};
+
+(: Check we get a list of MS items :)
+declare %test:assertTrue("$result//div[@id='mss-history']")
+function test-mss:history() {
+
+    let $node := <test></test>
+    let $model := map {}
+    let $mss := 'BLAddMS35331.xml'
+    let $map := mpese-mss:mss($node, $model, $mss)
+
+    return mpese-mss:history($node, $map)
+};
+
+(: Check we get a list of MS items :)
+declare %test:assertXPath("count($result//div[@class='mss-item']) > 3")
+function test-mss:contents() {
+
+    let $node := <test></test>
+    let $model := map {}
+    let $mss := 'BLAddMS35331.xml'
+    let $map := mpese-mss:mss($node, $model, $mss)
+
+    return mpese-mss:contents($node, $map)
+};
+
