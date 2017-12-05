@@ -4,8 +4,10 @@ module namespace mpese-search = 'http://mpese.ac.uk/corpus/search/';
 
 declare namespace tei = 'http://www.tei-c.org/ns/1.0';
 declare namespace xi = 'http://www.w3.org/2001/XInclude';
-import module namespace kwic="http://exist-db.org/xquery/kwic";
 
+import module namespace kwic='http://exist-db.org/xquery/kwic';
+import module namespace request="http://exist-db.org/xquery/request";
+import module namespace session="http://exist-db.org/xquery/session";
 import module namespace templates = "http://exist-db.org/xquery/templates";
 import module namespace xmldb = 'http://exist-db.org/xquery/xmldb';
 import module namespace functx = 'http://www.functx.com' at 'functx-1.0.xql';
@@ -176,17 +178,19 @@ declare function mpese-search:all($page as xs:integer, $num as xs:integer)  {
     let $pages := mpese-search:pages-total($total, $num)
 
     let $results := mpese-search:paginate-results($sorted-results, $start, $num)
-    return
 
+    return
+        ( session:create(), session:set-attribute('mpese-search', text{"hello"}),
     <div id="search-results">
-        <p class="text-center results-total">{$total} texts available</p>
+        <p class="text-center results-total">{$total} texts available!</p>
         {
             if ($pages > 1) then
                 mpese-search:pagination($page, $pages, "", "Top navigation")
             else
                 ""
         }
-        <div class="list-group">{
+        <div class="list-group"><p>{session:get-attribute('mpese-search')}</p>{
+
 
             for $item in $results
                 let $uri := fn:base-uri($item)
@@ -208,7 +212,7 @@ declare function mpese-search:all($page as xs:integer, $num as xs:integer)  {
             else
                 ""
         }
-    </div>
+    </div>)
 };
 
 (: default search, i.e. no search results defined  :)

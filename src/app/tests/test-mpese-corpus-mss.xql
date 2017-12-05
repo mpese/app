@@ -27,13 +27,20 @@ declare %test:assertEquals('No manuscript details.')function test-mss:mss-detail
     mpese-mss:ident-label(())
 };
 
-declare %test:assertXPath("deep-equal($result, <<span class='mss-item-person'><a href='../p/P0027.html'>William Noy</a></span>)")
+declare %test:assertXPath("deep-equal($result, <span class='mss-item-person'><a href='../p/P0027.html'>William Noy</a></span>)")
 function test-mss:person-with-link() {
 
     let $person := <tei:author><tei:persName corresp="../people/people.xml#P0027">William Noy</tei:persName></tei:author>
     return mpese-mss:person($person)
 };
 
+
+declare %test:assertXPath("deep-equal($result, <span class='mss-item-person'>William Noy</span>)")
+function test-mss:person-without-link() {
+
+    let $person := <tei:author><tei:persName>William Noy</tei:persName></tei:author>
+    return mpese-mss:person($person)
+};
 
 (: --------- Test template functions ---------- :)
 

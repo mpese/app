@@ -21,9 +21,9 @@ declare function local:item($type) {
 (: default: everything is passed through :)
 declare function local:default() {
     (util:log('INFO', ('local:default')),
-    <ignore xmlns="http://exist.sourceforge.net/NS/exist">
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <cache-control cache="yes"/>
-    </ignore>)
+    </dispatch>)
 };
 
 (: add a / to a request and redirect :)
