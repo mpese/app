@@ -21,9 +21,9 @@ declare function local:item($type) {
 (: default: everything is passed through :)
 declare function local:default() {
     (util:log('INFO', ('local:default')),
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    <ignore xmlns="http://exist.sourceforge.net/NS/exist">
         <cache-control cache="yes"/>
-    </dispatch>)
+    </ignore>)
 };
 
 (: add a / to a request and redirect :)
@@ -112,10 +112,13 @@ if ($exist:path eq "") then
     local:redirect-with-slash())
 (: homepage, / or /index.html :)
 else if ($exist:path eq '/' or $exist:path eq '/index.html') then
+    if (request:get-method() eq 'HEAD') then
+        (response:set-status-code(200), response:stream((),""))
+    else
     (util:log('INFO', ("Hompage, / or /index.html")),
     local:dispatch('/home.html'))
 (: handle URL that ends without a slash, eg. /dashboard :)
-else if (exists(fn:analyze-string($exist:path, '/\w+$')//fn:match)) then
+else if (fn:matches($exist:path, '^[^\.]*[^/]$')) then
     (util:log('INFO', ('URL without trailing slash')),
     local:redirect-with-slash())
 else if (fn:matches($exist:path, '^(/t/)(\w+|%20)+\.html$')) then
