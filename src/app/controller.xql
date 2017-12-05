@@ -114,7 +114,7 @@ else if ($exist:path eq '/' or $exist:path eq '/index.html') then
     (util:log('INFO', ("Hompage, / or /index.html")),
     local:dispatch('/index.html'))
 (: handle URL that ends without a slash, eg. /dashboard :)
-else if (exists(fn:analyze-string($exist:path, '\/\w+$')//fn:match)) then
+else if (fn:matches($exist:path, '^[^\.]*[^/]$')) then
     (util:log('INFO', ('URL without trailing slash')),
     local:redirect-with-slash())
 else if (fn:starts-with($exist:path, "/dashboard/")) then
