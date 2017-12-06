@@ -128,3 +128,25 @@ declare function utils:name-from-uri($uri as xs:string) as xs:string  {
     let $seq2 := fn:tokenize($file, '\.')
     return $seq2[1]
 };
+
+(:~
+ : We use cookies to keep track of searches, so we can have some basic navigation. We reconstruct
+ : the parameters used in the search.
+ :
+ : @base-uri   the base URI to prepend the
+ :)
+declare function utils:search-nav($base-uri) as element()? {
+    let $search := request:get-cookie-value('mpese-search-string')
+    let $page := request:get-cookie-value('mpese-search-page')
+    let $order := request:get-cookie-value('mpese-search-order')
+    return
+        if ($search or $page or $order) then
+            let $_page := if ($page) then 'page=' || $page else 'page=1'
+            let $_search := if ($search) then 'search=' || fn:encode-for-uri(util:base64-decode($search)) else ()
+            let $_order := if ($order) then 'results_order=' || $order else ()
+            let $url := '?' || fn:string-join(($_page, $_search, $_order), '&amp;')
+            return
+                <p class="mpese-search-nav"><a href="{$base-uri}{$url}">Back to search results</a></p>
+        else
+            ()
+};

@@ -180,7 +180,8 @@ declare function mpese-search:all($page as xs:integer, $num as xs:integer)  {
     let $results := mpese-search:paginate-results($sorted-results, $start, $num)
 
     return
-        ( session:create(), session:set-attribute('mpese-search', text{"hello"}),
+        ( response:set-cookie('mpese-search-string', ''), response:set-cookie('mpese-search-page', $page),
+          response:set-cookie('mpese-search-order', ''),
     <div id="search-results">
         <p class="text-center results-total">{$total} texts available!</p>
         {
@@ -189,7 +190,7 @@ declare function mpese-search:all($page as xs:integer, $num as xs:integer)  {
             else
                 ""
         }
-        <div class="list-group"><p>{session:get-attribute('mpese-search')}</p>{
+        <div class="list-group">{
 
 
             for $item in $results
@@ -228,7 +229,8 @@ declare function mpese-search:everything($page as xs:integer, $num as xs:integer
     let $results := mpese-search:paginate-results($sorted-results, $start, $num)
 
     return
-
+        (response:set-cookie('mpese-search-string', util:base64-encode($search)),
+         response:set-cookie('mpese-search-page', $page), response:set-cookie('mpese-search-order', $results_order),
     <div id="search-results">
         <p class="text-center results-total">{$total} texts available</p>
         {
@@ -258,7 +260,7 @@ declare function mpese-search:everything($page as xs:integer, $num as xs:integer
             else
                 ""
         }
-    </div>
+    </div>)
 };
 
 (: ---------- TEMPLATE FUNCTIONS ----------- :)

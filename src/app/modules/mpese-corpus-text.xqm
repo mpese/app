@@ -544,6 +544,10 @@ declare function mpese-text:text($node as node (), $model as map (*), $text as x
         map { "text" := $text, "mss" := $mss}
 };
 
+declare function mpese-text:search-nav($node as node (), $model as map (*)) {
+    utils:search-nav('../../')
+};
+
 (:~
  : Display the author and title of the text.
  :
