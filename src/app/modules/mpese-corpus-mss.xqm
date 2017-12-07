@@ -140,6 +140,18 @@ declare function mpese-mss:mss($node as node (), $model as map (*), $mss as xs:s
         map { "mss" := $doc}
 };
 
+(:~
+ : Provides a link back to the search if the cookies have the value.
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @param $text     filename of the TEI/XML document
+ : @return a link to the original search
+ :)
+declare function mpese-mss:search-nav($node as node (), $model as map (*)) {
+    utils:search-nav('../../')
+};
+
 declare function mpese-mss:mss-ident($node as node (), $model as map (*)) {
 
     let $msIdentifier := doc($model('mss'))//tei:body/tei:msDesc/tei:msIdentifier

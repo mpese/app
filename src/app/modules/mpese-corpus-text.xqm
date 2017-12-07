@@ -544,6 +544,14 @@ declare function mpese-text:text($node as node (), $model as map (*), $text as x
         map { "text" := $text, "mss" := $mss}
 };
 
+(:~
+ : Provides a link back to the search if the cookies have the value.
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @param $text     filename of the TEI/XML document
+ : @return a link to the original search
+ :)
 declare function mpese-text:search-nav($node as node (), $model as map (*)) {
     utils:search-nav('../../')
 };

@@ -6,6 +6,7 @@ module namespace mpese-person = 'http://mpese.rit.bris.ac.uk/corpus/person/';
 declare namespace tei = 'http://www.tei-c.org/ns/1.0';
 
 import module namespace config = "http://mpese.rit.bris.ac.uk/config" at "config.xqm";
+import module namespace utils = 'http://mpese.rit.bris.ac.uk/utils/' at 'utils.xql';
 
 (: the number of people in the corpus :)
 declare function mpese-person:total-count() {
@@ -62,6 +63,18 @@ declare function mpese-person:person($node as node (), $model as map (*), $perso
 
     return
         map { "person" := $person}
+};
+
+(:~
+ : Provides a link back to the search if the cookies have the value.
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @param $text     filename of the TEI/XML document
+ : @return a link to the original search
+ :)
+declare function mpese-person:search-nav($node as node (), $model as map (*)) {
+    utils:search-nav('../../')
 };
 
 (:~
