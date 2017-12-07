@@ -241,14 +241,15 @@ declare function mpese-mss:contents($node as node (), $model as map (*)) {
             for $item in $results
 
                 (: item locus :)
-                let $locus := <p class="mss-item-locus">{$item/tei:locus/string()}</p>
+                let $locus := if (functx:has-empty-content($item/tei:locus) or boolean($item/tei:locus/comment())) then ()
+                    else <p class="mss-item-locus">{$item/tei:locus/string()}</p>
 
                 (: item title :)
-                let $title := if ($item/tei:title) then <span>{(text {"'"}, $item/tei:title/string(), text {"'"})}</span> else ()
+                let $title := if ($item/tei:title and fn:string-length($item/tei:title/string()) > 0) then <span>{(text {"'"}, $item/tei:title/string(), text {"'"})}</span> else ()
 
                 (: authors :)
                 let $authors := for $author in $item/tei:author
-                                    return if (not(functx:has-empty-content($author))) then $author else ()
+                                    return if (not(functx:has-empty-content($author)) and fn:string-length($author/string()) > 0) then $author else ()
                 let $author_list := if (count($authors) eq 0) then ()
                                     else
                                         if (count($authors) eq 1) then
@@ -266,7 +267,7 @@ declare function mpese-mss:contents($node as node (), $model as map (*)) {
 
                 (: scribes and others responsible for the item :)
                 let $resps := for $resp in $item/tei:respStmt
-                              return if (not(functx:has-empty-content($resp))) then $resp else ()
+                              return if (functx:has-empty-content($resp/tei:name) or boolean($resp/tei:name/comment())) then () else $resp
                 let $resp_list := if (count($resps) eq 0) then ()
                                     else <span class="mss-resp-list"><em>Responsibility:</em>  {
                                         if (count($resps) eq 1) then
@@ -306,7 +307,10 @@ declare function mpese-mss:contents($node as node (), $model as map (*)) {
 
                 return
                     <div class="mss-item">{
-                        ($locus, <p>{$title, $author_list}</p>, $notes, $links_list)
+                        if ($locus or $title or $author_list or $notes or $links_list) then
+                            ($locus, <p>{$title, $author_list}</p>, $notes, $links_list)
+                        else
+                            <p>No details</p>
                     }</div>
         }</div>
 };
