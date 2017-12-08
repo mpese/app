@@ -568,7 +568,7 @@ declare function mpese-text:author-title($node as node (), $model as map (*)) {
     (: get the authors :)
     let $authors := mpese-text:authors($model('text'), false())
     return
-        <h2>{(mpese-text:author-label($authors), text{' &apos;'}, mpese-text:title($model('text')), text{'&apos;'})}</h2>
+        <h2 class="mpese-item-title">{(mpese-text:author-label($authors), text{' &apos;'}, mpese-text:title($model('text')), text{'&apos;'})}</h2>
 };
 
 (:~

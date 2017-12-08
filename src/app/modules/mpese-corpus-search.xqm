@@ -183,7 +183,7 @@ declare function mpese-search:all($page as xs:integer, $num as xs:integer)  {
         ( response:set-cookie('mpese-search-string', ''), response:set-cookie('mpese-search-page', $page),
           response:set-cookie('mpese-search-order', ''),
     <div id="search-results">
-        <p class="text-center results-total">{$total} texts available!</p>
+        <p class="text-center results-total">{$total} texts available</p>
         {
             if ($pages > 1) then
                 mpese-search:pagination($page, $pages, "", "Top navigation")
