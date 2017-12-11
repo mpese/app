@@ -145,3 +145,34 @@ ul.mpese-witness-list {
 .mpese-item-title {
     font-size: 18px;
 }
+
+/* text has left marginalia, make space */
+.mpese-text-lm {
+    margin-left: 120px;
+}
+
+/* text has right marginalia, make space */
+.mpese-text-rm {
+    margin-right: 120px;
+}
+
+/* hide text noting the location of the marginalia */
+.mpese-lm-note, .mpese-rm-note {
+    display: none;
+}
+
+.mpese-add-lm {
+    float: left;
+    clear: both;
+    max-width: 100px;
+    font-size: smaller;
+    margin-left: -100px;
+}
+
+.mpese-add-rm {
+    float: right;
+    clear: both;
+    max-width: 100px;
+    font-size: smaller;
+    margin-right: -100px;
+}

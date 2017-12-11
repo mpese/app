@@ -16,7 +16,7 @@
     </xsl:template>
 
     <xsl:template match="tei:text">
-        <div id="mpese-text-body"><xsl:apply-templates/></div>
+        <xsl:apply-templates/>
     </xsl:template>
 
     <xsl:template match="tei:body">
@@ -64,7 +64,13 @@
         </xsl:choose>
     </xsl:template>
 
-    <xsl:template match="tei:add">[<xsl:apply-templates/>]</xsl:template>
+    <xsl:template match="tei:add">
+        <xsl:choose>
+            <xsl:when test="@place='LM'"><span class="mpese-add-lm"><em class="mpese-lm-note">Left margin: </em> <xsl:apply-templates/></span></xsl:when>
+            <xsl:when test="@place='RM'"><span class="mpese-add-rm"><em class="mpese-rm-note">Right margin: </em> <xsl:apply-templates/></span></xsl:when>
+            <xsl:otherwise ><span class="mpese-add">[<xsl:apply-templates/>]</span></xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
 
     <xsl:template match="tei:del"><del><xsl:apply-templates/></del></xsl:template>
 
