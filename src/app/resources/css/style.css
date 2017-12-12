@@ -90,6 +90,23 @@ div#openseadragon {
     height: 600px;
 }
 
+.mpese-add-lm:before  {
+    content: "[";
+}
+
+.mpese-add-lm:after  {
+    content: "]";
+}
+
+.mpese-add-rm:before {
+    content: "[";
+}
+
+
+.mpese-add-rm:after {
+    content: "]";
+}
+
 /* SMARTPHONES PORTRAIT */
 @media only screen and (min-width: 300px) {
     #mpese-image-viewer {
@@ -123,6 +140,55 @@ div#openseadragon {
         max-height: 600px;
         overflow-y: scroll;
     }
+
+    .mpese-add-lm {
+        float: left;
+        clear: both;
+        max-width: 100px;
+        font-size: smaller;
+        margin-left: -100px;
+        text-align: left;
+    }
+
+    .mpese-add-rm {
+        float: right;
+        clear: both;
+        max-width: 100px;
+        font-size: smaller;
+        margin-right: -100px;
+        text-align: right;
+    }
+
+    /* text has left marginalia, make space */
+    .mpese-text-lm {
+        margin-left: 120px;
+    }
+
+    /* text has right marginalia, make space */
+    .mpese-text-rm {
+        margin-right: 120px;
+    }
+
+    /* hide text noting the location of the marginalia */
+    .mpese-lm-note, .mpese-rm-note {
+        display: none;
+    }
+
+    .mpese-add-lm:before  {
+        content: "";
+    }
+
+    .mpese-add-lm:after  {
+        content: "";
+    }
+
+    .mpese-add-rm:before {
+        content: "";
+    }
+
+    .mpese-add-rm:after {
+        content: "";
+    }
 }
 
 span.mpese-author-list {
@@ -146,33 +212,3 @@ ul.mpese-witness-list {
     font-size: 18px;
 }
 
-/* text has left marginalia, make space */
-.mpese-text-lm {
-    margin-left: 120px;
-}
-
-/* text has right marginalia, make space */
-.mpese-text-rm {
-    margin-right: 120px;
-}
-
-/* hide text noting the location of the marginalia */
-.mpese-lm-note, .mpese-rm-note {
-    display: none;
-}
-
-.mpese-add-lm {
-    float: left;
-    clear: both;
-    max-width: 100px;
-    font-size: smaller;
-    margin-left: -100px;
-}
-
-.mpese-add-rm {
-    float: right;
-    clear: both;
-    max-width: 100px;
-    font-size: smaller;
-    margin-right: -100px;
-}
