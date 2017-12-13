@@ -9,6 +9,5 @@
     <version>@APPVERSION@</version>
     <prepare>pre-install.xql</prepare>
     <finish>post-install.xql</finish>
-    <permissions user="guest" group="guest" mode="555"/>
     <deployed/>
 </meta>
