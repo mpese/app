@@ -8,6 +8,8 @@ declare variable $exist:root external;
 
 declare variable $view := concat($exist:controller, '/modules/view.xql');
 
+declare variable $methods := ('GET', 'POST', 'HEAD', 'OPTIONS');
+
 (: calculate the xml filename from URL path :)
 declare function local:item($type) {
     let $seq := fn:tokenize($exist:path, '/')
@@ -16,6 +18,7 @@ declare function local:item($type) {
     return
         $seq2[1]
 };
+
 
 (: default: everything is passed through :)
 declare function local:default() {
@@ -34,10 +37,15 @@ declare function local:redirect-with-slash() {
 
 (: forward to html page via the view :)
 declare function local:dispatch($uri as xs:string) {
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="{$exist:controller}{$uri}"/>
-        <view><forward url="{$view}"/></view>
-    </dispatch>
+    (: if HEAD or OPTIONS don't forward to the templating system :)
+    if (request:get-method() = ('OPTIONS', 'HEAD')) then
+        response:stream((), '')
+    (: otherwise, use the templating system :)
+    else
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+            <forward url="{$exist:controller}{$uri}"/>
+            <view><forward url="{$view}"/></view>
+        </dispatch>
 };
 
 (: forward to html page via the view with attribute :)
@@ -105,15 +113,17 @@ declare function local:dashboard() {
 
 util:log('INFO', ($exist:path)),
 
+(: the app only supports certain methods and POST is only supported in .xql files: ditch undesirable stuff :)
+if (not (request:get-method() = $methods) or (request:get-method() eq 'POST' and not(fn:ends-with($exist:path, '.xql')))) then
+    (util:log('INFO', ('Unexpected POST to ' || $exist:path)),
+    response:set-status-code(405), response:stream((), ''),
+    <message>405: {request:get-method()} is not supported for {$exist:path}</message>)
 (: empty path :)
-if ($exist:path eq "") then
+else if ($exist:path eq "") then
     (util:log('INFO', ('Homepage, no slash')),
     local:redirect-with-slash())
 (: homepage, / or /index.html :)
 else if ($exist:path eq '/' or $exist:path eq '/index.html') then
-    if (request:get-method() eq 'HEAD') then
-        (response:set-status-code(200), response:stream((),""))
-    else
     (util:log('INFO', ("Hompage, / or /index.html")),
     local:dispatch('/index.html'))
 (: handle URL that ends without a slash, eg. /dashboard :)
