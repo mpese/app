@@ -22,9 +22,10 @@ declare function local:item($type) {
 
 (: default: everything is passed through :)
 declare function local:default() {
+    (: don't cache ... bad responses can be cached :)
     (util:log('INFO', ('local:default')),
     <ignore xmlns="http://exist.sourceforge.net/NS/exist">
-        <cache-control cache="yes"/>
+        <cache-control cache="no"/>
     </ignore>)
 };
 
@@ -115,7 +116,7 @@ util:log('INFO', ($exist:path)),
 
 (: the app only supports certain methods and POST is only supported in .xql files: ditch undesirable stuff :)
 if (not (request:get-method() = $methods) or (request:get-method() eq 'POST' and not(fn:ends-with($exist:path, '.xql')))) then
-    (util:log('INFO', ('Unexpected POST to ' || $exist:path)),
+    (util:log('INFO', ('Unexpected method ' ||request:get-method() || ' to ' || $exist:path)),
     response:set-status-code(405), response:stream((), ''),
     <message>405: {request:get-method()} is not supported for {$exist:path}</message>)
 (: empty path :)
