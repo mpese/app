@@ -131,6 +131,10 @@ else if ($exist:path eq '/' or $exist:path eq '/index.html') then
 else if (fn:matches($exist:path, '^[^\.]*[^/]$')) then
     (util:log('INFO', ('URL without trailing slash')),
     local:redirect-with-slash())
+else if (fn:starts-with($exist:path, "/resources/")) then
+    <ignore xmlns="http://exist.sourceforge.net/NS/exist">
+        <set-header name="Cache-Control" value="max-age=3600, must-revalidate"/>
+    </ignore>
 else if (fn:starts-with($exist:path, "/dashboard/")) then
     (: forward dashboard :)
     (util:log('INFO', ('dashboard URL')),
