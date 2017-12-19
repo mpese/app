@@ -114,11 +114,29 @@ declare function local:dashboard() {
 
 util:log('INFO', ($exist:path)),
 
+response:set-header("Content-Security-Policy", "default-src 'self; style-src 'self' https://maxcdn.bootstrapcdn.com; font-src 'self' data:; script-src 'self' https://maxcdn.bootstrapcdn.com ; img-src 'self';"),
+response:set-header("X-Content-Type-Options", "nosniff"),
+response:set-header("X-Frame-Options", "Deny"),
+
+(: are we getting a valid URI? :)
+if (not($exist:path castable as xs:anyURI)) then
+    (response:set-status-code(400), response:stream((), ''),
+    <message>400: Bad URL: {$exist:path}</message>)
 (: the app only supports certain methods and POST is only supported in .xql files: ditch undesirable stuff :)
-if (not (request:get-method() = $methods) or (request:get-method() eq 'POST' and not(fn:ends-with($exist:path, '.xql')))) then
+else if (not (request:get-method() = $methods) or (request:get-method() eq 'POST' and not(fn:ends-with($exist:path, '.xql')))) then
     (util:log('INFO', ('Unexpected method ' ||request:get-method() || ' to ' || $exist:path)),
     response:set-status-code(405), response:stream((), ''),
     <message>405: {request:get-method()} is not supported for {$exist:path}</message>)
+(: limit the options ... needs nginx to rewrite this though :)
+else if (request:get-method() = 'OPTIONS') then
+    if (ends-with($exist:path, '.xql')) then
+        (response:set-status-code(200),
+         response:set-header('MPESE', 'GET, POST, HEAD, OPTIONS'),
+         response:stream((), ''))
+    else
+        (response:set-status-code(200),
+        response:set-header('MPESE', 'GET, HEAD, OPTIONS'),
+        response:stream((), ''))
 (: empty path :)
 else if ($exist:path eq "") then
     (util:log('INFO', ('Homepage, no slash')),
