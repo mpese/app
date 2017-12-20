@@ -7,7 +7,7 @@ declare variable $exist:prefix external;
 declare variable $exist:root external;
 
 declare variable $view := concat($exist:controller, '/modules/view.xql');
-
+declare variable $methods := ('GET', 'POST', 'HEAD', 'OPTIONS');
 
 (: calculate the xml filename from URL path :)
 declare function local:item($type) {
@@ -18,12 +18,14 @@ declare function local:item($type) {
         $seq2[1]
 };
 
+
 (: default: everything is passed through :)
 declare function local:default() {
+    (: don't cache ... bad responses can be cached :)
     (util:log('INFO', ('local:default')),
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <cache-control cache="yes"/>
-    </dispatch>)
+    <ignore xmlns="http://exist.sourceforge.net/NS/exist">
+        <cache-control cache="no"/>
+    </ignore>)
 };
 
 (: add a / to a request and redirect :)
@@ -35,10 +37,15 @@ declare function local:redirect-with-slash() {
 
 (: forward to html page via the view :)
 declare function local:dispatch($uri as xs:string) {
-    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-        <forward url="{$exist:controller}{$uri}"/>
-        <view><forward url="{$view}"/></view>
-    </dispatch>
+    (: if HEAD or OPTIONS don't forward to the templating system :)
+    if (request:get-method() = ('OPTIONS', 'HEAD')) then
+        response:stream((), '')
+    (: otherwise, use the templating system :)
+    else
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+            <forward url="{$exist:controller}{$uri}"/>
+            <view><forward url="{$view}"/></view>
+        </dispatch>
 };
 
 (: forward to html page via the view with attribute :)
@@ -106,15 +113,35 @@ declare function local:dashboard() {
 
 util:log('INFO', ($exist:path)),
 
+response:set-header("Content-Security-Policy", "default-src 'self; style-src 'self' https://maxcdn.bootstrapcdn.com; font-src 'self' data:; script-src 'self' https://maxcdn.bootstrapcdn.com ; img-src 'self';"),
+response:set-header("X-Content-Type-Options", "nosniff"),
+response:set-header("X-Frame-Options", "Deny"),
+
+(: are we getting a valid URI? :)
+if (not($exist:path castable as xs:anyURI)) then
+    (response:set-status-code(400), response:stream((), ''),
+    <message>400: Bad URL: {$exist:path}</message>)
+(: the app only supports certain methods and POST is only supported in .xql files: ditch undesirable stuff :)
+else if (not (request:get-method() = $methods) or (request:get-method() eq 'POST' and not(fn:ends-with($exist:path, '.xql')))) then
+    (util:log('INFO', ('Unexpected method ' ||request:get-method() || ' to ' || $exist:path)),
+    response:set-status-code(405), response:stream((), ''),
+    <message>405: {request:get-method()} is not supported for {$exist:path}</message>)
+(: limit the options ... needs nginx to rewrite this though :)
+else if (request:get-method() = 'OPTIONS') then
+    if (ends-with($exist:path, '.xql')) then
+        (response:set-status-code(200),
+         response:set-header('MPESE', 'GET, POST, HEAD, OPTIONS'),
+         response:stream((), ''))
+    else
+        (response:set-status-code(200),
+        response:set-header('MPESE', 'GET, HEAD, OPTIONS'),
+        response:stream((), ''))
 (: empty path :)
-if ($exist:path eq "") then
+else if ($exist:path eq "") then
     (util:log('INFO', ('Homepage, no slash')),
     local:redirect-with-slash())
 (: homepage, / or /index.html :)
 else if ($exist:path eq '/' or $exist:path eq '/index.html') then
-    if (request:get-method() eq 'HEAD') then
-        (response:set-status-code(200), response:stream((),""))
-    else
     (util:log('INFO', ("Hompage, / or /index.html")),
     local:dispatch('/home.html'))
 (: handle URL that ends without a slash, eg. /dashboard :)
@@ -133,6 +160,10 @@ else if (fn:matches($exist:path, '^(/p/)(\w+|%20)+\.html$')) then
 else if ($exist:path eq '/about.html') then
     (util:log('INFO', ("About page")),
     local:dispatch('/about.html'))
+else if (fn:starts-with($exist:path, "/resources/")) then
+    <ignore xmlns="http://exist.sourceforge.net/NS/exist">
+        <set-header name="Cache-Control" value="max-age=3600, must-revalidate"/>
+    </ignore>
 else if (fn:starts-with($exist:path, "/dashboard/")) then
     (: forward dashboard :)
     (util:log('INFO', ('dashboard URL')),

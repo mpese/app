@@ -1,4 +1,4 @@
-xquery version "1.0";
+xquery version "3.1";
 
 import module namespace util = "http://exist-db.org/xquery/util";
 import module namespace sm = "http://exist-db.org/xquery/securitymanager";
@@ -66,7 +66,21 @@ declare function local:copy-mpese-indices() {
 
 };
 
+(: We don't want folders in the app world readable :)
+declare function local:update-app-other($collection) {
+
+    util:log('INFO', ('Found collection in app: ' || $collection)),
+    sm:chmod($collection, 'rwxr-x--x'),
+
+    for $coll in xmldb:get-child-collections($collection)
+        return local:update-app-other($collection || '/' || $coll)
+
+};
+
 util:log('INFO', ('MPESE: Running the post-installation script ...')),
+
+util:log('INFO', ('MPESE: Remove read access to Other for app collections')),
+local:update-app-other('/db/apps/mpese/'),
 
 (: set the group owner for certain paths (recursively) :)
 local:chgrp-collection($config:mpese_group, $config:mpese-tei-templates),
