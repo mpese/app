@@ -39,7 +39,8 @@ declare function local:redirect-with-slash() {
 declare function local:dispatch($uri as xs:string) {
     (: if HEAD or OPTIONS don't forward to the templating system :)
     if (request:get-method() = ('OPTIONS', 'HEAD')) then
-        response:stream((), '')
+        (util:log('INFO', ('OPTIONS or HEAD in local:dispatch')),
+        response:set-status-code(200),<empty/>)
     (: otherwise, use the templating system :)
     else
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
@@ -117,6 +118,14 @@ response:set-header("Content-Security-Policy", "default-src 'self'; style-src 's
 response:set-header("X-Content-Type-Options", "nosniff"),
 response:set-header("X-Frame-Options", "Deny"),
 
+if (request:get-method() = 'OPTIONS') then
+    if (ends-with($exist:path, '.xql')) then
+        response:set-header('MPESE', 'GET, POST, HEAD, OPTIONS')
+    else
+        response:set-header('MPESE', 'GET, HEAD, OPTIONS')
+else
+    (),
+
 (: are we getting a valid URI? :)
 if (not($exist:path castable as xs:anyURI)) then
     (response:set-status-code(400), response:stream((), ''),
@@ -127,15 +136,6 @@ else if (not (request:get-method() = $methods) or (request:get-method() eq 'POST
     response:set-status-code(405), response:stream((), ''),
     <message>405: {request:get-method()} is not supported for {$exist:path}</message>)
 (: limit the options ... needs nginx to rewrite this though :)
-else if (request:get-method() = 'OPTIONS') then
-    if (ends-with($exist:path, '.xql')) then
-        (response:set-status-code(200),
-         response:set-header('MPESE', 'GET, POST, HEAD, OPTIONS'),
-         response:stream((), ''))
-    else
-        (response:set-status-code(200),
-        response:set-header('MPESE', 'GET, HEAD, OPTIONS'),
-        response:stream((), ''))
 (: empty path :)
 else if ($exist:path eq "") then
     (util:log('INFO', ('Homepage, no slash')),
