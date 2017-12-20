@@ -212,3 +212,6 @@ ul.mpese-witness-list {
     font-size: 18px;
 }
 
+div#mpese-details-panel, div#mpese-map-panel {
+    display: none;
+}
