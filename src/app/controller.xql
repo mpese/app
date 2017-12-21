@@ -40,7 +40,8 @@ declare function local:redirect-with-slash() {
 declare function local:dispatch($uri as xs:string) {
     (: if HEAD or OPTIONS don't forward to the templating system :)
     if (request:get-method() = ('OPTIONS', 'HEAD')) then
-        response:stream((), '')
+        (util:log('INFO', ('OPTIONS or HEAD in local:dispatch')),
+        response:set-status-code(200),<empty/>)
     (: otherwise, use the templating system :)
     else
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
@@ -114,7 +115,7 @@ declare function local:dashboard() {
 
 util:log('INFO', ($exist:path)),
 
-response:set-header("Content-Security-Policy", "default-src 'self; style-src 'self' https://maxcdn.bootstrapcdn.com; font-src 'self' data:; script-src 'self' https://maxcdn.bootstrapcdn.com ; img-src 'self';"),
+(: response:set-header("Content-Security-Policy", "default-src 'self; style-src 'self' https://maxcdn.bootstrapcdn.com; font-src 'self' data:; script-src 'self' https://maxcdn.bootstrapcdn.com ; img-src 'self';"), :)
 response:set-header("X-Content-Type-Options", "nosniff"),
 response:set-header("X-Frame-Options", "Deny"),
 
