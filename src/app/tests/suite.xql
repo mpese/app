@@ -10,7 +10,7 @@ test:suite(
         inspect:module-functions(xs:anyURI("test-mpese-corpus-search.xql")),
         inspect:module-functions(xs:anyURI("test-mpese-corpus-text.xql")),
         inspect:module-functions(xs:anyURI("test-mpese-corpus-mss.xql")),
-        inspect:module-functions(xs:anyURI("test-mpese-corpus-people.xql")),
-        inspect:module-functions(xs:anyURI("test-mpese-access-tests.xql"))
+        inspect:module-functions(xs:anyURI("test-mpese-corpus-people.xql"))
+        (:inspect:module-functions(xs:anyURI("test-mpese-access-tests.xql")):)
     )
 )

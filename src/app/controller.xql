@@ -114,6 +114,7 @@ declare function local:dashboard() {
 
 util:log('INFO', ($exist:path)),
 
+
 response:set-header("Content-Security-Policy", "default-src 'self'; style-src 'self'; font-src 'self' data:; script-src 'self'; img-src 'self';"),
 response:set-header("X-Content-Type-Options", "nosniff"),
 response:set-header("X-Frame-Options", "Deny"),
