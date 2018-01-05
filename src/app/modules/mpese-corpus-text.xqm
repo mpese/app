@@ -152,8 +152,12 @@ declare function mpese-text:text-body($text as xs:string) as node()* {
     let $css := fn:string-join(($lm,$rm), " ")
     let $xsl := doc('corpus-text-html.xsl')
     let $transcript := doc($text)
+    let $proof_read :=  if (not(boolean($transcript//tei:revisionDesc/tei:listChange/tei:change[@status = 'proofread']))) then
+                            <p><strong>Note:</strong> This transcript is marked as a draft and is awaiting proof reading</p>
+                        else
+                            ()
     return
-        <div id="mpese-text-body" class="{$css}">{transform:transform($transcript, $xsl, ())}</div>
+        <div id="mpese-text-body" class="{$css}">{$proof_read}{transform:transform($transcript, $xsl, ())}</div>
 };
 
 
