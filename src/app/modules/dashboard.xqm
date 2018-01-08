@@ -326,7 +326,7 @@ declare function dashboard:count_people($node as node (), $model as map (*)) {
 
 (: list the @rend attribute values :)
 declare function dashboard:rend_atts($node as node (), $model as map (*)) {
-    let $attrs := collection($config:mpese-tei-corpus)//@rend
+    let $attrs := collection($config:mpese-tei-corpus)//*/@rend/string()
     return
     <ul class='list-inline'>{
         for $att in fn:distinct-values($attrs)
