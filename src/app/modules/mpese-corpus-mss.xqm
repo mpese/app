@@ -233,7 +233,7 @@ declare function mpese-mss:history($node as node (), $model as map (*)) {
 declare function mpese-mss:contents($node as node (), $model as map (*)) {
 
     let $results := for $item in doc($model('mss'))//tei:body/tei:msDesc/tei:msContents/tei:msItem
-                    order by $item/@n
+                    order by xs:decimal($item/@n)
                     return if (not(functx:has-empty-content($item))) then $item else ()
 
     return
