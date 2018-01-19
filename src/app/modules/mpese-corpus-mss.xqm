@@ -314,3 +314,16 @@ declare function mpese-mss:contents($node as node (), $model as map (*)) {
                     }</div>
         }</div>
 };
+
+declare function mpese-mss:image($node as node (), $model as map (*)) {
+
+    let $has_images := exists(doc($model('mss'))//tei:facsimile)
+    return
+        if ($has_images) then
+            <div id='facsimile' data-doc-type="ms" data-doc-id="{utils:name-from-uri($model('mss'))}">
+                <div id="openseadragon"></div>
+
+            </div>
+        else
+            <div class="well well-lg"><p class="text-center font-weight-bold">No image</p></div>
+};

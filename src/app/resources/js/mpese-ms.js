@@ -1,0 +1,1 @@
+facsimile_viewer.init();

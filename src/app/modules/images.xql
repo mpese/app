@@ -21,9 +21,9 @@ return
         (: work out document location :)
         let $doc :=
             if ($type eq 'ms') then
-                $config:mpese-tei-corpus-mss || '/' || $id
+                $config:mpese-tei-corpus-mss || '/' || $id || ".xml"
             else
-                $config:mpese-tei-corpus-texts || '/' || $id
+                $config:mpese-tei-corpus-texts || '/' || $id || ".xml"
         (: get results :)
         let $results :=
             if (doc-available($doc)) then

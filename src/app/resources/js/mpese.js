@@ -102,3 +102,59 @@ var image_viewer = {
 }
 
 
+var facsimile_viewer = {
+
+    processImages: function(imageList) {
+
+        var tiles = [];
+
+        if (imageList !== undefined) {
+            for (var i = 0; i < images.length; i++) {
+                var tmp = images[i].split('.');
+                var tile = '/images' + tmp[0] + '.dzi';
+                tiles.push(tile)
+            }
+        }
+
+        return tiles;
+    },
+
+    call: function(type, id) {
+        $.get("/modules/images.xql", {type: type, id: id}, function(data) {
+            var json = JSON.parse(data);
+
+            var tiles = []
+
+            if (typeof json !== "undefined") {
+                for (var i = 0; i < json.results.image.length; i++) {
+                    var tmp = json.results.image[i].split('.');
+                    var tile = '/images' + tmp[0] + '.dzi';
+                    tiles.push(tile)
+                }
+            }
+
+            var viewer = OpenSeadragon({
+                id: "openseadragon",
+                prefixUrl: "/resources/openseadragon/images/",
+                tileSources: tiles,
+                sequenceMode: true,
+                showRotationControl: true,
+                gestureSettingsTouch: {
+                    pinchRotate: true
+                }
+            });
+
+        });
+    },
+
+    init: function() {
+
+        // extract data from the page
+        var doc_type = $('#facsimile').data('doc-type');
+        var doc_id = $('#facsimile').data('doc-id');
+
+        // call the service and process ...
+        this.call(doc_type, doc_id)
+    }
+
+};
