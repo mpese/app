@@ -104,27 +104,21 @@ var image_viewer = {
 
 var facsimile_viewer = {
 
-    processImages: function(imageList) {
-
-        var tiles = [];
-
-        if (imageList !== undefined) {
-            for (var i = 0; i < images.length; i++) {
-                var tmp = images[i].split('.');
-                var tile = '/images' + tmp[0] + '.dzi';
-                tiles.push(tile)
-            }
-        }
-
-        return tiles;
-    },
-
+    // Make a call to get the list of images from the server
+    /**
+     * Make a call to get a list if images from the server. From that, we get the
+     * .dzi names so that they can be passed to the OpenSeaDragon server.
+     */
     call: function(type, id) {
         $.get("/modules/images.xql", {type: type, id: id}, function(data) {
+
+            // parse the results
             var json = JSON.parse(data);
 
+            // hold the tiles
             var tiles = []
 
+            // create a list of dzi files
             if (typeof json !== "undefined") {
                 for (var i = 0; i < json.results.image.length; i++) {
                     var tmp = json.results.image[i].split('.');
@@ -133,6 +127,7 @@ var facsimile_viewer = {
                 }
             }
 
+            // initiate the viewer
             var viewer = OpenSeadragon({
                 id: "openseadragon",
                 prefixUrl: "/resources/openseadragon/images/",
