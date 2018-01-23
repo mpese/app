@@ -162,9 +162,10 @@ else if ($exist:path eq '/about.html') then
     (util:log('INFO', ("About page")),
     local:dispatch('/about.html'))
 else if (fn:starts-with($exist:path, "/resources/")) then
-    <ignore xmlns="http://exist.sourceforge.net/NS/exist">
-        <set-header name="Cache-Control" value="max-age=3600, must-revalidate"/>
-    </ignore>
+    (:<ignore xmlns="http://exist.sourceforge.net/NS/exist">:)
+        (:<set-header name="Cache-Control" value="max-age=3600, must-revalidate"/>:)
+    (:</ignore>:)
+    local:default()
 else if (fn:starts-with($exist:path, "/dashboard/")) then
     (: forward dashboard :)
     (util:log('INFO', ('dashboard URL')),

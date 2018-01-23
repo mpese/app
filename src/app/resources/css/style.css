@@ -135,9 +135,8 @@ div#openseadragon {
         display: block;
     }
 
-    #mpese-transcript {
-        min-height: 300px;
-        max-height: 600px;
+    #mpese-transcript, #mss-wrapper {
+        max-height: 80vh;
         overflow-y: scroll;
     }
 
