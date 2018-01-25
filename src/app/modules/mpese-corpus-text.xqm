@@ -614,12 +614,12 @@ declare function mpese-text:transcript($node as node (), $model as map (*)) {
  : @return HTML for the viewer or a 'No image' message
  :)
 declare function mpese-text:image($node as node (), $model as map (*)) {
-    let $images := doc($model('text'))//tei:pb[@facs]/@facs/string()
-    let $distinct := fn:string-join(distinct-values($images), ';')
+    let $has_images := exists(doc($model('text'))//tei:facsimile)
     return
-        if ($distinct) then
-            <div id='mss-images' data-images="{$distinct}">
+        if ($has_images) then
+            <div id='facsimile' data-doc-type="text" data-doc-id="{utils:name-from-uri($model('text'))}">
                 <div id="openseadragon"></div>
+
             </div>
         else
             <div class="well well-lg"><p class="text-center font-weight-bold">No image</p></div>

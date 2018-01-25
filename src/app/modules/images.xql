@@ -1,5 +1,7 @@
 xquery version "3.1";
 
+
+declare namespace json="http://www.json.org";
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace response="http://exist-db.org/xquery/response";
 declare namespace tei = 'http://www.tei-c.org/ns/1.0';
@@ -29,11 +31,11 @@ return
             if (doc-available($doc)) then
                 for $image in doc($doc)//tei:facsimile/tei:graphic
                 order by xs:int($image/@n)
-                return <image>{$image/@url/string()}</image>
+                return <images json:array="true">{$image/@url/string()}</images>
             else
-                <image/>
+                <images json:array="true"/>
         return
         (response:set-status-code(200),
-        <results>{if (count($results) eq 0) then <image/> else $results}</results>
+        <results>{$results}</results>
         )
     }</response>

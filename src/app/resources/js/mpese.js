@@ -104,7 +104,6 @@ var image_viewer = {
 
 var facsimile_viewer = {
 
-    // Make a call to get the list of images from the server
     /**
      * Make a call to get a list if images from the server. From that, we get the
      * .dzi names so that they can be passed to the OpenSeaDragon server.
@@ -120,8 +119,9 @@ var facsimile_viewer = {
 
             // create a list of dzi files
             if (typeof json !== "undefined") {
-                for (var i = 0; i < json.results.image.length; i++) {
-                    var tmp = json.results.image[i].split('.');
+                for (var i = 0; i < json.results.images.length; i++) {
+                    console.log("*** " + json.results.images[i])
+                    var tmp = json.results.images[i].split('.');
                     var tile = '/images' + tmp[0] + '.dzi';
                     tiles.push(tile)
                 }
@@ -136,6 +136,16 @@ var facsimile_viewer = {
                 showRotationControl: true,
                 gestureSettingsTouch: {
                     pinchRotate: true
+                }
+            });
+
+            $('span.mpese-photo').on('click', function(event) {
+
+                var selected = $(this).parent().data('facs').replace('.jpg', '.dzi');
+                var page = $.inArray('/images' + selected, tiles);
+
+                if (page !== -1) {
+                    viewer.goToPage(page);
                 }
             });
 
