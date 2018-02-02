@@ -5,6 +5,7 @@ module namespace config = "http://mpese.rit.bris.ac.uk/config";
 declare namespace templates = "http://exist-db.org/xquery/templates";
 declare namespace repo = "http://exist-db.org/xquery/repo";
 declare namespace expath = "http://expath.org/ns/pkg";
+declare namespace tei = 'http://www.tei-c.org/ns/1.0';
 
 (: Determine the root of the application :)
 declare variable $config:app-root :=
@@ -138,4 +139,30 @@ declare function config:app-info($node as node(), $model as map(*)) {
                 <td>{request:get-attribute("$exist:controller")}</td>
             </tr>
         </table>
+};
+
+(:~
+ : Provide a change log for those with preview access to the service.
+ :)
+declare function config:changes($node as node(), $model as map(*)) {
+
+    let $changes := for $div in doc('/db/mpese/tei/corpus/meta/mpese.xml')//tei:text/tei:body/tei:div
+                    order by $div/tei:head/tei:date/@when descending
+                    return $div
+
+    return
+        <div>{
+
+            for $change in $changes
+            return
+                <div class="well well-sm">
+                <h3>{$change/tei:head/string()}</h3>
+                <ul>{
+                    for $item in $change/tei:list/tei:item
+                    return
+                        <li>{$item/string()}</li>
+                }</ul>
+                </div>
+        }</div>
+
 };

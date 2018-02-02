@@ -145,6 +145,9 @@ else if ($exist:path eq "") then
 else if ($exist:path eq '/' or $exist:path eq '/index.html') then
     (util:log('INFO', ("Hompage, / or /index.html")),
     local:dispatch('/home.html'))
+else if ($exist:path eq '/changes.html') then
+    (util:log('INFO', ('Changes')),
+    local:dispatch('/changes.html'))
 (: handle URL that ends without a slash, eg. /dashboard :)
 else if (fn:matches($exist:path, '^[^\.]*[^/]$')) then
     (util:log('INFO', ('URL without trailing slash')),
