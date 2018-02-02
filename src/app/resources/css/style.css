@@ -2,6 +2,10 @@
     padding-top: 40px;
 }
 
+.main-row {
+    padding-top: 20px;
+}
+
 .logo {
     margin-right: 3em;
 }
@@ -63,9 +67,9 @@ img.mpese-home-img-caption {
     max-width: 100%;
 }
 
-#search-box {
-    padding-top: 40px;
-}
+/*#search-box {*/
+    /*padding-top: 40px;*/
+/*}*/
 
 .result-entry-snippet {
     margin: 5px 0 5px 0;
