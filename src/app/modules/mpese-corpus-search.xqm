@@ -311,5 +311,5 @@ declare %templates:default("page", 1) %templates:default("num", 10) %templates:d
 declare function mpese-search:last-change($node as node (), $model as map (*))  {
     let $date := doc('/db/mpese/tei/corpus/meta/mpese.xml')//tei:text/tei:body/tei:div[1]/tei:head/tei:date/string()
     return
-        <p class="text-center"><a href="./changes.html">Last update on {$date}. See changes.</a></p>
+        <div class="alert alert-info text-center"><a href="./changes.html">Last updated on {$date}. See changes.</a></div>
 };
