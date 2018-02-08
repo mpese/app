@@ -124,7 +124,7 @@
     <!-- Deploy the application .xar -->
     <target name="deploy" depends="undeploy">
         <loadfile property="xquery_deploy" srcFile="dist/deploy.xql"/>
-        <xdb:xquery uri="${xmlrpc}/db" user="admin" password="${password}"
+        <xdb:xquery uri="${xmlrpc}/db" user="admin" password="${password}" ssl="${ssl}"
                     query="${xquery_deploy}" outputproperty="deploy_output"/>
         <echoproperties>
             <propertyset>
