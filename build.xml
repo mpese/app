@@ -73,7 +73,7 @@
     </target>
 
     <!-- build stage -->
-    <target name="build" depends="clean">
+    <target name="build" depends="init-ivy,clean">
         <!-- copy the app src to build -->
         <copy todir="build">
             <fileset dir="src/app">
