@@ -135,6 +135,11 @@
         <get src="${test.url}" dest="test-results.xml" />
         <loadfile property="test-results" srcFile="test-results.xml" />
         <echo>${test-results}</echo>
+        <fail message="There are failed tests.">
+            <condition>
+                <contains string="${test-results}" substring="failure-error-code"/>
+            </condition>
+        </fail>
     </target>
 
 
