@@ -102,7 +102,7 @@
     <!-- Store the .xar file in the database -->
     <target name="store" depends="dist,resolve,credentials">
         <xdb:store uri="${xmlrpc}/db/xar_files"
-                   createcollection="true" user="admin" password="${password}">
+                   createcollection="true" user="${USERNAME}" password="${PASSWORD}">
             <fileset dir="dist">
                 <include name="*.xar"/>
             </fileset>
