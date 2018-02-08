@@ -101,8 +101,8 @@
 
     <!-- Store the .xar file in the database -->
     <target name="store" depends="dist,resolve,credentials">
-        <xdb:store uri="${xmlrpc}/db/xar_files"
-                   createcollection="true" user="${USERNAME}" password="${PASSWORD}">
+        <xdb:store uri="${xmlrpc}/db/xar_files" ssl="${ssl}"
+                   createcollection="true" user="${username}" password="${password}">
             <fileset dir="dist">
                 <include name="*.xar"/>
             </fileset>
@@ -112,7 +112,7 @@
     <!-- Remove previous the application .xar -->
     <target name="undeploy" depends="resolve,store">
         <loadfile property="xquery_undeploy" srcFile="dist/undeploy.xql"/>
-        <xdb:xquery uri="${xmlrpc}/db" user="admin" password="${password}"
+        <xdb:xquery uri="${xmlrpc}/db" user="${username}" password="${password}" ssl="${ssl}"
                     query="${xquery_undeploy}" outputproperty="undeploy_output"/>
         <echoproperties>
             <propertyset>
@@ -124,7 +124,7 @@
     <!-- Deploy the application .xar -->
     <target name="deploy" depends="undeploy">
         <loadfile property="xquery_deploy" srcFile="dist/deploy.xql"/>
-        <xdb:xquery uri="${xmlrpc}/db" user="admin" password="${password}" ssl="${ssl}"
+        <xdb:xquery uri="${xmlrpc}/db" user="${username}" password="${password}" ssl="${ssl}"
                     query="${xquery_deploy}" outputproperty="deploy_output"/>
         <echoproperties>
             <propertyset>
