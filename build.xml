@@ -17,18 +17,6 @@
     <property name="ivy.jar.dir" value="${ivy.home}/lib"/>
     <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
 
-    <!-- needed to run ant tasks -->
-    <path id="classpath.core">
-        <fileset dir="${lib}">
-            <include name="*.jar"/>
-        </fileset>
-    </path>
-
-    <!-- include exist ant tasks -->
-    <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
-        <classpath refid="classpath.core"/>
-    </typedef>
-
     <!-- create lib for holding jars needed for running ant tasks -->
     <target name="init">
         <mkdir dir="${lib}"/>
@@ -52,6 +40,17 @@
     <!-- download files needed for running the eXist ant tasks -->
     <target name="resolve" depends="init,init-ivy">
         <ivy:retrieve/>
+        <!-- needed to run ant tasks -->
+        <path id="classpath.core">
+            <fileset dir="${lib}">
+                <include name="*.jar"/>
+            </fileset>
+        </path>
+
+        <!-- include exist ant tasks -->
+        <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
+            <classpath refid="classpath.core"/>
+        </typedef>
     </target>
 
 
@@ -132,8 +131,8 @@
             </propertyset>
         </echoproperties>
 
-        <get src="${test.url}" dest="test-results.xml" />
-        <loadfile property="test-results" srcFile="test-results.xml" />
+        <get src="${test.url}" dest="test-results.xml"/>
+        <loadfile property="test-results" srcFile="test-results.xml"/>
         <echo>${test-results}</echo>
         <fail message="There are failed tests.">
             <condition>

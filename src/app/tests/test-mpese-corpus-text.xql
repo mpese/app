@@ -510,7 +510,7 @@ declare %test:assertXPath("$result eq '22 November 1627'") function test-text:te
 };
 
 (: check creation date :)
-declare %test:assertXPath("$result eq '1623, 1485 (claimed)'") function test-text:templ-creation-date-attr() {
+declare %test:assertXPath("$result eq 'c.1623, but dated 1485, 1485 (claimed)'") function test-text:templ-creation-date-attr() {
     let $node := <test></test>
     let $model := map {}
     let $text := 'ProphecyAbbeyNorfolk1623.xml'

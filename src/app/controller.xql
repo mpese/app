@@ -115,7 +115,7 @@ declare function local:dashboard() {
 util:log('INFO', ($exist:path)),
 
 
-response:set-header("Content-Security-Policy", "default-src 'self'; style-src 'self' https://bristoluni.atlassian.net 'sha256-CusZ5RPaUeDdwxEQuZMC0fL5hdIOS2kyapE2JOAu+zA='; font-src 'self' data:; script-src 'self' https://bristoluni.atlassian.net; img-src 'self' https://bristoluni.atlassian.net data:; frame-src 'self' https://bristoluni.atlassian.net"),
+response:set-header("Content-Security-Policy", "default-src 'self'; style-src 'self' 'unsafe-inline' https://bristoluni.atlassian.net; font-src 'self' data:; script-src 'self' https://bristoluni.atlassian.net; img-src 'self' https://bristoluni.atlassian.net data:; frame-src 'self' https://bristoluni.atlassian.net"),
 response:set-header("X-Content-Type-Options", "nosniff"),
 response:set-header("X-Frame-Options", "Deny"),
 
