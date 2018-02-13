@@ -21,14 +21,14 @@ import module namespace utils = "http://mpese.rit.bris.ac.uk/utils/" at 'utils.x
 
 (: Text search against the <tei:title/> of the document. Ordered by the title. :)
 declare function mpese-search:all() as element()* {
-    for $result in fn:collection($config:mpese-tei-corpus-texts)//tei:TEI
+    for $result in fn:collection($config:mpese-tei-corpus-texts)//tei:TEI[tei:text[not(@type) or @type='mpese_text']]
     order by $result//tei:titleStmt/tei:title/text()
     return $result
 };
 
 (: Search against title, author and text :)
 declare function mpese-search:search($phrase) {
-    collection($config:mpese-tei-corpus-texts)/*[ft:query(.,$phrase)]
+    collection($config:mpese-tei-corpus-texts)/*[ft:query(.,$phrase)][tei:text[not(@type) or @type='mpese_text']]
 };
 
 declare function mpese-search:search($phrase, $results_order) {
@@ -171,19 +171,17 @@ declare function mpese-search:matches($result) {
 declare function mpese-search:all($page as xs:integer, $num as xs:integer)  {
 
     let $start := mpese-search:seq-start($page, $num)
-
     let $sorted-results := mpese-search:all()
-
     let $total := fn:count($sorted-results)
     let $pages := mpese-search:pages-total($total, $num)
-
     let $results := mpese-search:paginate-results($sorted-results, $start, $num)
+    let $message := if ($total eq 1) then $total || ' text available' else $total || " texts available"
 
     return
         ( response:set-cookie('mpese-search-string', ''), response:set-cookie('mpese-search-page', $page),
           response:set-cookie('mpese-search-order', ''),
     <div id="search-results">
-        <p class="text-center results-total">{$total} texts available</p>
+        <p class="text-center results-total">{$message}</p>
         {
             if ($pages > 1) then
                 mpese-search:pagination($page, $pages, "", "Top navigation")
@@ -227,12 +225,13 @@ declare function mpese-search:everything($page as xs:integer, $num as xs:integer
     let $total := fn:count($sorted-results)
     let $pages := mpese-search:pages-total($total, $num)
     let $results := mpese-search:paginate-results($sorted-results, $start, $num)
+    let $message := if ($total eq 1) then $total || ' text available' else $total || " texts available"
 
     return
         (response:set-cookie('mpese-search-string', util:base64-encode($search)),
          response:set-cookie('mpese-search-page', $page), response:set-cookie('mpese-search-order', $results_order),
     <div id="search-results">
-        <p class="text-center results-total">{$total} texts available</p>
+        <p class="text-center results-total">{$message}</p>
         {
             if ($pages > 1) then
                 mpese-search:pagination($page, $pages, $search, "Top navigation")
