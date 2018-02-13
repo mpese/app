@@ -141,5 +141,17 @@
         </fail>
     </target>
 
+    <!-- Deploy the application .xar -->
+    <target name="deploy-demo" depends="deploy">
+        <loadfile property="xquery_perms" srcFile="dist/permissions.xql"/>
+        <xdb:xquery uri="${xmlrpc}/db" user="${username}" password="${password}" ssl="${ssl}"
+                    query="${xquery_perms}" outputproperty="deploy_output"/>
+        <echoproperties>
+            <propertyset>
+                <propertyref name="deploy_output"/>
+            </propertyset>
+        </echoproperties>
+    </target>
+
 
 </project>

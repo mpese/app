@@ -1,7 +1,6 @@
 xquery version "3.0";
  
 import module namespace repo = "http://exist-db.org/xquery/repo";
-import module namespace xdb = "http://exist-db.org/xquery/xmldb";
 
 declare variable $xar := "/db/xar_files/mpese-app-@APPVERSION@.xar";
  
