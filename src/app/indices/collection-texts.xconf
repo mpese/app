@@ -12,6 +12,7 @@
             <create qname="tei:author" type="xs:string" case="no"/>
             <create qname="@rend" type="xs:string"/>
             <create qname="@corresp" type="xs:string"/>
+            <create qname="@type" type="xs:string"/>
             <create qname="tei:date">
                 <field name="date-when" match="@when" type="xs:string"/>
             </create>
