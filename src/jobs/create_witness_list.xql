@@ -25,7 +25,7 @@ declare function local:locus($msItem) {
 (: find any transcript for the witness :)
 declare function local:find-transcript($msItem) {
     if (exists($msItem/tei:link[@type='t_witness'])) then
-        (<ref xmlns="http://www.tei-c.org/ns/1.0" target="{fn:substring-after($msItem/tei:link[@type='t_witness']/@target/string(), 'texts/')}">Transcript</ref>, text{" in "})
+        (<ref xmlns="http://www.tei-c.org/ns/1.0" type="text" target="{fn:substring-after($msItem/tei:link[@type='t_witness']/@target/string(), 'texts/')}">Transcript</ref>, text{" of "})
     else
         ()
 };
@@ -39,7 +39,7 @@ declare function local:process-mss($text) {
         return
         <bibl xmlns="http://www.tei-c.org/ns/1.0">
             {local:find-transcript($msItem)}
-            <ref target="{$mss_link}">{$label}{local:locus($msItem)}</ref>
+            <ref type="ms" target="{$mss_link}">{$label}{local:locus($msItem)}</ref>
         </bibl>
 };
 
