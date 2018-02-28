@@ -713,16 +713,35 @@ declare function mpese-text:author-list($node as node (), $model as map (*)) {
  : @return the list of witnesses or a "no witnesses" message
  :)
 declare function mpese-text:witnesses($node as node (), $model as map (*)) {
-    let $witnesses := mpese-text:witnesses-includes($model('text'))
+
+    let $witnesses := doc($model('text'))//tei:listBibl[@xml:id="mss_witness_generated"]/tei:bibl
+
     return
-        if (count($witnesses) eq 0) then
-            <p>No witnesses</p>
-        else
-            <ul>{
-                for $witness in $witnesses
-                    return
-                        <li>{mpese-text:mss-with-link($witness)}</li>
-            }</ul>
+    if (count($witnesses) eq 0) then
+        <p>No witnesses</p>
+    else
+        <ul>{
+            for $witness in $witnesses
+            order by $witness//tei:ref[@type='ms']/string()
+            return <li>{
+                let $transcript := if ($witness/tei:ref[@type='text']) then
+                    let $link := './' || substring-before($witness/tei:ref[@type='text']/@target/string(), '.xml') || '.html'
+                    return (<a href="{$link}">Transcript</a>, text{" of "})
+                    else
+                        ()
+                let $ms := if ($witness//tei:ref[@type='ms']) then
+                    let $target := $witness//tei:ref[@type='ms']/@target/string()
+                    let $tmp := substring-after($target, 'mss/')
+                    let $link := '../m/' || substring-before($tmp, '.xml') || '.html'
+                    return (<a href="{$link}">{$witness//tei:ref[@type='ms']/string()}</a>)
+                    else
+                        ()
+                return
+                    ($transcript, $ms)
+            }</li>
+
+        }</ul>
+
 };
 
 (:~
