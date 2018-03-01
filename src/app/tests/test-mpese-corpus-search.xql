@@ -42,11 +42,11 @@ declare %test:assertTrue function test-search:search() {
 };
 
 (: Test filtering out texts that aren't privileged :)
-declare %test:assertTrue function test-search:search-filtered() {
-    let $results := mpese-search:search("sackville challenges")
-    return
-        fn:count($results) eq 1
-};
+(:declare %test:assertTrue function test-search:search-filtered() {:)
+    (:let $results := mpese-search:search("sackville challenges"):)
+    (:return:)
+        (:fn:count($results) eq 1:)
+(:};:)
 
 
 (: Tests getting a subset of results for paginaation :)
