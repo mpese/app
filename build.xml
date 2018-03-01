@@ -153,5 +153,19 @@
         </echoproperties>
     </target>
 
+    <!-- Data tasks -->
+
+    <!-- Create a witness list -->
+    <target name="create-witness-list" depends="resolve, credentials">
+        <loadfile property="xquery_witness_list" srcFile="src/jobs/create_witness_list.xql"/>
+        <xdb:xquery uri="${xmlrpc}/db" user="${username}" password="${password}" ssl="${ssl}"
+                    query="${xquery_witness_list}" outputproperty="job_output"/>
+        <echoproperties>
+            <propertyset>
+                <propertyref name="job_output"/>
+            </propertyset>
+        </echoproperties>
+    </target>
+
 
 </project>
