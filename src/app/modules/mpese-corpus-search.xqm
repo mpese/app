@@ -112,10 +112,10 @@ declare function mpese-search:result-title($doc) {
  : @returns a formatted result item
 :)
 declare function mpese-search:result-entry($link as xs:string, $title as xs:string, $author as xs:string*,
-        $snippet as node()*, $mss as xs:string) as node() {
+        $snippet as node()*, $mss as xs:string, $images as node()*) as node() {
     <a href="{$link}" class="list-group-item">{
         <div class="result-entry">
-            <h4 class="list-group-item-heading result-entry-title">{$title}</h4>
+            <h4 class="list-group-item-heading result-entry-title">{$title}{$images}</h4>
             <p class="list-group-item-text result-entry-author">{$author}</p>
             <p class="list-group-item-text result-entry-snippet">{$snippet}</p>
             <p class="list-group-item-text result-entry-mss"><strong>{$mss}</strong></p>
@@ -202,7 +202,10 @@ declare function mpese-search:all($page as xs:integer, $num as xs:integer)  {
                 let $text := doc($uri)//tei:text[1]/tei:body/tei:p[1]/string()
                 let $link := './t/' || $name || '.html'
                 let $snippet := <em>{fn:substring($text, 1, 200)} ...</em>
-                return mpese-search:result-entry($link, $title, $author-label, $snippet, $mss-label)
+                let $images := if (count($item//tei:facsimile/tei:graphic) > 0) then
+                    (text{' '}, <span class="glyphicon glyphicon-camera" aria-hidden="true"></span>,
+                    <span class="sr-only">Images available</span>) else ()
+                return mpese-search:result-entry($link, $title, $author-label, $snippet, $mss-label, $images)
         }
         </div>
         {
@@ -250,7 +253,10 @@ declare function mpese-search:everything($page as xs:integer, $num as xs:integer
                 let $author-label := mpese-text:author-label($authors)
                 let $link := './t/' || $name || '.html'
                 let $snippet := mpese-search:matches($item)
-                return mpese-search:result-entry($link, $title, $author-label, $snippet, $mss-label)
+                let $images := if (count($item//tei:facsimile/tei:graphic) > 0) then
+                    (text{' '}, <span class="glyphicon glyphicon-camera" aria-hidden="true"></span>,
+                    <span class="sr-only">Images available</span>) else ()
+                return mpese-search:result-entry($link, $title, $author-label, $snippet, $mss-label, $images)
         }
         </div>
         {
