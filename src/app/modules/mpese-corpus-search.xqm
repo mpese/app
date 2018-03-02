@@ -34,7 +34,7 @@ declare function mpese-search:search($phrase) {
 declare function mpese-search:search($phrase, $results_order) {
     if ($results_order eq 'date') then
         for $hit in mpese-search:search($phrase)
-        let $date := $hit//tei:creation/tei:date[1]/@when/string()
+        let $date := $hit//tei:profileDesc/tei:creation/tei:date[1]/@when/string()
         order by $date ascending
         return $hit
     else
