@@ -124,14 +124,14 @@ declare function mpese-search:result-entry($link as xs:string, $title as xs:stri
     }</a>
 };
 
-declare function mpese-search:pagination-link($page as xs:integer, $search as xs:string?) {
-    if ($search) then
-        './?page=' || $page || '&amp;search=' || $search
-    else
-        './?page=' || $page
+declare function mpese-search:pagination-link($page, $map) {
+    let $params := for $key in map:keys($map)
+        return $key || '=' || encode-for-uri($map($key))
+    return
+        './?page=' || $page || '&amp;' || string-join($params, '&amp;')
 };
 
-declare function mpese-search:pagination($page, $pages, $search, $label) {
+declare function mpese-search:pagination($page, $pages, $map, $label) {
     <nav id="paginaton" aria-label="{$label}">
         <div class="text-center">
             <ul class="pagination">
@@ -139,21 +139,21 @@ declare function mpese-search:pagination($page, $pages, $search, $label) {
                     if ($page eq 1) then
                         <li class="page-item disabled"><a class="page-link" tabindex="-1" href="">Previous</a></li>
                     else
-                        <li class="page-item"><a class="page-link" href="{mpese-search:pagination-link($page - 1, $search)}">Previous</a></li>
+                        <li class="page-item"><a class="page-link" href="{mpese-search:pagination-link($page - 1, $map)}">Previous</a></li>
                 }
                 {
                     for $count in 1 to $pages
                         return
                             if ($count eq $page) then
-                                <li class="page-item active"><a class="page-link" href="{mpese-search:pagination-link($count, $search)}">{$count}</a></li>
+                                <li class="page-item active"><a class="page-link" href="{mpese-search:pagination-link($count, $map)}">{$count}</a></li>
                             else
-                                <li class="page-item"><a class="page-link" href="{mpese-search:pagination-link($count,$search)}">{$count}</a></li>
+                                <li class="page-item"><a class="page-link" href="{mpese-search:pagination-link($count,$map)}">{$count}</a></li>
                 }
                 {
                     if ($page eq $pages) then
                         <li class="page-item disabled"><a class="page-link" tabindex="-1" href="">Next</a></li>
                     else
-                        <li class="page-item"><a class="page-link" href="{mpese-search:pagination-link($page + 1, $search)}">Next</a></li>
+                        <li class="page-item"><a class="page-link" href="{mpese-search:pagination-link($page + 1, $map)}">Next</a></li>
                 }
             </ul>
         </div>
@@ -185,8 +185,9 @@ declare function mpese-search:all($page as xs:integer, $num as xs:integer)  {
         <p class="text-center results-total">{$message}</p>
         {
             if ($pages > 1) then
-                mpese-search:pagination($page, $pages, "", "Top navigation")
+                mpese-search:pagination($page, $pages, map {}, "Top navigation")
             else
+
                 ""
         }
         <div class="list-group">{
@@ -211,7 +212,7 @@ declare function mpese-search:all($page as xs:integer, $num as xs:integer)  {
         </div>
         {
             if ($pages > 1) then
-                mpese-search:pagination($page, $pages, "", "Bottom navigation")
+                mpese-search:pagination($page, $pages, map {}, "Bottom navigation")
             else
                 ""
         }
@@ -230,6 +231,7 @@ declare function mpese-search:everything($page as xs:integer, $num as xs:integer
     let $pages := mpese-search:pages-total($total, $num)
     let $results := mpese-search:paginate-results($sorted-results, $start, $num)
     let $message := if ($total eq 1) then $total || ' text available' else $total || " texts available"
+    let $map := map { 'search' := $search, 'results_order' := $results_order }
 
     return
         (response:set-cookie('mpese-search-string', util:base64-encode($search)),
@@ -238,7 +240,7 @@ declare function mpese-search:everything($page as xs:integer, $num as xs:integer
         <p class="text-center results-total">{$message}</p>
         {
             if ($pages > 1) then
-                mpese-search:pagination($page, $pages, $search, "Top navigation")
+                mpese-search:pagination($page, $pages, $map, "Top navigation")
             else
                 ""
         }
@@ -262,7 +264,7 @@ declare function mpese-search:everything($page as xs:integer, $num as xs:integer
         </div>
         {
             if ($pages > 1) then
-                mpese-search:pagination($page, $pages, $search, "Bottom navigation")
+                mpese-search:pagination($page, $pages, $map, "Bottom navigation")
             else
                 ""
         }
