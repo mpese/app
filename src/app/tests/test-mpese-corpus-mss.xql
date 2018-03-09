@@ -9,7 +9,7 @@ declare namespace xi = 'http://www.w3.org/2001/XInclude';
 import module namespace mpese-mss = 'http://mpese.rit.bris.ac.uk/corpus/mss/'  at '../modules/mpese-corpus-mss.xqm';
 
 
-declare %test:assertEquals('British Library, Additional, MS 35331')function test-mss:ident-label() {
+declare %test:assertEquals('British Library, Additional MS 35331')function test-mss:ident-label() {
     let $mss := <tei:msIdentifier xml:id="BL_Add_MS_35331">
                     <tei:country>United Kingdom</tei:country>
                     <tei:settlement>London</tei:settlement>
@@ -45,7 +45,7 @@ function test-mss:person-without-link() {
 (: --------- Test template functions ---------- :)
 
 (: Check we get the text and mss and add it to the model:)
-declare %test:assertXPath("deep-equal($result, <h2>British Library, Additional, MS 35331</h2>)")
+declare %test:assertXPath("deep-equal($result, <h2>British Library, Additional MS 35331</h2>)")
 function test-mss:mss-ident() {
 
     let $node := <test></test>

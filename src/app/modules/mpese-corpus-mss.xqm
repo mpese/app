@@ -69,7 +69,7 @@ declare function mpese-mss:foliation-list($foliation_list as element()*) as elem
  :)
 declare function mpese-mss:ident-label($msIdentifier as element()?) as xs:string {
     if (count($msIdentifier/*) > 0) then
-        $msIdentifier/tei:repository || ', ' || $msIdentifier/tei:collection || ', ' || $msIdentifier/tei:idno
+        $msIdentifier/tei:repository || ', ' || $msIdentifier/tei:collection || ' '|| $msIdentifier/tei:idno
     else
         "No manuscript details."
 };
@@ -99,7 +99,7 @@ declare function local:witness-label($name as xs:string) {
 
     (: return man:)
     return
-        concat($desc//tei:repository, ', ', $desc//tei:collection, ', ', $desc//tei:idno)
+        concat($desc//tei:repository, ', ', $desc//tei:collection, ' ', $desc//tei:idno)
 };
 
 (:~

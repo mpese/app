@@ -10,7 +10,7 @@ declare function local:ms-label($ms) {
     let $label_repo := if (normalize-space($ident/tei:repository/string()) = '') then () else $ident/tei:repository/string()
     let $label_collection := if (normalize-space($ident/tei:collection/string()) = '') then () else $ident/tei:collection/string()
     let $label_id := if (normalize-space($ident/tei:idno/string()) = '') then () else $ident/tei:idno/string()
-    return string-join(($label_repo, $label_collection, $label_id), ', ')
+    return $label_repo || ', ' || $label_collection || ' ' || $label_id
 };
 
 (: Create a label for the locus :)

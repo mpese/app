@@ -223,6 +223,20 @@ declare function mpese-text:languages($text as xs:string) as element()* {
     doc($text)//tei:profileDesc/tei:langUsage/tei:language
 };
 
+(:~
+ : Create a label for the folio numbers of a text.
+ :)
+declare function mpese-text:folios($doc as node()) as xs:string {
+    let $folios := for $folio in $doc//tei:text/tei:body/tei:pb/@n/string()
+                   order by $folio ascending return $folio
+    return
+        if (count($folios) eq 0) then ''
+        else if (count($folios) > 1) then ', ff. ' || $folios[1] || "-" || $folios[last()]
+        else ', f. ' || $folios[1]
+
+};
+
+
 (: ---------- Functions to help render content  ----------- :)
 
 (:~
@@ -300,12 +314,12 @@ declare function mpese-text:author-label($authors as element()*, $show_link as x
  : @param $show_link    show a URL to the manuscript details?
  : @return details with a link to the text
  :)
-declare function mpese-text:mss-with-link($mss as element()?) as element()? {
+declare function mpese-text:mss-with-link($mss as element()?, $doc as node()?) as element()? {
     if ($mss) then
         let $mss_doc := base-uri($mss)
         let $name := utils:name-from-uri($mss_doc)
         return
-            <a href="../m/{$name}.html">{mpese-mss:ident-label($mss)}</a>
+            <a href="../m/{$name}.html">{mpese-mss:ident-label($mss)}{mpese-text:folios($doc)}</a>
     else
         ()
 };
@@ -590,7 +604,7 @@ declare function mpese-text:author-title($node as node (), $model as map (*)) {
  : @return the details of the manuscript
  :)
 declare function mpese-text:mss($node as node (), $model as map (*)) {
-    <p>{mpese-text:mss-with-link($model('mss'))}</p>
+    <p>{mpese-text:mss-with-link($model('mss'), doc($model('text')))}</p>
 };
 
 (: ----- Main text tab -----:)
@@ -639,7 +653,7 @@ declare function mpese-text:mss-name-full($node as node (), $model as map (*)) {
     let $mss := $model('mss')
     return
         if ($mss) then
-            <p>{mpese-text:mss-with-link($model('mss')),
+            <p>{mpese-text:mss-with-link($model('mss'), doc($model('text'))),
                 if (not(functx:has-empty-content($model('mss')//tei:msName))) then
                     (text{', '},($model('mss')//tei:msName/string()))
                 else

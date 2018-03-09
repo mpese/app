@@ -78,6 +78,71 @@ declare %test:assertEquals("Untitled (No date)") function test-text:result-title
 
 };
 
+ (: Test folio label for no/missing folio :)
+declare %test:assertEquals("") function test-text:folios-0() {
+
+    let $doc := <tei:TEI>
+                    <tei:text>
+                        <tei:body/>
+                    </tei:text>
+                </tei:TEI>
+
+    return
+        mpese-text:folios($doc)
+
+};
+
+ (: Test folio label for a single folio :)
+declare %test:assertEquals(", f. 56r") function test-text:folios-1() {
+
+    let $doc := <tei:TEI>
+                    <tei:text>
+                        <tei:body>
+                            <tei:pb n="56r"/>
+                        </tei:body>
+                    </tei:text>
+                </tei:TEI>
+
+    return
+        mpese-text:folios($doc)
+
+};
+
+ (: Test folio label for two folios :)
+declare %test:assertEquals(", ff. 56r-56v") function test-text:folios-2() {
+
+    let $doc := <tei:TEI>
+                    <tei:text>
+                        <tei:body>
+                            <tei:pb n="56r"/>
+                            <tei:pb n="56v"/>
+                        </tei:body>
+                    </tei:text>
+                </tei:TEI>
+
+    return
+        mpese-text:folios($doc)
+
+};
+
+ (: Test folio label for multiple folios :)
+declare %test:assertEquals(", ff. 56r-57r") function test-text:folios-3() {
+
+    let $doc := <tei:TEI>
+                    <tei:text>
+                        <tei:body>
+                            <tei:pb n="56r"/>
+                            <tei:pb n="56v"/>
+                            <tei:pb n="57r"/>
+                        </tei:body>
+                    </tei:text>
+                </tei:TEI>
+
+    return
+        mpese-text:folios($doc)
+
+};
+
 (: Test getting the MSS URI for an include - normal :)
 declare %test:assertEquals('/db/mpese/tei/corpus/mss/BLAddMS35331.xml') function test-text:mss-details-uri() {
 
@@ -486,7 +551,7 @@ function test-text:author-title() {
 };
 
 (: check expected sample data manuscript details :)
-declare %test:assertXPath("contains($result/string(), 'British Library, Additional, MS 35331') eq true()")
+declare %test:assertXPath("contains($result/string(), 'British Library, Additional MS 35331') eq true()")
 function test-text:mss() {
 
     let $node := <test></test>
@@ -520,7 +585,7 @@ declare %test:assertXPath("$result eq 'c.1623, but dated 1485, 1485 (claimed)'")
 };
 
 declare
-%test:assertXPath("contains($result/string(), 'British Library, Additional, MS 35331') eq true()")
+%test:assertXPath("contains($result/string(), 'British Library, Additional MS 35331, ff. 4r-6r') eq true()")
 %test:assertXPath("contains($result/string(), 'Diary of Walter Yonge') eq true()")
 function test-text:mss-name-full() {
     let $node := <test></test>
@@ -594,4 +659,3 @@ function test-text:text-topic() {
     let $map := mpese-text:text($node, $model, $text)
     return mpese-text:text-topic($node, $map)
 };
-
