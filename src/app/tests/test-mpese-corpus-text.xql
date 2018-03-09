@@ -585,7 +585,7 @@ declare %test:assertXPath("$result eq 'c.1623, but dated 1485, 1485 (claimed)'")
 };
 
 declare
-%test:assertXPath("contains($result/string(), 'British Library, Additional MS 35331, ff. 4r-6r') eq true()")
+%test:assertXPath("contains($result/string(), 'British Library, Additional MS 35331, ff. 4r-8r') eq true()")
 %test:assertXPath("contains($result/string(), 'Diary of Walter Yonge') eq true()")
 function test-text:mss-name-full() {
     let $node := <test></test>
