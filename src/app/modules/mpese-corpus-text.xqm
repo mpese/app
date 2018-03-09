@@ -227,8 +227,8 @@ declare function mpese-text:languages($text as xs:string) as element()* {
  : Create a label for the folio numbers of a text.
  :)
 declare function mpese-text:folios($doc as node()) as xs:string {
-    let $folios := for $folio in $doc//tei:text/tei:body/tei:pb/@n/string()
-                   order by $folio ascending return $folio
+    let $folios := for $folio in $doc//tei:pb/@n/string()
+                   return $folio
     return
         if (count($folios) eq 0) then ''
         else if (count($folios) > 1) then ', ff. ' || $folios[1] || "-" || $folios[last()]
