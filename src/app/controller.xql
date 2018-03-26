@@ -164,6 +164,9 @@ else if (fn:matches($exist:path, '^(/p/)(\w+|%20)+\.html$')) then
 else if ($exist:path eq '/about.html') then
     (util:log('INFO', ("About page")),
     local:dispatch('/about.html'))
+else if ($exist:path eq '/advanced.html') then
+    (util:log('INFO', ("Advanced search")),
+    local:dispatch('/advanced.html'))
 else if (fn:starts-with($exist:path, "/resources/")) then
     (:<ignore xmlns="http://exist.sourceforge.net/NS/exist">:)
         (:<set-header name="Cache-Control" value="max-age=3600, must-revalidate"/>:)

@@ -271,6 +271,19 @@ declare function mpese-search:everything($page as xs:integer, $num as xs:integer
     </div>)
 };
 
+(: get a list of available text types:)
+declare function mpese-search:keywords-list() {
+
+    (: everything :)
+    let $text-types := collection('/db/mpese/tei/corpus/texts')//tei:keywords[@n='text-type']/tei:term/string()
+
+    (: return ordred unique values, ignoring case :)
+    return
+        for $key in distinct-values($text-types) order by lower-case($key)
+        return if (not($key eq '')) then $key else ()
+
+};
+
 (: ---------- TEMPLATE FUNCTIONS ----------- :)
 
 declare %templates:default("search", "") %templates:default("results_order", "relevance")function mpese-search:form($node as node (), $model as map (*),
@@ -320,4 +333,20 @@ declare function mpese-search:last-change($node as node (), $model as map (*))  
     let $date := doc('/db/mpese/tei/corpus/meta/mpese.xml')//tei:text/tei:body/tei:div[1]/tei:head/tei:date/string()
     return
         <div class="alert alert-info text-center"><a href="./changes.html">Last updated on {$date}. See changes.</a></div>
+};
+
+
+declare %templates:default("search", "") function mpese-search:advanced-form($node as node (), $model as map (*),
+        $search as xs:string)  {
+
+    <form action="." method="get" class="form-horizontal">
+        <div class="form-group">
+            <label for="search-terms" class="col-sm-3">Search term</label>
+            <div class="col-sm-9">
+                <input id="search-terms" name="search" type="text" class="form-control"
+                       placeholder="Search ..." value="{$search}" />
+            </div>
+        </div>
+    </form>
+
 };
