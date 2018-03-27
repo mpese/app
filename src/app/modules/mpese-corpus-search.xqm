@@ -271,6 +271,34 @@ declare function mpese-search:everything($page as xs:integer, $num as xs:integer
     </div>)
 };
 
+
+declare function mpese-search:build-query($phrase, $type) {
+
+    (: tokenize the string - clean up whitespace :)
+    let $tokens := tokenize(normalize-space($phrase), '\s+')
+    return
+        <query>{
+            (: wildcard search all for white space :)
+            if (empty($tokens)) then
+                <wildcard>*</wildcard>
+            else
+                if ($type eq 'phrase') then
+                    <phrase>{string-join($tokens, ' ')}</phrase>
+                else
+                    <bool>{
+                        for $token in $tokens
+                            return
+                                let $elmnt := if (contains($token, '*')) then <wildcard>{$token}</wildcard> else <term>{$token}</term>
+                                return
+                                    if ($type eq 'all') then
+                                        element { node-name($elmnt) } {attribute { 'occur' } { 'must'}, $elmnt/string()}
+                                    else
+                                        $elmnt
+                    }</bool>
+        }</query>
+
+};
+
 (: get a list of available text types:)
 declare function mpese-search:keywords-list() {
 
