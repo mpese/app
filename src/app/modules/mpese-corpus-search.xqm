@@ -312,6 +312,17 @@ declare function mpese-search:keywords-list() {
 
 };
 
+declare function mpese-search:advanced($phrase, $type, $image) {
+
+    let $query := mpese-search:build-query($phrase, $type)
+
+    let $results := collection($config:mpese-tei-corpus-texts)/*[ft:query(.,$query)]
+
+    return
+        <p>{count($results)}</p>
+};
+
+
 (: ---------- TEMPLATE FUNCTIONS ----------- :)
 
 declare %templates:default("search", "") %templates:default("results_order", "relevance")function mpese-search:form($node as node (), $model as map (*),
@@ -337,7 +348,7 @@ declare %templates:default("search", "") %templates:default("results_order", "re
             <div>
                 <p class="text-center">Order results by {$rel_order}
                     relevance or {$date_order} date. Alternatively,
-                    use the <a href="">advanced search</a> or <a href="">browse</a>.</p>
+                    use the <a href="./advanced.html">advanced search</a> or <a href="">browse</a>.</p>
             </div>
     </form>
 
@@ -364,17 +375,53 @@ declare function mpese-search:last-change($node as node (), $model as map (*))  
 };
 
 
-declare %templates:default("search", "") function mpese-search:advanced-form($node as node (), $model as map (*),
-        $search as xs:string)  {
+declare %templates:default("search", "") %templates:default("type", "any") %templates:default("image", "no") function mpese-search:advanced-form($node as node (), $model as map (*),
+        $search as xs:string, $type as xs:string, $image as xs:string)  {
 
-    <form action="." method="get" class="form-horizontal">
+    let $input_any := if ($type eq 'any') then <input type="radio" name="type" id="adv_search_type1" value="any" checked="checked"/>
+                      else <input type="radio" name="type" id="adv_search_type1" value="any"/>
+
+    let $input_all := if ($type eq 'all') then <input type="radio" name="all" id="adv_search_type2" value="all" checked="checked"/>
+                      else <input type="radio" name="type" id="adv_search_type2" value="all"/>
+
+    let $input_phrase := if ($type eq 'phrase') then <input type="radio" name="type" id="adv_search_type3" value="phrase" checked="checked"/>
+                         else <input type="radio" name="type" id="adv_search_type3" value="phrase"/>
+
+    let $text_with_images := if ($image eq 'yes') then <input type="checkbox" name="image" id="adv_image_only" value="yes" checked="checked"/>
+                             else <input type="checkbox" name="image" id="adv_image_only" value="yes"/>
+    return
+
+    <form action="./advanced.html" method="get">
         <div class="form-group">
-            <label for="search-terms" class="col-sm-3">Search term</label>
-            <div class="col-sm-9">
-                <input id="search-terms" name="search" type="text" class="form-control"
-                       placeholder="Search ..." value="{$search}" />
-            </div>
+            <label for="search-terms">Search term</label>
+            <input id="search-terms" name="search" type="text" class="form-control"
+                   placeholder="Search ..." value="{$search}" />
+        </div>
+        <div class="form-group">
+            <label class="radio-inline">
+                {$input_any} match any
+            </label>
+            <label class="radio-inline">
+                {$input_all} match all
+            </label>
+            <label class="radio-inline">
+                {$input_phrase} match phrase
+            </label>
+        </div>
+        <div class="form-group">
+            <label class="checkbox-inline">
+                {$text_with_images} only texts with images
+            </label>
+        </div>
+        <div class="form-group">
+            <input type="submit" value="Search"/>
         </div>
     </form>
 
+};
+
+declare %templates:default("search", "") %templates:default("type", "any") %templates:default("image", "no") function mpese-search:advanced-results($node as node (), $model as map (*),
+        $search as xs:string, $type as xs:string, $image as xs:string)  {
+
+    mpese-search:advanced($search, $type, $image)
 };
