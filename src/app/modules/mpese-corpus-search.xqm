@@ -316,7 +316,12 @@ declare function mpese-search:advanced($phrase, $type, $image) {
 
     let $query := mpese-search:build-query($phrase, $type)
 
-    let $results := collection($config:mpese-tei-corpus-texts)/*[ft:query(.,$query)]
+    let $search-predicate := "[ft:query(.,$query)]"
+    let $image-predicate := if ($image eq 'yes') then "[exists(./tei:facsimile)]" else ()
+
+    let $search-string := concat("collection($config:mpese-tei-corpus-texts)/*", $search-predicate, $image-predicate)
+
+    let $results := util:eval($search-string)
 
     return
         <p>{count($results)}</p>
@@ -381,7 +386,7 @@ declare %templates:default("search", "") %templates:default("type", "any") %temp
     let $input_any := if ($type eq 'any') then <input type="radio" name="type" id="adv_search_type1" value="any" checked="checked"/>
                       else <input type="radio" name="type" id="adv_search_type1" value="any"/>
 
-    let $input_all := if ($type eq 'all') then <input type="radio" name="all" id="adv_search_type2" value="all" checked="checked"/>
+    let $input_all := if ($type eq 'all') then <input type="radio" name="type" id="adv_search_type2" value="all" checked="checked"/>
                       else <input type="radio" name="type" id="adv_search_type2" value="all"/>
 
     let $input_phrase := if ($type eq 'phrase') then <input type="radio" name="type" id="adv_search_type3" value="phrase" checked="checked"/>
