@@ -272,21 +272,22 @@ declare function mpese-search:everything($page as xs:integer, $num as xs:integer
 };
 
 
-declare function mpese-search:build-query($phrase, $type) {
+declare function mpese-search:build-query($phrase, $type, $exclude) {
 
-    (: tokenize the string - clean up whitespace :)
-    let $tokens := tokenize(normalize-space($phrase), '\s+')
+    (: tokenize the strings - clean up whitespace :)
+    let $search_tokens := tokenize(normalize-space($phrase), '\s+')
+    let $exclude_tokens := tokenize(normalize-space($exclude), '\s+')
     return
         <query>{
             (: wildcard search all for white space :)
-            if (empty($tokens)) then
+            if (empty($search_tokens)) then
                 <wildcard>*</wildcard>
             else
                 if ($type eq 'phrase') then
-                    <phrase>{string-join($tokens, ' ')}</phrase>
+                    <phrase>{string-join($search_tokens, ' ')}</phrase>
                 else
                     <bool>{
-                        for $token in $tokens
+                        for $token in $search_tokens
                             return
                                 let $elmnt := if (contains($token, '*')) then <wildcard>{$token}</wildcard> else <term>{$token}</term>
                                 return
@@ -294,6 +295,12 @@ declare function mpese-search:build-query($phrase, $type) {
                                         element { node-name($elmnt) } {attribute { 'occur' } { 'must'}, $elmnt/string()}
                                     else
                                         $elmnt
+
+
+                    } {
+                        for $token in $exclude_tokens
+                            return
+                                <term occur="not">{$token}</term>
                     }</bool>
         }</query>
 
@@ -303,7 +310,7 @@ declare function mpese-search:build-query($phrase, $type) {
 declare function mpese-search:keywords-list() {
 
     (: everything :)
-    let $text-types := collection('/db/mpese/tei/corpus/texts')//tei:keywords[@n='text-type']/tei:term/string()
+    let $text-types := collection($config:mpese-tei-corpus-texts)//tei:keywords[@n='text-type']/tei:term/string()
 
     (: return ordred unique values, ignoring case :)
     return
@@ -312,15 +319,41 @@ declare function mpese-search:keywords-list() {
 
 };
 
-declare function mpese-search:advanced($phrase, $type, $image) {
+(: get a list of available languages :)
+declare function mpese-search:languages() {
+    for $lang in distinct-values(collection($config:mpese-tei-corpus-texts)//tei:langUsage/tei:language/string())
+    order by $lang return if (not($lang eq "")) then $lang else ()
+};
 
-    let $query := mpese-search:build-query($phrase, $type)
+(: get a list of repositories :)
+declare function mpese-search:repositories() {
+    for $repo in distinct-values(collection($config:mpese-tei-corpus-mss)//tei:repository)
+    order by $repo return if ($repo = "") then () else $repo
+};
 
+declare function mpese-search:advanced($phrase, $type, $exclude, $image, $start-range, $end-range) {
+
+    (: construct the query xml: will be pulled in via util:eval :)
+    let $query := mpese-search:build-query($phrase, $type, $exclude)
+
+    (:::: we create the search as strings that can be evaluated ::::)
+
+    let $collection-predicate := "for $result in collection($config:mpese-tei-corpus-texts)/*"
+
+    (: keyword search on text :)
     let $search-predicate := "[ft:query(.,$query)]"
+
+    (: only texts with images :)
     let $image-predicate := if ($image eq 'yes') then "[exists(./tei:facsimile)]" else ()
 
-    let $search-string := concat("collection($config:mpese-tei-corpus-texts)/*", $search-predicate, $image-predicate)
+    (:::: get the dates add as a string:::::)
 
+    let $return_predicate := " return $result"
+
+    (: create the query as a string:)
+    let $search-string := concat($collection-predicate, $search-predicate, $image-predicate, $return_predicate)
+
+    (: evaluate :)
     let $results := util:eval($search-string)
 
     return
@@ -380,8 +413,15 @@ declare function mpese-search:last-change($node as node (), $model as map (*))  
 };
 
 
-declare %templates:default("search", "") %templates:default("type", "any") %templates:default("image", "no") function mpese-search:advanced-form($node as node (), $model as map (*),
-        $search as xs:string, $type as xs:string, $image as xs:string)  {
+declare
+%templates:default("search", "")
+%templates:default("type", "any")
+%templates:default("exclude", "")
+%templates:default("start-range", "")
+%templates:default("end-range", "")
+%templates:default("image", "no")
+function mpese-search:advanced-form($node as node (), $model as map (*),
+        $search as xs:string, $type as xs:string, $exclude as xs:string, $start-range as xs:string, $end-range as xs:string, $image as xs:string)  {
 
     let $input_any := if ($type eq 'any') then <input type="radio" name="type" id="adv_search_type1" value="any" checked="checked"/>
                       else <input type="radio" name="type" id="adv_search_type1" value="any"/>
@@ -396,27 +436,45 @@ declare %templates:default("search", "") %templates:default("type", "any") %temp
                              else <input type="checkbox" name="image" id="adv_image_only" value="yes"/>
     return
 
-    <form action="./advanced.html" method="get">
+    <form action="./advanced.html" method="get" class="form-horizontal">
+
         <div class="form-group">
-            <label for="search-terms">Search term</label>
-            <input id="search-terms" name="search" type="text" class="form-control"
-                   placeholder="Search ..." value="{$search}" />
+            <label for="search-terms" class="col-sm-2">Keywords</label>
+            <div class="col-sm-5">
+                <input id="search-terms" name="search" type="text" class="form-control"
+                       placeholder="keywords to search" value="{$search}" />
+                <label class="radio-inline">{$input_any} match any</label>
+                <label class="radio-inline">{$input_all} match all</label>
+                <label class="radio-inline">{$input_phrase} match phrase</label>
+            </div>
         </div>
+
         <div class="form-group">
-            <label class="radio-inline">
-                {$input_any} match any
-            </label>
-            <label class="radio-inline">
-                {$input_all} match all
-            </label>
-            <label class="radio-inline">
-                {$input_phrase} match phrase
-            </label>
+            <label for="exclude-terms" class="col-sm-2">Exclude</label>
+            <div class="col-sm-5">
+                <input id="exclude-terms" name="exclude" type="text" class="form-control"
+                       placeholder="keywords to exclude" value="{$exclude}" />
+            </div>
         </div>
+
         <div class="form-group">
-            <label class="checkbox-inline">
-                {$text_with_images} only texts with images
-            </label>
+            <label class="col-sm-2">Date range</label>
+            <div class="col-sm-5">
+                From year <input id="start-range" name="start-range" type="text"
+                            placeholder="1603" value="{$start-range}" size="4" maxsize="4" pattern="^\d{4}$"/> to year
+                <input id="end-range" name="end-range" type="text" size="4" maxsize="4"
+                       placeholder="1642" value="{$end-range}" pattern="^\d{4}$"/>
+            </div>
+        </div>
+
+
+        <div class="form-group">
+            <div class="col-sm-2"></div>
+            <div class="col-sm-5">
+                <label class="checkbox-inline">
+                    {$text_with_images} show only texts with images
+                </label>
+            </div>
         </div>
         <div class="form-group">
             <input type="submit" value="Search"/>
@@ -425,8 +483,16 @@ declare %templates:default("search", "") %templates:default("type", "any") %temp
 
 };
 
-declare %templates:default("search", "") %templates:default("type", "any") %templates:default("image", "no") function mpese-search:advanced-results($node as node (), $model as map (*),
-        $search as xs:string, $type as xs:string, $image as xs:string)  {
+declare
+%templates:default("search", "")
+%templates:default("type", "any")
+%templates:default("exclude", "")
+%templates:default("start-range", "")
+%templates:default("end-range", "")
+%templates:default("image", "no")
+function mpese-search:advanced-results($node as node (), $model as map (*),
+        $search as xs:string, $type as xs:string, $exclude as xs:string, $start-range as xs:string,
+$end-range as xs:string, $image as xs:string)  {
 
-    mpese-search:advanced($search, $type, $image)
+    mpese-search:advanced($search, $type, $exclude, $image, $start-range, $end-range)
 };

@@ -58,41 +58,58 @@ declare %test:assertTrue function test-search:paginate-results() {
     return ($results[1]/text() eq '2' and $results[5]/text() eq '6')
 };
 
+(: we should have languages :)
+declare %test:assertXPath("count($result) > 0")
+function test-search:languages() {
+    mpese-search:languages()
+};
+
+(: we should have repositories :)
+declare %test:assertXPath("count($result) > 0")
+function test-search:repositories() {
+    mpese-search:repositories()
+};
 
 (: ------- test build query -----:)
 
 (: empty query creates wildcard :)
 declare %test:assertXPath("deep-equal($result, <query><wildcard>*</wildcard></query>)")
 function test-search:build-query-1() {
-    mpese-search:build-query('', 'all')
+    mpese-search:build-query('', 'all', '')
 };
 
 (: empty query (lots of whitespace) creates wildcard :)
 declare %test:assertXPath("deep-equal($result, <query><wildcard>*</wildcard></query>)")
 function test-search:build-query-2() {
-    mpese-search:build-query('', 'all')
+    mpese-search:build-query('', 'all', '')
 };
 
 (: keywords, all needed  :)
 declare %test:assertXPath("deep-equal($result, <query><bool><term occur='must'>challenge</term><term occur='must'>courage</term></bool></query>)")
 function test-search:build-query-3() {
-    mpese-search:build-query('challenge courage', 'all')
+    mpese-search:build-query('challenge courage', 'all', '')
 };
 
 (: keywords, any  :)
 declare %test:assertXPath("deep-equal($result, <query><bool><term>challenge</term><term>courage</term></bool></query>)")
 function test-search:build-query-4() {
-    mpese-search:build-query('challenge courage', 'any')
+    mpese-search:build-query('challenge courage', 'any', '')
 };
 
 (: keywords, any, including wildcard  :)
 declare %test:assertXPath("deep-equal($result, <query><bool><term>challenge</term><wildcard>courage*</wildcard></bool></query>)")
 function test-search:build-query-5() {
-    mpese-search:build-query('challenge courage*', 'any')
+    mpese-search:build-query('challenge courage*', 'any', '')
 };
 
 (: phrase  :)
 declare %test:assertXPath("deep-equal($result, <query><phrase>challenge courage</phrase></query>)")
 function test-search:build-query-6() {
-    mpese-search:build-query('challenge courage', 'phrase')
+    mpese-search:build-query('challenge courage', 'phrase', '')
+};
+
+(: exclude  :)
+declare %test:assertXPath("deep-equal($result, <query><bool><term>challenge</term><term occur='not'>courage</term></bool></query>)")
+function test-search:build-query-7() {
+    mpese-search:build-query('challenge', 'any', 'courage')
 };
