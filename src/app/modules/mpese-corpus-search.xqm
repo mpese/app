@@ -84,8 +84,25 @@ declare function mpese-search:pages-total($total as xs:integer, $num as xs:integ
 
 (: ---------- DATA RENDERING ---------- :)
 
-(:
-:~
+(:~
+ : Give a message on the number of results.
+ :
+ : @param $total - the total number of results
+ : @return a suitable message
+ :)
+declare function mpese-search:results-message($total as xs:integer) as xs:string {
+    if ($total eq 1) then $total || ' text available.' else $total || " texts available."
+};
+
+declare function mpese-search:results-edit-search-link($map) {
+    let $base := './advanced.html?'
+    let $params := for $key in map:keys($map)
+        return $key || '=' || encode-for-uri($map($key))
+    return
+        $base || string-join($params, '&amp;')
+};
+
+(:~
  : Create a title for the search results
  :
  : @param $doc - the TEI/XML document
@@ -101,8 +118,7 @@ declare function mpese-search:result-title($doc) {
 
 };
 
-(:
-:~
+(:~
  : Return a formatted result item.
  :
  : @param $link - a link to the full text item
@@ -124,14 +140,83 @@ declare function mpese-search:result-entry($link as xs:string, $title as xs:stri
     }</a>
 };
 
-declare function mpese-search:pagination-link($page, $map) {
+
+(:// MAKE AUTHORS A METHOD:)
+(:// MAKE IMAHES A METHOD:)
+
+(:~
+ : Create an application specific partial URL for rendering a text
+ : @param $item - an item from a result set.
+ : @return a partal app URL for a text
+ :)
+declare function mpese-search:text-link($item as node()) as xs:string {
+    let $uri := fn:base-uri($item)
+    let $name := utils:name-from-uri($uri)
+    return './t/' || $name || '.html'
+};
+
+(:~
+ : Do we show 'authors' who have been assigned role? This can make a long list with
+ : signatories. We could update this method to filter the type of role.
+ : @param $item - an item from a result set.
+ : @return a partal app URL for a text
+ :)
+declare function mpese-search:author-list($item, $include_roles as xs:boolean) {
+    if ($include_roles) then
+        $item//tei:fileDesc/tei:titleStmt/tei:author
+    else
+        $item//tei:fileDesc/tei:titleStmt/tei:author[not(@role)]
+};
+
+declare function mpese-search:images($item) as node()* {
+    if (count($item//tei:facsimile/tei:graphic) > 0) then
+        (text{' '}, <span class="glyphicon glyphicon-camera" aria-hidden="true"></span>,
+        <span class="sr-only">Images available</span>)
+    else ()
+};
+
+declare function mpese-search:result-entry($item as node()) as node() {
+
+    (: link to the text :)
+    let $link := mpese-search:text-link($item)
+
+    (: title to display :)
+    let $title := mpese-text:title-label($item)
+
+    (: authors to display :)
+    let $authors :=  mpese-search:author-list($item, false())
+    let $author-label := mpese-text:author-label($authors)
+
+    (: mss details to display :)
+    let $mss := mpese-text:mss-details($item)
+    let $mss-label := mpese-mss:ident-label($mss)
+
+    (: kiwc in snippet :)
+    let $snippet := mpese-search:matches($item)
+    let $images := mpese-search:images($item)
+
+    return
+        <a href="{$link}" class="list-group-item">{
+        <div class="result-entry">
+            <h4 class="list-group-item-heading result-entry-title">{$title}{$images}</h4>
+            <p class="list-group-item-text result-entry-author">{$author-label}</p>
+            <p class="list-group-item-text result-entry-snippet">{$snippet}</p>
+            <p class="list-group-item-text result-entry-mss"><strong>{$mss-label}</strong></p>
+        </div>}
+    </a>
+};
+
+
+
+declare function mpese-search:pagination-link($page, $map, $type) {
+    let $base := if ($type eq 'adv') then './results.html?page=' else './?page='
     let $params := for $key in map:keys($map)
         return $key || '=' || encode-for-uri($map($key))
     return
-        './?page=' || $page || '&amp;' || string-join($params, '&amp;')
+        $base || $page || '&amp;' || string-join($params, '&amp;')
 };
 
-declare function mpese-search:pagination($page, $pages, $map, $label) {
+declare function mpese-search:pagination($page, $pages, $map, $label, $type) {
     <nav id="paginaton" aria-label="{$label}">
         <div class="text-center">
             <ul class="pagination">
@@ -139,21 +224,21 @@ declare function mpese-search:pagination($page, $pages, $map, $label) {
                     if ($page eq 1) then
                         <li class="page-item disabled"><a class="page-link" tabindex="-1" href="">Previous</a></li>
                     else
-                        <li class="page-item"><a class="page-link" href="{mpese-search:pagination-link($page - 1, $map)}">Previous</a></li>
+                        <li class="page-item"><a class="page-link" href="{mpese-search:pagination-link($page - 1, $map, $type)}">Previous</a></li>
                 }
                 {
                     for $count in 1 to $pages
                         return
                             if ($count eq $page) then
-                                <li class="page-item active"><a class="page-link" href="{mpese-search:pagination-link($count, $map)}">{$count}</a></li>
+                                <li class="page-item active"><a class="page-link" href="{mpese-search:pagination-link($count, $map, $type)}">{$count}</a></li>
                             else
-                                <li class="page-item"><a class="page-link" href="{mpese-search:pagination-link($count,$map)}">{$count}</a></li>
+                                <li class="page-item"><a class="page-link" href="{mpese-search:pagination-link($count,$map,$type)}">{$count}</a></li>
                 }
                 {
                     if ($page eq $pages) then
                         <li class="page-item disabled"><a class="page-link" tabindex="-1" href="">Next</a></li>
                     else
-                        <li class="page-item"><a class="page-link" href="{mpese-search:pagination-link($page + 1, $map)}">Next</a></li>
+                        <li class="page-item"><a class="page-link" href="{mpese-search:pagination-link($page + 1, $map, $type)}">Next</a></li>
                 }
             </ul>
         </div>
@@ -167,6 +252,11 @@ declare function mpese-search:matches($result) {
         return $match//*
 };
 
+declare function mpese-search:cookies($type, $map) {
+    response:set-cookie('mpese-search-type', $type),
+    for $key in map:keys($map)
+        return response:set-cookie('mpese-' || $key, util:base64-encode(($map($key))))
+};
 
 (: default search, i.e. no search results defined  :)
 declare function mpese-search:all($page as xs:integer, $num as xs:integer)  {
@@ -185,7 +275,7 @@ declare function mpese-search:all($page as xs:integer, $num as xs:integer)  {
         <p class="text-center results-total">{$message}</p>
         {
             if ($pages > 1) then
-                mpese-search:pagination($page, $pages, map {}, "Top navigation")
+                mpese-search:pagination($page, $pages, map {}, "Top navigation", 'basic')
             else
 
                 ""
@@ -212,7 +302,7 @@ declare function mpese-search:all($page as xs:integer, $num as xs:integer)  {
         </div>
         {
             if ($pages > 1) then
-                mpese-search:pagination($page, $pages, map {}, "Bottom navigation")
+                mpese-search:pagination($page, $pages, map {}, "Bottom navigation", "basic")
             else
                 ""
         }
@@ -240,7 +330,7 @@ declare function mpese-search:everything($page as xs:integer, $num as xs:integer
         <p class="text-center results-total">{$message}</p>
         {
             if ($pages > 1) then
-                mpese-search:pagination($page, $pages, $map, "Top navigation")
+                mpese-search:pagination($page, $pages, $map, "Top navigation", "basic")
             else
                 ""
         }
@@ -264,7 +354,7 @@ declare function mpese-search:everything($page as xs:integer, $num as xs:integer
         </div>
         {
             if ($pages > 1) then
-                mpese-search:pagination($page, $pages, $map, "Bottom navigation")
+                mpese-search:pagination($page, $pages, $map, "Bottom navigation", "basic")
             else
                 ""
         }
@@ -356,8 +446,7 @@ declare function mpese-search:advanced($phrase, $type, $exclude, $image, $start-
     (: evaluate :)
     let $results := util:eval($search-string)
 
-    return
-        <p>{count($results)}</p>
+    return $results
 };
 
 
@@ -436,7 +525,7 @@ function mpese-search:advanced-form($node as node (), $model as map (*),
                              else <input type="checkbox" name="image" id="adv_image_only" value="yes"/>
     return
 
-    <form action="./advanced.html" method="get" class="form-horizontal">
+    <form action="./results.html" method="get" class="form-horizontal">
 
         <div class="form-group">
             <label for="search-terms" class="col-sm-2">Keywords</label>
@@ -484,15 +573,59 @@ function mpese-search:advanced-form($node as node (), $model as map (*),
 };
 
 declare
+%templates:default("page", 1)
+%templates:default("num", 10)
 %templates:default("search", "")
 %templates:default("type", "any")
 %templates:default("exclude", "")
 %templates:default("start-range", "")
 %templates:default("end-range", "")
 %templates:default("image", "no")
-function mpese-search:advanced-results($node as node (), $model as map (*),
+function mpese-search:advanced-results($node as node (), $model as map (*), $page as xs:integer, $num as xs:integer,
         $search as xs:string, $type as xs:string, $exclude as xs:string, $start-range as xs:string,
 $end-range as xs:string, $image as xs:string)  {
 
-    mpese-search:advanced($search, $type, $exclude, $image, $start-range, $end-range)
+    (: all results, unpaginated - empty sequence if no search parameter :)
+    let $results := if (request:get-parameter('search', 'xxx-empty-xxx') eq 'xxx-empty-xxx') then ()
+                    else mpese-search:advanced($search, $type, $exclude, $image, $start-range, $end-range)
+
+    (: total number :)
+    let $total := count($results)
+
+    (: message about results :)
+    let $message := mpese-search:results-message($total)
+
+    (:work out pagination :)
+    let $start := mpese-search:seq-start($page, $num)
+    let $pages := mpese-search:pages-total($total, $num)
+    let $results := mpese-search:paginate-results($results, $start, $num)
+
+    (:track search parameters :)
+    let $map := map { 'search' := $search, 'type' := $type, 'exclude' := $exclude, 'start-range' := $start-range,
+                      'end-range' := $end-range, 'image' := $image }
+
+    (: edit form link :)
+    let $edit-link := mpese-search:results-edit-search-link($map)
+
+    return
+    (mpese-search:cookies('adv', $map),
+    <div id="search-results">
+        <p class="text-center results-total">{$message, text{" "}} <a href="{$edit-link}">Edit search</a>.</p>
+        {
+            if ($pages > 1) then
+                mpese-search:pagination($page, $pages, $map, "Top navigation", "adv")
+            else
+                ""
+        }
+        <div class="list-group">{
+            for $item in $results
+                return mpese-search:result-entry($item)
+        }</div>
+        {
+            if ($pages > 1) then
+                mpese-search:pagination($page, $pages, $map, "Bottom navigation", "adv")
+            else
+                ""
+        }
+    </div>)
 };

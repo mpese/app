@@ -165,8 +165,11 @@ else if ($exist:path eq '/about.html') then
     (util:log('INFO', ("About page")),
     local:dispatch('/about.html'))
 else if ($exist:path eq '/advanced.html') then
-    (util:log('INFO', ("Advanced search")),
+    (util:log('INFO', ("Advanced search form")),
     local:dispatch('/advanced.html'))
+else if ($exist:path eq '/results.html') then
+    (util:log('INFO', ("Advanced search results")),
+    local:dispatch('/results.html'))
 else if (fn:starts-with($exist:path, "/resources/")) then
     (:<ignore xmlns="http://exist.sourceforge.net/NS/exist">:)
         (:<set-header name="Cache-Control" value="max-age=3600, must-revalidate"/>:)

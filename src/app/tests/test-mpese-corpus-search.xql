@@ -70,6 +70,28 @@ function test-search:repositories() {
     mpese-search:repositories()
 };
 
+
+(: ------- message based on results ------- :)
+
+(: no results :)
+declare %test:assertXPath("deep-equal($result, '0 texts available.')")
+function test-search:results-message-0() {
+    mpese-search:results-message(0)
+};
+
+(: one result :)
+declare %test:assertXPath("deep-equal($result, '1 text available.')")
+function test-search:results-message-1() {
+    mpese-search:results-message(1)
+};
+
+(: many results :)
+declare %test:assertXPath("deep-equal($result, '45 texts available.')")
+function test-search:results-message-2() {
+    mpese-search:results-message(45)
+};
+
+
 (: ------- test build query -----:)
 
 (: empty query creates wildcard :)
