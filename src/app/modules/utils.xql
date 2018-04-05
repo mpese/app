@@ -136,17 +136,21 @@ declare function utils:name-from-uri($uri as xs:string) as xs:string  {
  : @base-uri   the base URI to prepend the
  :)
 declare function utils:search-nav($base-uri) as element()? {
-    let $search := request:get-cookie-value('mpese-search-string')
-    let $page := request:get-cookie-value('mpese-search-page')
-    let $order := request:get-cookie-value('mpese-search-order')
-    return
-        if ($search or $page or $order) then
-            let $_page := if ($page) then 'page=' || $page else 'page=1'
-            let $_search := if ($search) then 'search=' || fn:encode-for-uri(util:base64-decode($search)) else ()
-            let $_order := if ($order) then 'results_order=' || $order else ()
-            let $url := '?' || fn:string-join(($_page, $_search, $_order), '&amp;')
-            return
-                <p class="mpese-search-nav"><a href="{$base-uri}{$url}">Back to search results</a></p>
-        else
-            ()
+
+    let $basic-search-params := ('mpese-search-search', 'mpese-search-page', 'mpese-search-order')
+    let $search-type := request:get-cookie-value('mpese-search-type')
+    let $url := if ($search-type eq 'basic') then $base-uri || '?' else $base-uri || 'results.html?'
+
+    let $params := if ($search-type eq 'basic') then
+                        for $param in $basic-search-params
+                            let $value := request:get-cookie-value($param)
+                                return substring-after($param, 'mpese-search-') || '=' || encode-for-uri(util:base64-decode($value))
+                   else
+                        for $cookie in request:get-cookie-names()
+                        return
+                            if (starts-with($cookie, 'mpese-') and $cookie != 'mpese-search-type') then
+                                let $value := request:get-cookie-value($cookie)
+                                    return substring-after($cookie, 'mpese-search-') || '=' || encode-for-uri(util:base64-decode($value))
+                            else ()
+    return <p class="mpese-search-nav"><a href="{$url}{string-join($params, '&amp;')}">Back to search results</a></p>
 };

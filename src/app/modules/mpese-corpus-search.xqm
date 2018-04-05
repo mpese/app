@@ -175,7 +175,13 @@ declare function mpese-search:images($item) as node()* {
     else ()
 };
 
-declare function mpese-search:result-entry($item as node()) as node() {
+declare function mpese-search:witness-count($item) as xs:string {
+    let $total := count($item//tei:listBibl[@xml:id='mss_witness_generated']/tei:bibl)
+    return
+        if ($total eq 1) then '1 witness' else $total || ' witnesses'
+};
+
+declare function mpese-search:result-entry($item as node(), $show_kwic as xs:boolean) as node() {
 
     (: link to the text :)
     let $link := mpese-search:text-link($item)
@@ -192,8 +198,12 @@ declare function mpese-search:result-entry($item as node()) as node() {
     let $mss-label := mpese-mss:ident-label($mss)
 
     (: kiwc in snippet :)
-    let $snippet := mpese-search:matches($item)
+    let $snippet := if ($show_kwic) then mpese-search:matches($item)
+            else <em>{substring($item//tei:text[1]/tei:body/tei:p[1]/string(), 1, 200)} ...</em>
     let $images := mpese-search:images($item)
+
+    (: witnesses :)
+    let $witnesses := mpese-search:witness-count($item)
 
     return
         <a href="{$link}" class="list-group-item">{
@@ -201,6 +211,7 @@ declare function mpese-search:result-entry($item as node()) as node() {
             <h4 class="list-group-item-heading result-entry-title">{$title}{$images}</h4>
             <p class="list-group-item-text result-entry-author">{$author-label}</p>
             <p class="list-group-item-text result-entry-snippet">{$snippet}</p>
+            <p class="list-group-item-text result-entry-witness">{$witnesses}</p>
             <p class="list-group-item-text result-entry-mss"><strong>{$mss-label}</strong></p>
         </div>}
     </a>
@@ -211,7 +222,9 @@ declare function mpese-search:result-entry($item as node()) as node() {
 declare function mpese-search:pagination-link($page, $map, $type) {
     let $base := if ($type eq 'adv') then './results.html?page=' else './?page='
     let $params := for $key in map:keys($map)
-        return $key || '=' || encode-for-uri($map($key))
+        return
+        if ($key eq 'page') then ()
+        else $key || '=' || encode-for-uri($map($key))
     return
         $base || $page || '&amp;' || string-join($params, '&amp;')
 };
@@ -255,7 +268,7 @@ declare function mpese-search:matches($result) {
 declare function mpese-search:cookies($type, $map) {
     response:set-cookie('mpese-search-type', $type),
     for $key in map:keys($map)
-        return response:set-cookie('mpese-' || $key, util:base64-encode(($map($key))))
+        return response:set-cookie('mpese-search-' || $key, util:base64-encode(($map($key))))
 };
 
 (: default search, i.e. no search results defined  :)
@@ -269,8 +282,8 @@ declare function mpese-search:all($page as xs:integer, $num as xs:integer)  {
     let $message := if ($total eq 1) then $total || ' text available' else $total || " texts available"
 
     return
-        ( response:set-cookie('mpese-search-string', ''), response:set-cookie('mpese-search-page', $page),
-          response:set-cookie('mpese-search-order', ''),
+        ( response:set-cookie('mpese-search-search', util:base64-encode('')), response:set-cookie('mpese-search-page', util:base64-encode($page)),
+          response:set-cookie('mpese-search-order', util:base64-encode('')), response:set-cookie('mpese-search-type', 'basic'),
     <div id="search-results">
         <p class="text-center results-total">{$message}</p>
         {
@@ -324,8 +337,9 @@ declare function mpese-search:everything($page as xs:integer, $num as xs:integer
     let $map := map { 'search' := $search, 'results_order' := $results_order }
 
     return
-        (response:set-cookie('mpese-search-string', util:base64-encode($search)),
-         response:set-cookie('mpese-search-page', $page), response:set-cookie('mpese-search-order', $results_order),
+        (response:set-cookie('mpese-search-search', util:base64-encode($search)),
+         response:set-cookie('mpese-search-page', util:base64-encode($page)), response:set-cookie('mpese-search-order', util:base64-encode($results_order)),
+         response:set-cookie('mpese-search-type', 'basic'),
     <div id="search-results">
         <p class="text-center results-total">{$message}</p>
         {
@@ -421,7 +435,7 @@ declare function mpese-search:repositories() {
     order by $repo return if ($repo = "") then () else $repo
 };
 
-declare function mpese-search:advanced($phrase, $type, $exclude, $image, $start-range, $end-range) {
+declare function mpese-search:advanced($phrase, $type, $exclude, $image, $start-range, $end-range, $order-by) {
 
     (: construct the query xml: will be pulled in via util:eval :)
     let $query := mpese-search:build-query($phrase, $type, $exclude)
@@ -437,14 +451,27 @@ declare function mpese-search:advanced($phrase, $type, $exclude, $image, $start-
     let $image-predicate := if ($image eq 'yes') then "[exists(./tei:facsimile)]" else ()
 
     (:::: get the dates add as a string:::::)
+    let $date_predicate := " let $date := substring($result//tei:creation/tei:date[1]/@when/string(), 1, 4) "
+
+    let $start_date := if (not($start-range eq '')) then "number($date) >= number($start-range)" else ()
+    let $end_date := if (not($end-range eq '')) then "number($date) <= number($end-range)" else ()
+    let $date_filter := fn:string-join(($start_date, $end_date) , ' and ')
+
+    let $where_predicate := if (not($date_filter eq '')) then 'where ' || $date_filter else () || ' '
+
+    let $order_by_predicate := if ($order-by eq 'date_d') then ' order by $date descending '
+                               else if ($order-by eq 'witness_d') then 'order by count($result//tei:listBibl[@xml:id="mss_witness_generated"]/tei:bibl) descending '
+                               else if ($order-by eq 'witness_a') then 'order by count($result//tei:listBibl[@xml:id="mss_witness_generated"]/tei:bibl) ascending '
+                               else ' order by $date ascending '
 
     let $return_predicate := " return $result"
 
     (: create the query as a string:)
-    let $search-string := concat($collection-predicate, $search-predicate, $image-predicate, $return_predicate)
+    let $search-string := concat($collection-predicate, $search-predicate, $image-predicate, $date_predicate,
+        $where_predicate, $order_by_predicate, $return_predicate)
 
     (: evaluate :)
-    let $results := util:eval($search-string)
+    let $results := ((util:log('INFO', ($query))),(util:log('INFO', ($search-string))), util:eval($search-string))
 
     return $results
 };
@@ -509,8 +536,10 @@ declare
 %templates:default("start-range", "")
 %templates:default("end-range", "")
 %templates:default("image", "no")
+%templates:default("order-by", 'date_a')
 function mpese-search:advanced-form($node as node (), $model as map (*),
-        $search as xs:string, $type as xs:string, $exclude as xs:string, $start-range as xs:string, $end-range as xs:string, $image as xs:string)  {
+        $search as xs:string, $type as xs:string, $exclude as xs:string, $start-range as xs:string,
+        $end-range as xs:string, $image as xs:string, $order-by as xs:string)  {
 
     let $input_any := if ($type eq 'any') then <input type="radio" name="type" id="adv_search_type1" value="any" checked="checked"/>
                       else <input type="radio" name="type" id="adv_search_type1" value="any"/>
@@ -523,6 +552,19 @@ function mpese-search:advanced-form($node as node (), $model as map (*),
 
     let $text_with_images := if ($image eq 'yes') then <input type="checkbox" name="image" id="adv_image_only" value="yes" checked="checked"/>
                              else <input type="checkbox" name="image" id="adv_image_only" value="yes"/>
+
+    let $date_asc := if ($order-by eq 'date_a') then <input type="radio" name="order-by" value="date_a" checked="checked"/>
+                     else <input type="radio" name="order-by" value="date_a"/>
+
+    let $date_desc := if ($order-by eq 'date_d') then <input type="radio" name="order-by" value="date_d" checked="checked"/>
+                      else <input type="radio" name="order-by" value="date_d"/>
+
+    let $witness_desc := if ($order-by eq 'witness_d') then <input type="radio" name="order-by" value="witness_d" checked="checked"/>
+                         else <input type="radio" name="order-by" value="witness_d"/>
+
+    let $witness_asc := if ($order-by eq 'witness_a') then <input type="radio" name="order-by" value="witness_a" checked="checked"/>
+                        else <input type="radio" name="order-by" value="witness_a"/>
+
     return
 
     <form action="./results.html" method="get" class="form-horizontal">
@@ -550,12 +592,21 @@ function mpese-search:advanced-form($node as node (), $model as map (*),
             <label class="col-sm-2">Date range</label>
             <div class="col-sm-5">
                 From year <input id="start-range" name="start-range" type="text"
-                            placeholder="1603" value="{$start-range}" size="4" maxsize="4" pattern="^\d{4}$"/> to year
+                            placeholder="1603" value="{$start-range}" size="4" maxsize="4" pattern="^\d{{4}}$"/> to year
                 <input id="end-range" name="end-range" type="text" size="4" maxsize="4"
-                       placeholder="1642" value="{$end-range}" pattern="^\d{4}$"/>
+                       placeholder="1642" value="{$end-range}" pattern="^\d{{4}}$"/>
             </div>
         </div>
 
+        <div class="form-group">
+            <label class="col-sm-2">Order by</label>
+            <div class="col-sm-5">
+                <label class="radio-inline">{$date_asc} date (ascending)</label>
+                <label class="radio-inline">{$date_desc} date (descending)</label><br/>
+                <label class="radio-inline">{$witness_desc} no. of witnesses (descending)</label>
+                <label class="radio-inline">{$witness_asc} no. of witnesses (ascending)</label>
+            </div>
+        </div>
 
         <div class="form-group">
             <div class="col-sm-2"></div>
@@ -566,7 +617,9 @@ function mpese-search:advanced-form($node as node (), $model as map (*),
             </div>
         </div>
         <div class="form-group">
-            <input type="submit" value="Search"/>
+            <div class="col-sm-12">
+                <input type="submit" value="Search"/>
+            </div>
         </div>
     </form>
 
@@ -581,13 +634,17 @@ declare
 %templates:default("start-range", "")
 %templates:default("end-range", "")
 %templates:default("image", "no")
+%templates:default("order-by", 'date_a')
 function mpese-search:advanced-results($node as node (), $model as map (*), $page as xs:integer, $num as xs:integer,
         $search as xs:string, $type as xs:string, $exclude as xs:string, $start-range as xs:string,
-$end-range as xs:string, $image as xs:string)  {
+        $end-range as xs:string, $image as xs:string, $order-by as xs:string)  {
+
+    (: kwic on wildcard everything kills the app :)
+    let $show_kwic := if ($search eq '') then false() else true()
 
     (: all results, unpaginated - empty sequence if no search parameter :)
     let $results := if (request:get-parameter('search', 'xxx-empty-xxx') eq 'xxx-empty-xxx') then ()
-                    else mpese-search:advanced($search, $type, $exclude, $image, $start-range, $end-range)
+                    else mpese-search:advanced($search, $type, $exclude, $image, $start-range, $end-range, $order-by)
 
     (: total number :)
     let $total := count($results)
@@ -602,7 +659,7 @@ $end-range as xs:string, $image as xs:string)  {
 
     (:track search parameters :)
     let $map := map { 'search' := $search, 'type' := $type, 'exclude' := $exclude, 'start-range' := $start-range,
-                      'end-range' := $end-range, 'image' := $image }
+                      'end-range' := $end-range, 'image' := $image, 'order-by' := $order-by, 'page' := $page }
 
     (: edit form link :)
     let $edit-link := mpese-search:results-edit-search-link($map)
@@ -619,7 +676,7 @@ $end-range as xs:string, $image as xs:string)  {
         }
         <div class="list-group">{
             for $item in $results
-                return mpese-search:result-entry($item)
+                return mpese-search:result-entry($item, $show_kwic)
         }</div>
         {
             if ($pages > 1) then
