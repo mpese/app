@@ -28,7 +28,32 @@
 
     <xsl:template match="tei:choice"><xsl:call-template name="abbr"/></xsl:template>
 
-    <xsl:template match="tei:p"><p><xsl:apply-templates/></p></xsl:template>
+    <xsl:template match="tei:p">
+        <xsl:choose>
+            <xsl:when test="@rend='align-centre'"><p class="text-center"><xsl:apply-templates/></p></xsl:when>
+            <xsl:otherwise><p><xsl:apply-templates/></p></xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+
+    <xsl:template match="tei:head">
+        <xsl:choose>
+            <xsl:when test="@rend='align-centre'"><p class="text-center"><xsl:apply-templates/></p></xsl:when>
+            <xsl:otherwise><p><xsl:apply-templates/></p></xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+
+    <xsl:template match="tei:opener">
+        <xsl:choose>
+            <xsl:when test="@rend='align-centre'"><p class="text-center"><xsl:apply-templates/></p></xsl:when>
+            <xsl:otherwise><p><xsl:apply-templates/></p></xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+    <xsl:template match="tei:closer">
+        <xsl:choose>
+            <xsl:when test="@rend='align-centre'"><p class="text-center"><xsl:apply-templates/></p></xsl:when>
+            <xsl:otherwise><p><xsl:apply-templates/></p></xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
 
     <xsl:template match="tei:lb"><xsl:text> </xsl:text></xsl:template>
 
@@ -43,7 +68,7 @@
         </xsl:choose>
     </xsl:template>
 
-    <xsl:template match="tei:ex"><em><xsl:apply-templates/></em></xsl:template>
+    <xsl:template match="tei:ex">[<xsl:apply-templates/>]</xsl:template>
 
     <xsl:template name="abbr" match="tei:abbr"><xsl:apply-templates/></xsl:template>
 
@@ -51,6 +76,8 @@
         <xsl:choose>
             <xsl:when test="@rend='bold'"><strong><xsl:apply-templates/></strong></xsl:when>
             <xsl:when test="@rend='superscript'"><sup><xsl:apply-templates/></sup></xsl:when>
+            <xsl:when test="@rend='underline'"><u><xsl:apply-templates/></u></xsl:when>
+            <xsl:when test="@rend='align-centre'"><span class="text-center"><xsl:apply-templates/></span></xsl:when>
             <xsl:otherwise><xsl:apply-templates/></xsl:otherwise>
         </xsl:choose>
     </xsl:template>
