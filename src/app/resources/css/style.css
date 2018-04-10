@@ -56,9 +56,7 @@ footer p {
     font-weight: bold;
 }
 
-.unclear {
-    text-decoration: dashed;
-}
+
 
 img.mpese-home-img-caption {
     max-width: 100%;
@@ -218,4 +216,54 @@ ul.mpese-witness-list {
 
 #mpese-map-panel {
     display: none;
+}
+
+/* text rendering */
+
+.tei-seg {
+    display: block;
+}
+
+.tei-signed {
+    display: block;
+}
+
+.tei-unclear {
+    text-decoration: dashed;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.superscript {
+    vertical-align: super;
+}
+
+.underline {
+    text-decoration: #000000 underline;
+}
+
+.align-centre {
+    text-align: center;
+}
+
+.small-caps {
+    font-variant: small-caps;
+}
+
+.align-right {
+    text-align: right;
+}
+
+.align-left {
+    text-align: left;
+}
+
+.indent {
+    text-indent: 25px;
+}
+
+.tei-add-header {
+    display: block;
 }

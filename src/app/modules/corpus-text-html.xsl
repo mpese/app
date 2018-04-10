@@ -30,8 +30,12 @@
 
     <xsl:template match="tei:p">
         <xsl:choose>
-            <xsl:when test="@rend='align-centre'"><p class="text-center"><xsl:apply-templates/></p></xsl:when>
-            <xsl:otherwise><p><xsl:apply-templates/></p></xsl:otherwise>
+            <xsl:when test="@rend != ''">
+                <p class="{@rend}"><xsl:apply-templates/></p>
+            </xsl:when>
+            <xsl:otherwise>
+                <p><xsl:apply-templates/></p>
+            </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
 
@@ -44,14 +48,23 @@
 
     <xsl:template match="tei:opener">
         <xsl:choose>
-            <xsl:when test="@rend='align-centre'"><p class="text-center"><xsl:apply-templates/></p></xsl:when>
-            <xsl:otherwise><p><xsl:apply-templates/></p></xsl:otherwise>
+            <xsl:when test="@rend != ''">
+                <p class="{@rend}"><xsl:apply-templates/></p>
+            </xsl:when>
+            <xsl:otherwise>
+                <p><xsl:apply-templates/></p>
+            </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
+
     <xsl:template match="tei:closer">
         <xsl:choose>
-            <xsl:when test="@rend='align-centre'"><p class="text-center"><xsl:apply-templates/></p></xsl:when>
-            <xsl:otherwise><p><xsl:apply-templates/></p></xsl:otherwise>
+            <xsl:when test="@rend != ''">
+                <p class="{@rend}"><xsl:apply-templates/></p>
+            </xsl:when>
+            <xsl:otherwise>
+                <p><xsl:apply-templates/></p>
+            </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
 
@@ -74,11 +87,12 @@
 
     <xsl:template match="tei:hi">
         <xsl:choose>
-            <xsl:when test="@rend='bold'"><strong><xsl:apply-templates/></strong></xsl:when>
-            <xsl:when test="@rend='superscript'"><sup><xsl:apply-templates/></sup></xsl:when>
-            <xsl:when test="@rend='underline'"><u><xsl:apply-templates/></u></xsl:when>
-            <xsl:when test="@rend='align-centre'"><span class="text-center"><xsl:apply-templates/></span></xsl:when>
-            <xsl:otherwise><xsl:apply-templates/></xsl:otherwise>
+            <xsl:when test="@rend != ''">
+                <span class="{@rend}"><xsl:apply-templates/></span>
+            </xsl:when>
+            <xsl:otherwise>
+                <span><xsl:apply-templates/></span>
+            </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
 
@@ -99,13 +113,36 @@
         <xsl:choose>
             <xsl:when test="@place='LM'"><span class="mpese-add-lm"><em class="mpese-lm-note">Left margin: </em> <xsl:apply-templates/></span></xsl:when>
             <xsl:when test="@place='RM'"><span class="mpese-add-rm"><em class="mpese-rm-note">Right margin: </em> <xsl:apply-templates/></span></xsl:when>
+            <xsl:when test="@place='header'"><span class="tei-add-header"><xsl:apply-templates/></span></xsl:when>
             <xsl:otherwise ><span class="mpese-add">[<xsl:apply-templates/>]</span></xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+
+    <xsl:template match="tei:seg">
+        <xsl:choose>
+            <xsl:when test="@rend != ''">
+                <span class="{@rend} tei-seg"><xsl:apply-templates/></span>
+            </xsl:when>
+            <xsl:otherwise>
+                <span class="tei-seg"><xsl:apply-templates/></span>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+
+    <xsl:template match="tei:signed">
+        <xsl:choose>
+            <xsl:when test="@rend != ''">
+                <span class="{@rend} tei-signed"><xsl:apply-templates/></span>
+            </xsl:when>
+            <xsl:otherwise>
+                <span class="tei-signed"><xsl:apply-templates/></span>
+            </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
 
     <xsl:template match="tei:del"><del><xsl:apply-templates/></del></xsl:template>
 
-     <xsl:template match="tei:unclear"><span class="unclear"><xsl:apply-templates/></span></xsl:template>
+     <xsl:template match="tei:unclear"><span class="tei-unclear"><xsl:apply-templates/></span></xsl:template>
 
     <xsl:template match="tei:gap"><span class="mpese-gap"><xsl:apply-templates/></span></xsl:template>
 
