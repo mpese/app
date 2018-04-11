@@ -236,8 +236,13 @@ ul.mpese-witness-list {
     font-weight: bold;
 }
 
+.italic {
+    font-style: italic;
+}
+
 .superscript {
     vertical-align: super;
+    font-size: 75%;
 }
 
 .underline {
@@ -264,6 +269,36 @@ ul.mpese-witness-list {
     text-indent: 25px;
 }
 
+.outdent {
+    text-indent: -25px;
+}
+
+.overline {
+    text-decoration: #000000 overline;
+}
+
+.strikethrough {
+    text-decoration: #000000 line-through;
+}
+
+.subscript {
+    vertical-align: sub;
+    font-size: 75%;
+}
+
 .tei-add-header {
     display: block;
+}
+
+.supralinear {
+    vertical-align: super;
+    font-size: 75%;
+}
+
+.underline {
+    text-decoration: #000000 underline;
+}
+
+.tei-milestone {
+    border-color: #000000;
 }

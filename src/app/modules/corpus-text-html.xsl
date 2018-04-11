@@ -68,6 +68,19 @@
         </xsl:choose>
     </xsl:template>
 
+    <xsl:template match="tei:list">
+        <xsl:choose>
+            <xsl:when test="contains(@rend, 'numbered')">
+                <ol><xsl:apply-templates/></ol>
+            </xsl:when>
+            <xsl:otherwise>
+                <ul><xsl:apply-templates/></ul>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+
+    <xsl:template match="tei:item"><li><xsl:apply-templates/></li></xsl:template>
+
     <xsl:template match="tei:lb"><xsl:text> </xsl:text></xsl:template>
 
     <xsl:template match="tei:lg"><p><xsl:apply-templates/></p></xsl:template>
@@ -114,6 +127,7 @@
             <xsl:when test="@place='LM'"><span class="mpese-add-lm"><em class="mpese-lm-note">Left margin: </em> <xsl:apply-templates/></span></xsl:when>
             <xsl:when test="@place='RM'"><span class="mpese-add-rm"><em class="mpese-rm-note">Right margin: </em> <xsl:apply-templates/></span></xsl:when>
             <xsl:when test="@place='header'"><span class="tei-add-header"><xsl:apply-templates/></span></xsl:when>
+            <xsl:when test="@place='above'"><span class="superscript"><xsl:apply-templates/></span></xsl:when>
             <xsl:otherwise ><span class="mpese-add">[<xsl:apply-templates/>]</span></xsl:otherwise>
         </xsl:choose>
     </xsl:template>
@@ -140,9 +154,29 @@
         </xsl:choose>
     </xsl:template>
 
-    <xsl:template match="tei:del"><del><xsl:apply-templates/></del></xsl:template>
+    <xsl:template match="tei:del">
+        <xsl:choose>
+            <xsl:when test="@rend != ''">
+                <del class="{@rend} tei-del"><xsl:apply-templates/></del>
+            </xsl:when>
+            <xsl:otherwise>
+                <del class="tei-del"><xsl:apply-templates/></del>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
 
-     <xsl:template match="tei:unclear"><span class="tei-unclear"><xsl:apply-templates/></span></xsl:template>
+    <xsl:template match="tei:milestone">
+        <xsl:choose>
+            <xsl:when test="@type eq 'separator' and @unit eq 'nonstructural' and @rend='horizontal-line'">
+                <hr class="tei-milestone"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:text> </xsl:text>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+
+     <xsl:template match="tei:unclear"><span class="tei-unclear">{<xsl:apply-templates/>}</span></xsl:template>
 
     <xsl:template match="tei:gap"><span class="mpese-gap"><xsl:apply-templates/></span></xsl:template>
 
