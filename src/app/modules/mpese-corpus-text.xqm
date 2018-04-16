@@ -676,9 +676,9 @@ declare function mpese-text:lang($node as node (), $model as map (*)) {
 
     return
         if ($lang and not(empty(fn:string-join($lang)))) then
-            "No details"
-        else
             fn:string-join($lang, ', ')
+        else
+            "No details"
 };
 
 (:~
@@ -708,7 +708,7 @@ declare function mpese-text:author-list($node as node (), $model as map (*)) {
     return
         (: Check if we have a list or the first item of the list is empty (usually a comment saying
            content nees to be added :)
-        if (count($authors) eq 0 or functx:has-empty-content($authors[1])) then
+        if (count($authors) eq 0 or functx:has-empty-content($authors[1]) or $authors[1]/comment()) then
             <p>No authors.</p>
         else
             <ul>{
