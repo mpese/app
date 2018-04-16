@@ -81,13 +81,19 @@
 
     <xsl:template match="tei:item"><li><xsl:apply-templates/></li></xsl:template>
 
-    <xsl:template match="tei:lb"><xsl:text> </xsl:text></xsl:template>
+    <xsl:template match="tei:lb">
+        <xsl:choose>
+            <xsl:when test="@break eq 'no'"><xsl:text></xsl:text></xsl:when>
+            <xsl:otherwise><xsl:text> </xsl:text></xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
 
     <xsl:template match="tei:lg"><p><xsl:apply-templates/></p></xsl:template>
 
     <xsl:template match="tei:l"><xsl:apply-templates/><br/></xsl:template>
 
     <xsl:template match="tei:expan">
+        <xsl:text> </xsl:text>
         <xsl:choose>
             <xsl:when test="parent::tei:choice"></xsl:when>
             <xsl:otherwise><xsl:apply-templates/></xsl:otherwise>
@@ -179,6 +185,41 @@
      <xsl:template match="tei:unclear"><span class="tei-unclear">{<xsl:apply-templates/>}</span></xsl:template>
 
     <xsl:template match="tei:gap"><span class="mpese-gap"><xsl:apply-templates/></span></xsl:template>
+
+    <!--
+
+    Here be dragons ...
+
+    Text might be broken up by an <lb break='no'/>, which indicates that the word shouldn't
+    be broken in rendering. However, the researchers have included a lot of whitespace, including
+    line breaks for ease of reading the source. The original scribe might also indicate that
+    a word has been truncated with an equals (=) sign, eg. 'witch= =craft', but we want the word
+    to appear as 'witchcraft' in the text.
+
+    So ... on the text node we check whether or not a sibling is the <lb/> tag with the appropriate
+    attribute and replace any whitespace and equals with appropriate regex. I expect we will return
+    to this template often. :-(
+
+    -->
+    <xsl:template match="text()">
+        <xsl:choose>
+            <!-- following and preceding siblings are a lb? Strip whitespace and equals -->
+            <xsl:when test="./following-sibling::*[1][local-name()='lb' and @break = 'no'] and ./preceding-sibling::*[1][local-name()='lb' and @break = 'no']">
+                <xsl:value-of select="replace(., '(=$|(^\s+=?|=?\s+$))', '')"/>
+            </xsl:when>
+            <!-- following siblings is a lb? Strip whitespace and equals -->
+            <xsl:when test="./following-sibling::*[1][local-name()='lb' and @break = 'no']">
+                <xsl:value-of select="replace(., '(=$|=?\s+?$)', '')"/>
+            </xsl:when>
+            <!-- preceding siblings are a lb? Strip whitespace and equals -->
+            <xsl:when test="./preceding-sibling::*[1][local-name()='lb' and @break = 'no']">
+                <xsl:value-of select="replace(., '(^\s+=?)', '')"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="."/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
 
     <!--<xsl:template match="*">-->
         <!--<xsl:message terminate="no">-->
