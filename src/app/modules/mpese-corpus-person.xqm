@@ -47,6 +47,11 @@ declare function mpese-person:label($persName as node()?) as xs:string {
         fn:normalize-space($persName/string())
 };
 
+
+declare function mpese-person:person-label($person as node()) as node() {
+    <h2>{fn:string-join($person//tei:persName/*/string(), ' ')}</h2>
+};
+
 (: ---------- TEMPLATE FUNCTIONS ----------- :)
 
 (:~
@@ -62,7 +67,7 @@ declare function mpese-person:person($node as node (), $model as map (*), $perso
     let $person := mpese-person:person-by-id($person_id)
 
     return
-        map { "person" := $person}
+        map { "person" := $person, "id" := $person_id}
 };
 
 (:~
@@ -86,8 +91,52 @@ declare function mpese-person:search-nav($node as node (), $model as map (*)) {
  :)
 declare function mpese-person:title($node as node (), $model as map (*)) {
 
-    let $person := $model('person')
+    mpese-person:person-label($model('person'))
+};
 
-    return
-        <h2>{fn:string-join($person//tei:persName/*/string(), ' ')}</h2>
+declare function mpese-person:bibliographic($node as node (), $model as map (*)) {
+    <div>{
+        let $person := $model('person')
+        let $birth :=   if ($person/tei:birth/tei:date/string())
+                            then <p><strong>Birth:</strong>{text {' '}, $person/tei:birth/tei:date/string()}</p>
+                        else ()
+        let $death :=   if ($person/tei:death/tei:date/string())
+                            then <p><strong>Death:</strong>{text {' '}, $person/tei:death/tei:date/string()}</p>
+                        else ()
+        let $nationality := if ($person/tei:nationality/string())
+                            then <p><strong>Nationality:</strong>{text {' '}, $person/tei:nationality/string()}</p>
+                        else ()
+        let $occupation := if ($person/tei:occupation/string())
+                            then <p><strong>Occupation:</strong>{text {' '}, $person/tei:occupation/string()}</p>
+                        else ()
+        let $details := ($birth, $death, $nationality, $occupation)
+        return
+            if (empty($details)) then <p>No details</p> else $details
+    }</div>
+};
+
+declare function mpese-person:further-reading($node as node (), $model as map (*)) {
+    <div>{
+        let $person := $model('person')
+        let $bibl :=   if ($person/tei:listBibl/string())
+                            then <ul>{for $item in $person/tei:listBibl/tei:bibl return <li>{$item/string()}</li>}</ul>
+                        else (<p>No details</p>)
+        return
+            $bibl
+    }</div>
+};
+
+declare function mpese-person:author($node as node (), $model as map (*)) {
+    <div>{
+        let $id := '../people/people.xml#' || $model('id')
+        let $texts := collection($config:mpese-tei-corpus-texts)//tei:teiHeader/tei:fileDesc/tei:titleStmt[tei:author/tei:persName/@corresp = $id]
+        let $text_list := if (count($texts) > 0) then
+                            for $text in $texts
+                                let $uri := base-uri($text)
+                                let $name := utils:name-from-uri($uri)
+                                return <li><a href="../t/{$name}.html">{$text/tei:title/string()}</a></li>
+                          else (<p>No texts</p>)
+        return
+            $text_list
+    }</div>
 };
