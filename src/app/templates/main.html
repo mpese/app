@@ -13,16 +13,34 @@
     <body id="body">
         <!-- navigation -->
         <nav class="navbar navbar-inverse navbar-fixed-top">
-            <div class="container">
-                <div class="navbar-header">
-                    <a class="navbar-brand" href=".">
-                        <span data-template="config:app-abbrev">Abbrev</span>: <span
-                            class="hidden-xs"><span data-template="config:app-title">App
-                                Title</span></span>
-                    </a>
-                </div>
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href=".">
+                        <span data-template="config:app-abbrev">Abbrev</span>
+                        <span class="hidden-xs hidden-sm hidden-md">: <span data-template="config:app-title">App Title</span></span></a>
             </div>
-        </nav>
+            <div id="navbar" class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="./introduction.html">Introduction</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">How to use <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="./scope.html">Scope of coverage</a></li>
+                        <li><a href="./conventions.html">Transcription conventions</a></li>
+                    </ul></li>
+                    <li><a href="./teaching.html">Teaching</a></li>
+                <li><a href="./about.html">About</a></li>
+            </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
         <!-- project abstract -->
         <div id="content" class="container"></div>
         <footer>
@@ -34,7 +52,7 @@
                     <img class="logo" src="./resources/img/logo-ha.svg" height="50" alt="Historical Association" />
                     <img class="logo" src="./resources/img/logo-bl.svg" height="50" alt="British Library" />
                 </div>
-                <p>&#169; 2017 University of Birmingham, University of Bristol.</p>
+                <p>&#169; 2017–18 University of Birmingham, University of Bristol.</p>
                 <p class="pull-right"><a href="./dashboard/">Dashboard</a>; Version: <span data-template="app:version"></span> (deployed,
                     <span data-template="app:deployed"></span>)</p>
             </div>
