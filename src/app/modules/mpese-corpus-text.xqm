@@ -381,6 +381,12 @@ declare function mpese-text:bibl-idno($bibl as element()) as xs:string {
             ""
 };
 
+(:~
+ : Volume section of a printed bibliographical item
+ :
+ : @param $bibl         a bibliographical element
+ : @return the volume section
+ :)
 declare function mpese-text:biblio-vol($bibl as element()) as xs:string {
     if (boolean($bibl/tei:biblScope[@unit="volume"])) then
         let $vols := $bibl/tei:biblScope[@unit="volume"]
@@ -389,6 +395,24 @@ declare function mpese-text:biblio-vol($bibl as element()) as xs:string {
                     ", vols. " || fn:string-join($bibl/tei:biblScope[@unit="volume"], ", ")
                 else
                     ", vol. " || $bibl/tei:biblScope[@unit="volume"]/string()
+    else
+        ""
+};
+
+(:~
+ : Part section of a printed bibliographical item
+ :
+ : @param $bibl         a bibliographical element
+ : @return the part section
+ :)
+declare function mpese-text:biblio-part($bibl as element()) as xs:string {
+    if (boolean($bibl/tei:biblScope[@unit="part"])) then
+        let $vols := $bibl/tei:biblScope[@unit="part"]
+            return
+                if (count($vols) > 1) then
+                    ", parts " || fn:string-join($bibl/tei:biblScope[@unit="part"], ", ")
+                else
+                    ", part " || $bibl/tei:biblScope[@unit="part"]/string()
     else
         ""
 };
@@ -483,6 +507,7 @@ declare function mpese-text:bibliography($biblio_list) {
                         let $pub := mpese-text:bibl-pub($item)
                         let $id := mpese-text:bibl-idno($item)
                         let $vols := mpese-text:biblio-vol($item)
+                        let $parts := mpese-text:biblio-part($item)
                         let $seq := ($authors, $title)
                         let $f := for $item at $pos in $seq
                             return
@@ -492,7 +517,7 @@ declare function mpese-text:bibliography($biblio_list) {
                                     $item
                         let $scope := mpese-text:biblScopePrefix($item)
                         return
-                            ($f, fn:string-join(($pub, $id, $vols, $scope), ''))
+                            ($f, fn:string-join(($pub, $id, $vols, $parts, $scope), ''))
                     }</li>
         }</ul>
 
