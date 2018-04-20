@@ -186,6 +186,11 @@
 
     <xsl:template match="tei:gap"><span class="mpese-gap"><xsl:apply-templates/></span></xsl:template>
 
+    <xsl:template match="tei:foreign"><em><xsl:apply-templates/></em></xsl:template>
+
+    <!-- TODO: how to show corrections? -->
+    <xsl:template match="tei:corr"></xsl:template>
+
     <!--
 
     Here be dragons ...
