@@ -19,7 +19,7 @@ declare function local:locus($msItem) {
     let $locus := $msItem/tei:locus
     let $folio_prefix := if (fn:contains($locus, '-')) then ', ff.' else ', f.'
     return
-        $folio_prefix || ' ' || $locus
+        $folio_prefix || ' ' || replace($locus, '-', '–')
 };
 
 (: find any transcript for the witness :)
