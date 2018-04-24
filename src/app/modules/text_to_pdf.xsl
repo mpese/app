@@ -89,6 +89,33 @@
         <xsl:apply-templates select="//tei:text/tei:body"/>
     </xsl:template>
 
+    <!-- Manuscript witnesses -->
+    <xsl:template name="mss_witness">
+        <!-- subtitle -->
+        <fo:block font-family="{$font}" font-size="{$subheading-size}" font-weight="bold"
+                  space-before="12pt" space-after="6pt">Other manuscript witnesses</fo:block>
+        <!-- witness list -->
+         <xsl:apply-templates select="//tei:sourceDesc/tei:listBibl[@xml:id='mss_witness_generated']"/>
+    </xsl:template>
+
+    <!-- 17th century print witnesses -->
+    <xsl:template name="C17_print_witness">
+        <!-- subtitle -->
+        <fo:block font-family="{$font}" font-size="{$subheading-size}" font-weight="bold"
+                  space-before="12pt" space-after="6pt">Seventeenth-century print exemplars</fo:block>
+        <!-- witness list -->
+         <xsl:apply-templates select="//tei:sourceDesc/tei:listBibl[@xml:id='C17_print_witness']"/>
+    </xsl:template>
+
+    <!-- 17th century print witnesses -->
+    <xsl:template name="modern_print_witness">
+        <!-- subtitle -->
+        <fo:block font-family="{$font}" font-size="{$subheading-size}" font-weight="bold"
+                  space-before="12pt" space-after="6pt">Modern print exemplars</fo:block>
+        <!-- witness list -->
+         <xsl:apply-templates select="//tei:sourceDesc/tei:listBibl[@xml:id='modern_print_witness']"/>
+    </xsl:template>
+
     <xsl:template name="header">
         <xsl:call-template name="title"/>
         <xsl:call-template name="author"/>
@@ -97,6 +124,9 @@
     <xsl:template name="body">
         <xsl:call-template name="introduction"/>
         <xsl:call-template name="transcript"/>
+        <xsl:call-template name="mss_witness"/>
+        <xsl:call-template name="C17_print_witness"/>
+        <xsl:call-template name="modern_print_witness"/>
     </xsl:template>
 
     <!-- match root - create FO document -->
@@ -157,16 +187,11 @@
     </xsl:template>
 
 
-    <xsl:template match="tei:publicationStmt"></xsl:template>
+    <xsl:template match="tei:publicationStmt"/>
 
-    <xsl:template match="tei:sourceDesc">
-        <xsl:apply-templates select="tei:listBibl[@xml:id='mss_witness_generated']"/>
-    </xsl:template>
+    <xsl:template match="tei:sourceDesc"/>
 
     <xsl:template match="tei:listBibl[@xml:id='mss_witness_generated']">
-        <fo:block font-family="{$font}" font-size="{$subheading-size}" space-before="6pt" space-after="6pt">Manuscript
-            witnesses
-        </fo:block>
         <fo:list-block provisional-distance-between-starts="14pt" provisional-label-separation="3pt">
             <xsl:for-each select="tei:bibl">
                 <fo:list-item>
@@ -183,6 +208,89 @@
             </xsl:for-each>
         </fo:list-block>
     </xsl:template>
+
+    <xsl:template match="tei:listBibl[@xml:id='C17_print_witness']">
+        <fo:list-block provisional-distance-between-starts="14pt" provisional-label-separation="3pt">
+            <xsl:for-each select="tei:bibl">
+                <fo:list-item>
+                    <fo:list-item-label>
+                        <fo:block font-family="{$font}" font-size="{$list-size}" end-indent="label-end()">&#x2022;
+                        </fo:block>
+                    </fo:list-item-label>
+                    <fo:list-item-body start-indent="body-start()">
+                        <fo:block font-family="{$font}" font-size="{$list-size}">
+                            <xsl:variable name="place"><xsl:value-of select="./tei:pubPlace"/></xsl:variable>
+                            <xsl:variable name="date"><xsl:value-of select="./tei:date"/></xsl:variable>
+                            <xsl:variable name="pub_details"><xsl:value-of select="string-join(($place, $date), ', ')"/></xsl:variable>
+                            <xsl:choose>
+                                <xsl:when test="normalize-space(./tei:author) = ''"/>
+                                <xsl:otherwise><xsl:value-of select="normalize-space(./tei:author/string())"/><xsl:text>, </xsl:text></xsl:otherwise>
+                            </xsl:choose>
+                            <xsl:choose>
+                                <xsl:when test="normalize-space(./tei:title) = ''"/>
+                                <xsl:otherwise><fo:inline font-style="italic"><xsl:value-of select="normalize-space(./tei:title/string())"/></fo:inline></xsl:otherwise>
+                            </xsl:choose>
+                            <xsl:choose>
+                                <xsl:when test="normalize-space($pub_details) = ''"/>
+                                <xsl:otherwise><xsl:text> </xsl:text>(<xsl:value-of select="$pub_details"/>)</xsl:otherwise>
+                            </xsl:choose>
+                            <xsl:choose>
+                                <xsl:when test="normalize-space(./tei:idno) = ''"/>
+                                <xsl:otherwise><xsl:text> </xsl:text>[<xsl:value-of select="./tei:idno/@type/string()"/><xsl:text> </xsl:text><xsl:value-of select="./tei:idno/string()"/>]</xsl:otherwise>
+                            </xsl:choose>
+                            <xsl:choose>
+                                <xsl:when test="not(./tei:biblScope)"/>
+                                <xsl:otherwise>
+                                    <xsl:choose>
+                                        <xsl:when test="./tei:biblScope[@unit = 'page']">
+                                            <xsl:choose>
+                                                <xsl:when test="./tei:biblScope[@unit = 'page']/@from/string() != ./tei:biblScope[@unit = 'page']/@to/string()">
+                                                    <xsl:text>, pp. </xsl:text><xsl:value-of select="./tei:biblScope[@unit = 'page']/@from/string()"/>–<xsl:value-of select="./tei:biblScope[@unit = 'page']/@to/string()"/>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <xsl:text>, p. </xsl:text><xsl:value-of select="./tei:biblScope[@unit = 'page']/@from/string()"/>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                        </xsl:when>
+                                        <xsl:when test="./tei:biblScope[@unit = 'sigs']">
+                                            <xsl:choose>
+                                                <xsl:when test="./tei:biblScope[@unit = 'sigs']/@from/string() != ./tei:biblScope[@unit = 'sigs']/@to/string()">
+                                                    <xsl:text>, sigs. </xsl:text><xsl:value-of select="./tei:biblScope[@unit = 'sigs']/@from/string()"/>–<xsl:value-of select="./tei:biblScope[@unit = 'sigs']/@to/string()"/>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <xsl:text>, sig. </xsl:text><xsl:value-of select="./tei:biblScope[@unit = 'sigs']/@from/string()"/>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                        </xsl:when>
+                                        <xsl:otherwise/>
+                                    </xsl:choose>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </fo:block>
+                    </fo:list-item-body>
+                </fo:list-item>
+            </xsl:for-each>
+        </fo:list-block>
+    </xsl:template>
+
+       <xsl:template match="tei:listBibl[@xml:id='modern_print_witness']">
+        <fo:list-block provisional-distance-between-starts="14pt" provisional-label-separation="3pt">
+            <xsl:for-each select="tei:bibl">
+                <fo:list-item>
+                    <fo:list-item-label>
+                        <fo:block font-family="{$font}" font-size="{$list-size}" end-indent="label-end()">&#x2022;
+                        </fo:block>
+                    </fo:list-item-label>
+                    <fo:list-item-body start-indent="body-start()">
+                        <fo:block font-family="{$font}" font-size="{$list-size}">
+                            <xsl:value-of select="."/>
+                        </fo:block>
+                    </fo:list-item-body>
+                </fo:list-item>
+            </xsl:for-each>
+        </fo:list-block>
+    </xsl:template>
+
 
     <xsl:template match="tei:respStmt"></xsl:template>
 
