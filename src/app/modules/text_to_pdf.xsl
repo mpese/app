@@ -17,14 +17,26 @@
 
     <!-- title of the document -->
     <xsl:template name="title">
-        <fo:block font-family="{$font}" font-size="16pt" text-align="center">
-            <xsl:value-of select="//tei:fileDesc/tei:titleStmt/tei:title"/>
+        <xsl:variable name="title">
+            <xsl:choose>
+                <xsl:when test="normalize-space(//tei:fileDesc/tei:titleStmt/tei:title) eq ''">Untitled</xsl:when>
+                <xsl:otherwise><xsl:value-of select="//tei:fileDesc/tei:titleStmt/tei:title"/></xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        <xsl:variable name="date">
+            <xsl:choose>
+                <xsl:when test="normalize-space(//tei:profileDesc/tei:creation/tei:date) eq ''">No date</xsl:when>
+                <xsl:otherwise><xsl:value-of select="//tei:profileDesc/tei:creation/tei:date/string()"/></xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        <fo:block font-family="{$font}" font-size="16pt" text-align="center" font-weight="bold">
+            <xsl:value-of select="$title"/><xsl:text> </xsl:text>(<xsl:value-of select="$date"/>)
         </fo:block>
     </xsl:template>
 
     <!-- author -->
     <xsl:template name="author">
-        <fo:block font-family="{$font}" font-size="12pt" text-align="center" font-style="italic">
+        <fo:block font-family="{$font}" font-size="12pt" text-align="center">
             <xsl:for-each select="//tei:fileDesc/tei:titleStmt/tei:author">
                 <xsl:value-of select="tei:persName"/>
             </xsl:for-each>
@@ -32,7 +44,7 @@
     </xsl:template>
 
     <!-- manuscript -->
-    <xsl:template name="ms">
+    <xsl:variable name="ms">
         <xsl:variable name="repo">
             <xsl:value-of select="//tei:fileDesc/tei:sourceDesc/tei:msDesc/tei:msIdentifier/tei:repository"/>
             <xsl:text>, </xsl:text>
@@ -41,29 +53,50 @@
             <xsl:value-of select="//tei:fileDesc/tei:sourceDesc/tei:msDesc/tei:msIdentifier/tei:idno"/>
         </xsl:variable>
         <xsl:variable name="folios" select="//tei:pb/@n/string()"/>
-        <!--<xsl:variable name="folio_label">-->
-            <!--<xsl:choose>-->
-                <!--<xsl:when test="count($folios) > 1)">-->
-                    <!--<xsl:text>, ff. </xsl:text>-->
-                    <!--<xsl:value-of select="$folios"/>-->
-                    <!--<xsl:text>–</xsl:text>-->
-                    <!--<xsl:value-of select="$folios"/>-->
-                <!--</xsl:when>-->
-                <!--<xsl:otherwise>-->
-                    <!--<xsl:text>, f. </xsl:text>-->
-                    <!--<xsl:value-of select="$folios"/>-->
-                <!--</xsl:otherwise>-->
-            <!--</xsl:choose>-->
-        <!--</xsl:variable>-->
-        <fo:block font-family="{$font}" font-size="10pt" text-align="center">
-            <xsl:value-of select="$repo"/> <xsl:value-of select="$folios"/>
-        </fo:block>
+        <xsl:variable name="folio_label">
+            <xsl:choose>
+                <xsl:when test="count($folios) &gt; 1">
+                    <xsl:text>, ff. </xsl:text>
+                    <xsl:value-of select="$folios[1]"/>
+                    <xsl:text>–</xsl:text>
+                    <xsl:value-of select="$folios[last()]"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:text>, f. </xsl:text>
+                    <xsl:value-of select="$folios"/>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        <xsl:value-of select="$repo"/> <xsl:value-of select="$folio_label"/>
+    </xsl:variable>
+
+    <!-- Introduction to the text -->
+    <xsl:template name="introduction">
+        <!-- subtitle -->
+        <fo:block font-family="{$font}" font-size="{$subheading-size}" font-weight="bold"
+                  space-before="12pt" space-after="6pt">Introduction</fo:block>
+        <!-- text within the abstract -->
+        <xsl:apply-templates select="//tei:profileDesc/tei:abstract"/>
+    </xsl:template>
+
+    <!-- Transcript of the text -->
+    <xsl:template name="transcript">
+        <!-- subtitle -->
+        <fo:block font-family="{$font}" font-size="{$subheading-size}" font-weight="bold"
+                  space-before="12pt" space-after="6pt">Transcript</fo:block>
+        <!-- text within the abstract -->
+        <fo:block font-family="{$font}" font-size="10pt" text-align="left"><xsl:value-of select="$ms"/></fo:block>
+        <xsl:apply-templates select="//tei:text/tei:body"/>
     </xsl:template>
 
     <xsl:template name="header">
         <xsl:call-template name="title"/>
         <xsl:call-template name="author"/>
-        <xsl:call-template name="ms"/>
+    </xsl:template>
+
+    <xsl:template name="body">
+        <xsl:call-template name="introduction"/>
+        <xsl:call-template name="transcript"/>
     </xsl:template>
 
     <!-- match root - create FO document -->
@@ -90,6 +123,7 @@
                 </fo:static-content>
                 <fo:flow flow-name="xsl-region-body">
                     <xsl:call-template name="header"/>
+                    <xsl:call-template name="body"/>
                 </fo:flow>
             </fo:page-sequence>
         </fo:root>
@@ -104,8 +138,6 @@
     </xsl:template>
 
     <xsl:template match="tei:body">
-        <fo:block font-family="{$font}" font-size="{$subheading-size}" space-before="6pt" space-after="6pt">Transcript
-        </fo:block>
         <xsl:apply-templates/>
     </xsl:template>
 
@@ -172,8 +204,7 @@
     </xsl:template>
 
     <!-- expanded text -->
-    <xsl:template match="tei:ex">[<xsl:apply-templates/>]
-    </xsl:template>
+    <xsl:template match="tei:ex">[<xsl:apply-templates/>]</xsl:template>
 
     <xsl:template match="tei:add">
         <xsl:choose>
