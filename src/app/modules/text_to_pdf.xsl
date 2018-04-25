@@ -6,6 +6,9 @@
                 exclude-result-prefixes="xs"
                 version="2.0">
 
+    <!-- parameter is passed in by the transformer -->
+    <xsl:param name="url" />
+
     <!-- font and sizes -->
     <xsl:variable name="font">Times</xsl:variable>
     <xsl:variable name="subheading-size">14pt</xsl:variable>
@@ -127,6 +130,10 @@
         <xsl:call-template name="mss_witness"/>
         <xsl:call-template name="C17_print_witness"/>
         <xsl:call-template name="modern_print_witness"/>
+
+        <fo:block space-before="24pt" font-family="{$font}" font-size="{$note-size}">&#169; 2018 University of Birmingham,
+                        University of Bristol (<xsl:value-of select="$url"/>)
+        </fo:block>
     </xsl:template>
 
     <!-- match root - create FO document -->
@@ -140,16 +147,14 @@
                     <fo:region-after region-name="xsl-region-after" extent="1cm"/>
                 </fo:simple-page-master>
             </fo:layout-master-set>
-            <fo:page-sequence master-reference="mpese-text-A4">
+            <fo:page-sequence master-reference="mpese-text-A4" initial-page-number="1">
                 <fo:static-content flow-name="xsl-region-before">
                     <fo:block font-family="{$font}" font-size="{$note-size}" text-align="center">Manuscript
                         Pamphleteering in Early Stuart England
                     </fo:block>
                 </fo:static-content>
                 <fo:static-content flow-name="xsl-region-after">
-                    <fo:block font-family="{$font}" font-size="{$note-size}">&#169; 2018 University of Birmingham,
-                        University of Bristol
-                    </fo:block>
+                    <fo:block font-family="{$font}" font-size="{$note-size}" text-align="center"><fo:page-number/></fo:block>
                 </fo:static-content>
                 <fo:flow flow-name="xsl-region-body">
                     <xsl:call-template name="header"/>
