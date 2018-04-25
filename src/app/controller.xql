@@ -75,6 +75,17 @@ declare function local:serialize-xml($type, $file) {
     </dispatch>
 };
 
+(: serialize some xml file :)
+declare function local:serialize-pdf($uri, $file) {
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}/modules/mpese-text-pdf.xql">
+            <set-attribute name="text" value="{$file}"/>
+            <set-attribute name="uri" value="{$uri}"/>
+        </forward>
+    </dispatch>
+};
+
+
 (: handle dashboard related urls :)
 declare function local:dashboard() {
     (: /dashboard/ or /dashboard/index.html :)
@@ -158,6 +169,9 @@ else if (fn:matches($exist:path, '^(/t/)(\w+|%20)+\.html$')) then
 else if (fn:matches($exist:path, '^(/m/)(\w+|%20)+\.html$')) then
     (util:log('INFO', (' new mss homepage')),
     local:dispatch-attribute('/mss.html', 'mss', concat(local:item('mss'), '.xml')))
+else if (fn:matches($exist:path, '^(/t/)(\w+|%20)+\.pdf$')) then
+    (util:log('INFO', (' new text pdf')),
+    local:serialize-pdf($exist:path, concat(local:item('text'), '.xml')))
 else if (fn:matches($exist:path, '^(/p/)(\w+|%20)+\.html$')) then
     (util:log('INFO', (' new person homepage')),
     local:dispatch-attribute('/person.html', 'person_id', local:item('person_id')))
