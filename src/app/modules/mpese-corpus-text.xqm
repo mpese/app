@@ -840,3 +840,18 @@ declare function mpese-text:text-topic($node as node (), $model as map (*)) {
     return
         mpese-text:keywords-label($text-types)
 };
+
+declare function mpese-text:downloads($node as node (), $model as map (*)) {
+    let $name := utils:name-from-uri($model('text'))
+
+    return
+        <div class="panel panel-primary">
+            <div class="panel-heading text-center">
+                <h3 class="panel-title">Downloads</h3>
+            </div>
+            <div class="panel-body text-center">
+                <p class="mpese-text-download"><a download="{$name}.pdf" class="btn btn-success" href="./{$name}.pdf">Download PDF <span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span></a></p>
+                <p class="mpese-text-download"><a download="{$name}.xml"class="btn btn-success" href="./{$name}.xml">Download XML <span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span></a></p>
+            </div>
+        </div>
+};

@@ -75,8 +75,8 @@ declare function local:serialize-xml($type, $file) {
     </dispatch>
 };
 
-(: serialize some xml file :)
-declare function local:serialize-pdf($uri, $file) {
+(: serialize a text as a PDF :)
+declare function local:serialize-text-pdf($uri, $file) {
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}/modules/mpese-text-pdf.xql">
             <set-attribute name="text" value="{$file}"/>
@@ -85,6 +85,14 @@ declare function local:serialize-pdf($uri, $file) {
     </dispatch>
 };
 
+(: serialize a text as an xml file :)
+declare function local:serialize-text-xml($file) {
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}/modules/mpese-text-xml.xql">
+            <set-attribute name="text" value="{$file}"/>
+        </forward>
+    </dispatch>
+};
 
 (: handle dashboard related urls :)
 declare function local:dashboard() {
@@ -163,15 +171,18 @@ else if ($exist:path eq '/changes.html') then
 else if (fn:matches($exist:path, '^[^\.]*[^/]$')) then
     (util:log('INFO', ('URL without trailing slash')),
     local:redirect-with-slash())
-else if (fn:matches($exist:path, '^(/t/)(\w+|%20)+\.html$')) then
-    (util:log('INFO', (' new text homepage')),
-    local:dispatch-attribute('/text.html', 'text', concat(local:item('text'), '.xml')))
 else if (fn:matches($exist:path, '^(/m/)(\w+|%20)+\.html$')) then
     (util:log('INFO', (' new mss homepage')),
     local:dispatch-attribute('/mss.html', 'mss', concat(local:item('mss'), '.xml')))
-else if (fn:matches($exist:path, '^(/t/)(\w+|%20)+\.pdf$')) then
-    (util:log('INFO', (' new text pdf')),
-    local:serialize-pdf($exist:path, concat(local:item('text'), '.xml')))
+else if (fn:matches($exist:path, '^(/t/)(\w+|%20)+\.(html|xml|pdf)$')) then
+    let $file := fn:concat(local:item('text'), '.xml')
+    return
+        if (fn:ends-with($exist:path, '.xml')) then
+            local:serialize-text-xml($file)
+        else if (fn:ends-with($exist:path, '.pdf')) then
+            local:serialize-text-pdf($exist:path, $file)
+        else
+            local:dispatch-attribute('/text.html', 'text', $file)
 else if (fn:matches($exist:path, '^(/p/)(\w+|%20)+\.html$')) then
     (util:log('INFO', (' new person homepage')),
     local:dispatch-attribute('/person.html', 'person_id', local:item('person_id')))
