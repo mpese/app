@@ -841,6 +841,12 @@ declare function mpese-text:text-topic($node as node (), $model as map (*)) {
         mpese-text:keywords-label($text-types)
 };
 
+(:~
+ : Display download links
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @return the list of text topic keywords
+ :)
 declare function mpese-text:downloads($node as node (), $model as map (*)) {
     let $name := utils:name-from-uri($model('text'))
 
