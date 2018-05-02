@@ -3,6 +3,7 @@
                 xmlns:xs="http://www.w3.org/2001/XMLSchema"
                 xmlns:tei="http://www.tei-c.org/ns/1.0"
                 xmlns:fo="http://www.w3.org/1999/XSL/Format"
+                xmlns:mpese="http://mpese.ac.uk"
                 exclude-result-prefixes="xs"
                 version="2.0">
 
@@ -278,17 +279,80 @@
         </fo:list-block>
     </xsl:template>
 
-       <xsl:template match="tei:listBibl[@xml:id='modern_print_witness']">
+    <!-- Authors: format a list of authors with appropriate commas etc. -->
+    <xsl:function name="mpese:authors">
+        <xsl:param name="authors"/>
+        <xsl:choose>
+            <!-- no authors, no content -->
+            <xsl:when test="count($authors) eq 0"/>
+            <!-- more than one author - handle formatting -->
+            <xsl:when test="count($authors) &gt; 1">
+                <xsl:for-each select="$authors">
+                    <xsl:choose>
+                        <xsl:when test="position() eq 1">
+                            <xsl:value-of select="normalize-space(.)"/>
+                        </xsl:when>
+                        <xsl:when test="position() eq last()">
+                            <xsl:text> and </xsl:text><xsl:value-of select="."/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:text>, </xsl:text><xsl:value-of select="normalize-space(.)"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:for-each>
+            </xsl:when>
+            <!-- one author -->
+            <xsl:otherwise><xsl:value-of select="normalize-space($authors)"/></xsl:otherwise>
+        </xsl:choose>
+    </xsl:function>
+
+    <!-- publication details -->
+    <xsl:function name="mpese:pubDetails">
+        <xsl:param name="pubEdition"/>
+        <xsl:param name="pubPlace"/>
+        <xsl:param name="pubDate"/>
+        <xsl:choose>
+            <xsl:when test="$pubPlace eq '' and $pubDate eq ''"/>
+            <xsl:otherwise>
+                <xsl:value-of select="string-join(($pubEdition, $pubPlace, $pubDate), ', ')"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:function>
+
+    <xsl:template match="tei:listBibl[@xml:id='modern_print_witness']">
         <fo:list-block provisional-distance-between-starts="14pt" provisional-label-separation="3pt">
             <xsl:for-each select="tei:bibl">
+                <!-- start item -->
                 <fo:list-item>
+                    <!-- item label: bullet point -->
                     <fo:list-item-label>
                         <fo:block font-family="{$font}" font-size="{$list-size}" end-indent="label-end()">&#x2022;
                         </fo:block>
                     </fo:list-item-label>
+                    <!-- item body: formatted bibliographic item -->
                     <fo:list-item-body start-indent="body-start()">
+                        <!-- author(s) : formatted by function, add a comma at end if we have them -->
+                        <xsl:variable name="author">
+                            <xsl:choose>
+                                <xsl:when test="count(./tei:author) eq 0"/>
+                                <xsl:otherwise>
+                                    <xsl:value-of select="mpese:authors(./tei:author)"/><xsl:text>, </xsl:text>
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:variable>
+                        <xsl:variable name="pubDetails">
+                            <xsl:value-of select="mpese:pubDetails(./tei:edition, ./tei:pubPlace, ./tei:date)"/>
+                        </xsl:variable>
                         <fo:block font-family="{$font}" font-size="{$list-size}">
-                            <xsl:value-of select="."/>
+                            <xsl:value-of select="$author"/>
+                            <xsl:choose>
+                                <xsl:when test="normalize-space(./tei:title) = ''"/>
+                                <xsl:otherwise><fo:inline font-style="italic"><xsl:value-of select="normalize-space(./tei:title)"/></fo:inline></xsl:otherwise>
+                            </xsl:choose>
+                            <xsl:choose>
+                                <xsl:when test="$pubDetails = ''"/>
+                                <xsl:otherwise><xsl:text> </xsl:text>(<xsl:value-of select="$pubDetails"/>)</xsl:otherwise>
+                            </xsl:choose>
                         </fo:block>
                     </fo:list-item-body>
                 </fo:list-item>
