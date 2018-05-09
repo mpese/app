@@ -302,3 +302,8 @@ ul.mpese-witness-list {
 .tei-milestone {
     border-color: #000000;
 }
+
+.mpese-catchword {
+    display: block;
+    text-align: end;
+}

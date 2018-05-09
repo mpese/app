@@ -102,6 +102,8 @@
 
     <xsl:template match="tei:ex">[<xsl:apply-templates/>]</xsl:template>
 
+    <xsl:template match="tei:fw"><span class="mpese-catchword"><xsl:apply-templates/></span></xsl:template>
+
     <xsl:template name="abbr" match="tei:abbr"><xsl:apply-templates/></xsl:template>
 
     <xsl:template match="tei:hi">
