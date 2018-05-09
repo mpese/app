@@ -319,6 +319,20 @@
         </xsl:choose>
     </xsl:function>
 
+    <!-- do we need p. or pp. ? -->
+    <xsl:function name="mpese:page-prefix">
+        <xsl:param name="page"/>
+        <xsl:choose>
+            <xsl:when test="count($page) &gt; 1"><xsl:text>, pp.</xsl:text></xsl:when>
+            <xsl:otherwise>
+                <xsl:choose>
+                <xsl:when test="$page/@from/string() != $page/@to/string()"><xsl:text>, pp.</xsl:text></xsl:when>
+                <xsl:otherwise><xsl:text>, p.</xsl:text></xsl:otherwise>
+                </xsl:choose>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:function>
+
     <xsl:template match="tei:listBibl[@xml:id='modern_print_witness']">
         <fo:list-block provisional-distance-between-starts="14pt" provisional-label-separation="3pt">
             <xsl:for-each select="tei:bibl">
@@ -353,6 +367,21 @@
                                 <xsl:when test="$pubDetails = ''"/>
                                 <xsl:otherwise><xsl:text> </xsl:text>(<xsl:value-of select="$pubDetails"/>)</xsl:otherwise>
                             </xsl:choose>
+                            <xsl:choose>
+                                <xsl:when test="./tei:biblScope[@unit = 'volume']">
+                                    <xsl:text>, vol. </xsl:text><xsl:value-of select="normalize-space(./tei:biblScope[@unit = 'volume'])"/>
+                                </xsl:when>
+                            </xsl:choose>
+                            <xsl:choose>
+                                <xsl:when test="./tei:biblScope[@unit = 'part']">
+                                    <xsl:text>, part. </xsl:text><xsl:value-of select="normalize-space(./tei:biblScope[@unit = 'part'])"/>
+                                </xsl:when>
+                            </xsl:choose>
+                            <xsl:choose>
+                                <xsl:when test="./tei:biblScope[@unit = 'page']">
+                                    <xsl:value-of select="mpese:page-prefix(./tei:biblScope[@unit = 'page'])"/>
+                                </xsl:when>
+                            </xsl:choose>
                         </fo:block>
                     </fo:list-item-body>
                 </fo:list-item>
@@ -382,6 +411,11 @@
 
     <!-- expanded text -->
     <xsl:template match="tei:ex">[<xsl:apply-templates/>]</xsl:template>
+
+    <!-- catch words -->
+    <xsl:template match="tei:fw">
+        <fo:block font-family="{$font}" font-size="{$text-size}" text-align="right"
+                  space-before="6pt" space-after="6pt"><xsl:apply-templates/></fo:block></xsl:template>
 
     <xsl:template match="tei:add">
         <xsl:choose>
