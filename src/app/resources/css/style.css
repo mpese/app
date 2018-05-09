@@ -307,3 +307,8 @@ ul.mpese-witness-list {
     margin: 5px;
     display: inline;
 }
+
+.mpese-catchword {
+    display: block;
+    text-align: end;
+}
