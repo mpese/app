@@ -7,6 +7,8 @@
                 exclude-result-prefixes="xs"
                 version="2.0">
 
+    <xsl:import href="mpese-common.xsl"/>
+
     <!-- parameter is passed in by the transformer -->
     <xsl:param name="url" />
 
@@ -279,59 +281,8 @@
         </fo:list-block>
     </xsl:template>
 
-    <!-- Authors: format a list of authors with appropriate commas etc. -->
-    <xsl:function name="mpese:authors">
-        <xsl:param name="authors"/>
-        <xsl:choose>
-            <!-- no authors, no content -->
-            <xsl:when test="count($authors) eq 0"/>
-            <!-- more than one author - handle formatting -->
-            <xsl:when test="count($authors) &gt; 1">
-                <xsl:for-each select="$authors">
-                    <xsl:choose>
-                        <xsl:when test="position() eq 1">
-                            <xsl:value-of select="normalize-space(.)"/>
-                        </xsl:when>
-                        <xsl:when test="position() eq last()">
-                            <xsl:text> and </xsl:text><xsl:value-of select="."/>
-                        </xsl:when>
-                        <xsl:otherwise>
-                            <xsl:text>, </xsl:text><xsl:value-of select="normalize-space(.)"/>
-                        </xsl:otherwise>
-                    </xsl:choose>
-                </xsl:for-each>
-            </xsl:when>
-            <!-- one author -->
-            <xsl:otherwise><xsl:value-of select="normalize-space($authors)"/></xsl:otherwise>
-        </xsl:choose>
-    </xsl:function>
 
-    <!-- publication details -->
-    <xsl:function name="mpese:pubDetails">
-        <xsl:param name="pubEdition"/>
-        <xsl:param name="pubPlace"/>
-        <xsl:param name="pubDate"/>
-        <xsl:choose>
-            <xsl:when test="$pubPlace eq '' and $pubDate eq ''"/>
-            <xsl:otherwise>
-                <xsl:value-of select="string-join(($pubEdition, $pubPlace, $pubDate), ', ')"/>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:function>
 
-    <!-- do we need p. or pp. ? -->
-    <xsl:function name="mpese:page-prefix">
-        <xsl:param name="page"/>
-        <xsl:choose>
-            <xsl:when test="count($page) &gt; 1"><xsl:text>, pp.</xsl:text></xsl:when>
-            <xsl:otherwise>
-                <xsl:choose>
-                <xsl:when test="$page/@from/string() != $page/@to/string()"><xsl:text>, pp.</xsl:text></xsl:when>
-                <xsl:otherwise><xsl:text>, p.</xsl:text></xsl:otherwise>
-                </xsl:choose>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:function>
 
     <xsl:template match="tei:listBibl[@xml:id='modern_print_witness']">
         <fo:list-block provisional-distance-between-starts="14pt" provisional-label-separation="3pt">
@@ -358,28 +309,41 @@
                             <xsl:value-of select="mpese:pubDetails(./tei:edition, ./tei:pubPlace, ./tei:date)"/>
                         </xsl:variable>
                         <fo:block font-family="{$font}" font-size="{$list-size}">
+                            <!-- author -->
                             <xsl:value-of select="$author"/>
+                            <!-- title -->
                             <xsl:choose>
                                 <xsl:when test="normalize-space(./tei:title) = ''"/>
                                 <xsl:otherwise><fo:inline font-style="italic"><xsl:value-of select="normalize-space(./tei:title)"/></fo:inline></xsl:otherwise>
                             </xsl:choose>
+                            <!-- publication details -->
                             <xsl:choose>
                                 <xsl:when test="$pubDetails = ''"/>
                                 <xsl:otherwise><xsl:text> </xsl:text>(<xsl:value-of select="$pubDetails"/>)</xsl:otherwise>
                             </xsl:choose>
+                            <!-- volume -->
                             <xsl:choose>
                                 <xsl:when test="./tei:biblScope[@unit = 'volume']">
                                     <xsl:text>, vol. </xsl:text><xsl:value-of select="normalize-space(./tei:biblScope[@unit = 'volume'])"/>
                                 </xsl:when>
                             </xsl:choose>
+                            <!-- part -->
                             <xsl:choose>
                                 <xsl:when test="./tei:biblScope[@unit = 'part']">
                                     <xsl:text>, part. </xsl:text><xsl:value-of select="normalize-space(./tei:biblScope[@unit = 'part'])"/>
                                 </xsl:when>
                             </xsl:choose>
+                            <!-- page ranges -->
                             <xsl:choose>
+                                <!-- Display the page or page range -->
                                 <xsl:when test="./tei:biblScope[@unit = 'page']">
-                                    <xsl:value-of select="mpese:page-prefix(./tei:biblScope[@unit = 'page'])"/>
+                                    <xsl:variable name="page" select="./tei:biblScope[@unit = 'page']"/>
+                                    <xsl:value-of select="mpese:pages($page)"/>
+                                </xsl:when>
+                                <!-- Display the sigs if we don't have pages -->
+                                <xsl:when test="./tei:biblScope[@unit = 'sigs'] and not(./tei:biblScope[@unit = 'page'])">
+                                    <xsl:variable name="sigs" select="./tei:biblScope[@unit = 'sigs']"/>
+                                    <xsl:value-of select="mpese:sigs($sigs)"/>
                                 </xsl:when>
                             </xsl:choose>
                         </fo:block>
