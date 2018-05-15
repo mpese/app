@@ -110,7 +110,7 @@
     <xsl:template name="mss_witness">
         <xsl:variable name="list" select="//tei:sourceDesc/tei:listBibl[@xml:id='mss_witness_generated']"/>
         <xsl:choose>
-             <xsl:when test="count($list) &gt; 0">
+             <xsl:when test="count($list/tei:bibl) &gt; 0">
                  <!-- subtitle -->
                  <fo:block font-family="{$font}" font-size="{$subheading-size}" font-weight="bold"
                            space-before="12pt" space-after="6pt">Other manuscript witnesses</fo:block>
@@ -126,7 +126,7 @@
     <xsl:template name="C17_print_witness">
         <xsl:variable name="list" select="//tei:sourceDesc/tei:listBibl[@xml:id='C17_print_witness']"/>
         <xsl:choose>
-            <xsl:when test="count($list) &gt; 0">
+            <xsl:when test="count($list/tei:bibl) &gt; 0">
                 <!-- subtitle -->
                 <fo:block font-family="{$font}" font-size="{$subheading-size}" font-weight="bold"
                           space-before="12pt" space-after="6pt">Seventeenth-century print exemplars</fo:block>
@@ -142,7 +142,7 @@
     <xsl:template name="modern_print_witness">
         <xsl:variable name="list" select="//tei:sourceDesc/tei:listBibl[@xml:id='modern_print_witness']"/>
         <xsl:choose>
-            <xsl:when test="count($list) &gt; 0">
+            <xsl:when test="count($list/tei:bibl) &gt; 0">
                 <!-- subtitle -->
                 <fo:block font-family="{$font}" font-size="{$subheading-size}" font-weight="bold"
                           space-before="12pt" space-after="6pt">Modern print exemplars</fo:block>
@@ -158,7 +158,7 @@
     <xsl:template name="selected_criticism">
         <xsl:variable name="list" select="//tei:sourceDesc/tei:listBibl[@xml:id='selected_criticism']"/>
         <xsl:choose>
-            <xsl:when test="count($list) &gt; 0">
+            <xsl:when test="count($list/tei:bibl) &gt; 0">
                 <!-- subtitle -->
                 <fo:block font-family="{$font}" font-size="{$subheading-size}" font-weight="bold"
                           space-before="12pt" space-after="6pt">Selected Criticism</fo:block>
@@ -427,6 +427,26 @@
             <xsl:apply-templates/>
         </fo:block>
     </xsl:template>
+
+        <!-- line groups -->
+    <xsl:template match="tei:lg">
+        <xsl:variable name="align">
+            <xsl:choose>
+                <xsl:when test="@rend = 'align-centre'">center</xsl:when>
+                <xsl:otherwise>left</xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        <fo:block linefeed-treatment="preserve" font-family="{$font}" text-align="{$align}" font-size="{$text-size}"
+                  space-before="6pt" space-after="6pt">
+            <xsl:apply-templates/>
+        </fo:block>
+    </xsl:template>
+
+    <xsl:template match="tei:l">
+        <xsl:apply-templates/>
+        <xsl:value-of select="'&#x2028;'"/>
+    </xsl:template>
+
 
     <!-- expanded text -->
     <xsl:template match="tei:ex">[<xsl:apply-templates/>]</xsl:template>
