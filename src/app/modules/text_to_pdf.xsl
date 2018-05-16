@@ -7,10 +7,14 @@
                 exclude-result-prefixes="xs"
                 version="2.0">
 
+
+
     <xsl:import href="mpese-common.xsl"/>
 
     <!-- parameter is passed in by the transformer -->
     <xsl:param name="url" />
+
+    <xsl:strip-space elements="tei:choice tei:expan tei:body tei:p tei:add tei:hi tei:del tei:gap tei:lg tei:l" />
 
     <!-- font and sizes -->
     <xsl:variable name="font">Times</xsl:variable>
@@ -18,6 +22,7 @@
     <xsl:variable name="text-size">12pt</xsl:variable>
     <xsl:variable name="list-size">11pt</xsl:variable>
     <xsl:variable name="note-size">10pt</xsl:variable>
+    <xsl:variable name="tiny-size">8pt</xsl:variable>
 
 
     <!-- ===== NAMED TEMPLATES ===== -->
@@ -44,7 +49,7 @@
     <!-- author -->
     <xsl:template name="author">
         <xsl:choose>
-            <xsl:when test="not(normalize-space(//tei:fileDesc/tei:titleStmt/tei:author) = '')">
+            <xsl:when test="not(normalize-space(//tei:fileDesc/tei:titleStmt/tei:author[1]) = '')">
                 <fo:block font-family="{$font}" font-size="12pt" text-align="center">
                     <xsl:value-of select="mpese:authors(//tei:fileDesc/tei:titleStmt/tei:author)"/>
                 </fo:block>
@@ -95,13 +100,15 @@
     <!-- Transcript of the text -->
     <xsl:template name="transcript">
         <xsl:choose>
-            <xsl:when test="not(normalize-space(//tei:text/tei:body) eq '')">
+            <xsl:when test="//tei:text/tei:body">
                 <!-- subtitle -->
                 <fo:block font-family="{$font}" font-size="{$subheading-size}" font-weight="bold"
                           space-before="12pt" space-after="6pt">Transcript</fo:block>
                 <!-- text within the abstract -->
                 <fo:block font-family="{$font}" font-size="10pt" text-align="left"><xsl:value-of select="$ms"/></fo:block>
-                <xsl:apply-templates select="//tei:text/tei:body"/>
+                <xsl:for-each select="//tei:text/tei:body">
+                    <xsl:apply-templates/>
+                </xsl:for-each>
             </xsl:when>
         </xsl:choose>
     </xsl:template>
@@ -236,10 +243,19 @@
                 <xsl:when test="$pubDetails = ''"/>
                 <xsl:otherwise><xsl:text> </xsl:text>(<xsl:value-of select="$pubDetails"/>)</xsl:otherwise>
             </xsl:choose>
-            <!-- ID, Wing etc. -->
+            <!-- ID, Wing etc. there might be more than one -->
             <xsl:choose>
-                <xsl:when test="normalize-space(./tei:idno) = ''"/>
-                <xsl:otherwise><xsl:text> </xsl:text>[<xsl:value-of select="./tei:idno/@type/string()"/><xsl:text> </xsl:text><xsl:value-of select="./tei:idno/string()"/>]</xsl:otherwise>
+                <xsl:when test="not(./tei:idno)"/>
+                <xsl:otherwise>
+                    <xsl:text> [</xsl:text>
+                    <xsl:for-each select="./tei:idno">
+                        <xsl:choose>
+                            <xsl:when test="position() &gt; 1"><xsl:text>, </xsl:text></xsl:when>
+                        </xsl:choose>
+                       <xsl:value-of select="./@type/string()"/><xsl:text> </xsl:text><xsl:value-of select="./string()"/>
+                    </xsl:for-each>
+                    <xsl:text>]</xsl:text>
+                </xsl:otherwise>
             </xsl:choose>
             <!-- volume -->
             <xsl:choose>
@@ -415,7 +431,7 @@
     <xsl:template match="tei:profileDesc"></xsl:template>
 
     <!-- paragraphs -->
-    <xsl:template match="tei:p|tei:head|tei:closer">
+    <xsl:template match="tei:p|tei:head|tei:closer|tei:trailer|tei:list">
         <xsl:variable name="align">
             <xsl:choose>
                 <xsl:when test="@rend = 'align-centre'">center</xsl:when>
@@ -442,11 +458,14 @@
         </fo:block>
     </xsl:template>
 
-    <xsl:template match="tei:l">
-        <xsl:apply-templates/>
-        <xsl:value-of select="'&#x2028;'"/>
-    </xsl:template>
+    <xsl:template match="tei:l"><xsl:apply-templates/><xsl:value-of select="'&#x2028;'"/></xsl:template>
 
+    <xsl:template match="tei:lb">
+        <xsl:choose>
+            <xsl:when test="@break eq 'no'"><xsl:text></xsl:text></xsl:when>
+            <xsl:otherwise><xsl:text> </xsl:text></xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
 
     <!-- expanded text -->
     <xsl:template match="tei:ex">[<xsl:apply-templates/>]</xsl:template>
@@ -459,14 +478,10 @@
     <xsl:template match="tei:add">
         <xsl:choose>
             <xsl:when test="@place='LM'">
-                [
-                <fo:inline font-style="italic">Left margin:</fo:inline>
-                <xsl:apply-templates/>]
+                [<fo:inline font-style="italic">Left margin:</fo:inline><xsl:apply-templates/>]
             </xsl:when>
             <xsl:when test="@place='RM'">
-                [
-                <fo:inline font-style="italic">Right margin:</fo:inline>
-                <xsl:apply-templates/>]
+                [<fo:inline font-style="italic">Right margin:</fo:inline><xsl:apply-templates/>]
             </xsl:when>
             <xsl:when test="@place='header'">
                 <fo:block>
@@ -497,6 +512,21 @@
         <fo:inline font-style="italic">
             <xsl:apply-templates/>
         </fo:inline>
+    </xsl:template>
+
+    <xsl:template match="tei:hi">
+        <xsl:choose>
+            <xsl:when test="contains(@rend, 'superscript')">
+                <fo:inline vertical-align="super" font-size="{$tiny-size}"><xsl:apply-templates/></fo:inline>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:apply-templates/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+
+    <xsl:template match="tei:del">
+        <fo:inline text-decoration="line-through"><xsl:apply-templates/></fo:inline>
     </xsl:template>
 
     <!-- TODO: how to show corrections? -->
