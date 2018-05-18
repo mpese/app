@@ -38,8 +38,8 @@
         </xsl:variable>
         <xsl:variable name="date">
             <xsl:choose>
-                <xsl:when test="normalize-space(//tei:profileDesc/tei:creation/tei:date) eq ''">No date</xsl:when>
-                <xsl:otherwise><xsl:value-of select="//tei:profileDesc/tei:creation/tei:date/string()"/></xsl:otherwise>
+                <xsl:when test="normalize-space(//tei:profileDesc/tei:creation/tei:date[1]/string()) eq ''">No date</xsl:when>
+                <xsl:otherwise><xsl:value-of select="//tei:profileDesc/tei:creation/tei:date[1]/string()"/></xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
         <fo:block font-family="{$font}" font-size="16pt" text-align="center" font-weight="bold">
