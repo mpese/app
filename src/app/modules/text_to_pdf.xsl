@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:xs="http://www.w3.org/2001/XMLSchema"
                 xmlns:tei="http://www.tei-c.org/ns/1.0"
@@ -192,8 +193,8 @@
         <xsl:call-template name="modern_print_witness"/>
         <xsl:call-template name="selected_criticism"/>
         <fo:block space-before="24pt" font-family="{$font}" font-size="{$note-size}">&#169; 2018 University of Birmingham,
-                        University of Bristol (<xsl:value-of select="$url"/>)
-        </fo:block>
+                        University of Bristol</fo:block>
+        <fo:block space-before="6pt" text-align="center" font-family="{$font}" font-size="{$note-size}"><xsl:value-of select="$url"/></fo:block>
     </xsl:template>
 
     <!-- manuscript material -->
@@ -431,7 +432,7 @@
     <xsl:template match="tei:profileDesc"></xsl:template>
 
     <!-- paragraphs -->
-    <xsl:template match="tei:p|tei:head|tei:closer|tei:trailer|tei:list">
+    <xsl:template match="tei:p|tei:head|tei:closer|tei:trailer">
         <xsl:variable name="align">
             <xsl:choose>
                 <xsl:when test="@rend = 'align-centre'">center</xsl:when>
@@ -528,6 +529,30 @@
     <xsl:template match="tei:del">
         <fo:inline text-decoration="line-through"><xsl:apply-templates/></fo:inline>
     </xsl:template>
+
+    <xsl:template match="tei:list">
+        <fo:list-block provisional-distance-between-starts="14pt" provisional-label-separation="3pt">
+            <xsl:for-each select="tei:item">
+                <!-- start item -->
+                <fo:list-item>
+                    <!-- item label: bullet point -->
+                    <fo:list-item-label>
+                        <fo:block font-family="{$font}" font-size="{$list-size}" end-indent="label-end()">
+                            <xsl:choose>
+                                <xsl:when test="not(./@n)">&#x2022;</xsl:when>
+                                <xsl:otherwise><xsl:value-of select="./@n/string()"/></xsl:otherwise>
+                            </xsl:choose>
+                        </fo:block>
+                    </fo:list-item-label>
+                    <!-- item body: formatted bibliographic item -->
+                    <fo:list-item-body start-indent="body-start()">
+                        <fo:block font-family="{$font}" font-size="{$text-size}"><xsl:apply-templates/></fo:block>
+                    </fo:list-item-body>
+                </fo:list-item>
+            </xsl:for-each>
+        </fo:list-block>
+    </xsl:template>
+
 
     <!-- TODO: how to show corrections? -->
     <xsl:template match="tei:corr"></xsl:template>
