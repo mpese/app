@@ -1,5 +1,7 @@
 xquery version "3.0";
 
+import module namespace util = "http://exist-db.org/xquery/util";
+
 declare variable $exist:path external;
 declare variable $exist:resource external;
 declare variable $exist:controller external;
@@ -94,6 +96,15 @@ declare function local:serialize-text-xml($file) {
     </dispatch>
 };
 
+(: serialize a text as a text file :)
+declare function local:serialize-text-txt($file) {
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}/modules/mpese-text-txt.xql">
+            <set-attribute name="text" value="{$file}"/>
+        </forward>
+    </dispatch>
+};
+
 (: handle dashboard related urls :)
 declare function local:dashboard() {
     (: /dashboard/ or /dashboard/index.html :)
@@ -174,13 +185,15 @@ else if (fn:matches($exist:path, '^[^\.]*[^/]$')) then
 else if (fn:matches($exist:path, '^(/m/)(\w+|%20)+\.html$')) then
     (util:log('INFO', (' new mss homepage')),
     local:dispatch-attribute('/mss.html', 'mss', concat(local:item('mss'), '.xml')))
-else if (fn:matches($exist:path, '^(/t/)(\w+|%20)+\.(html|xml|pdf)$')) then
+else if (fn:matches($exist:path, '^(/t/)(\w+|%20)+\.(html|xml|pdf|txt)$')) then
     let $file := fn:concat(local:item('text'), '.xml')
     return
         if (fn:ends-with($exist:path, '.xml')) then
             local:serialize-text-xml($file)
         else if (fn:ends-with($exist:path, '.pdf')) then
             local:serialize-text-pdf($exist:path, $file)
+        else if (fn:ends-with($exist:path, '.txt')) then
+            local:serialize-text-txt($file)
         else
             local:dispatch-attribute('/text.html', 'text', $file)
 else if (fn:matches($exist:path, '^(/p/)(\w+|%20)+\.html$')) then
