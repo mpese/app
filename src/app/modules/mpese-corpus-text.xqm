@@ -147,8 +147,10 @@ declare function mpese-text:keywords-topic($text as xs:string) as element()* {
  :  @return the transcript marked up as HTML
  :)
 declare function mpese-text:text-body($text as xs:string) as node()* {
-    let $lm := if (count(doc($text)//tei:add[@place='LM']) > 0) then 'mpese-text-lm' else ()
-    let $rm := if (count(doc($text)//tei:add[@place='LM']) > 0) then 'mpese-text-rm' else ()
+    (:let $lm := if (count(doc($text)//tei:add[@place='LM']) > 0) then 'mpese-text-lm' else ():)
+    (:let $rm := if (count(doc($text)//tei:add[@place='LM']) > 0) then 'mpese-text-rm' else ():)
+    let $lm := 'mpese-text-lm'
+    let $rm := 'mpese-text-rm'
     let $css := fn:string-join(($lm,$rm), " ")
     let $xsl := doc('corpus-text-html.xsl')
     let $transcript := doc($text)
