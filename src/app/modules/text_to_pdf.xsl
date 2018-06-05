@@ -506,8 +506,14 @@
         </fo:block>
     </xsl:template>
 
-    <xsl:template match="tei:unclear">{<xsl:apply-templates/>}
-    </xsl:template>
+    <!-- unclear -->
+    <xsl:template match="tei:unclear">{<xsl:apply-templates/>}</xsl:template>
+
+    <!-- supplied -->
+     <xsl:template match="tei:supplied">{<xsl:apply-templates/>}</xsl:template>
+
+    <!-- gap -->
+    <xsl:template match="tei:gap">{<fo:inline font-style="italic">gap:<xsl:text> </xsl:text><xsl:value-of select="@reason/string()"/></fo:inline>}</xsl:template>
 
     <xsl:template match="tei:foreign">
         <fo:inline font-style="italic">
