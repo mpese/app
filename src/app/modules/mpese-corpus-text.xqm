@@ -152,7 +152,7 @@ declare function mpese-text:text-body($text as xs:string) as node()* {
     let $lm := 'mpese-text-lm'
     let $rm := 'mpese-text-rm'
     let $css := fn:string-join(($lm,$rm), " ")
-    let $xsl := doc('corpus-text-html.xsl')
+    let $xsl := doc('xsl/corpus-text-html.xsl')
     let $transcript := doc($text)
     let $proof_read :=  if (not(boolean($transcript//tei:revisionDesc/tei:listChange/tei:change[@status = 'proofread']))) then
                             <div class="alert alert-warning" role="alert">

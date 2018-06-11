@@ -13,7 +13,7 @@ if (not(empty(request:get-attribute('text')))) then
     let $params := <parameters><param name="url" value="{$uri}"/></parameters>
 
     (: create fop xml :)
-    let $xsl := doc('text_to_pdf.xsl')
+    let $xsl := doc('xsl/text_to_pdf.xsl')
     let $output-doc := transform:transform($doc, $xsl, $params)
     let $media-type as xs:string := 'application/pdf'
 

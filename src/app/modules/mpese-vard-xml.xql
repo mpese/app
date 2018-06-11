@@ -1,6 +1,6 @@
 xquery version "3.1";
 
-declare option exist:serialize "method=text media-type=text/plain omit-xml-declaration=yes";
+declare option exist:serialize "method=xml media-type=text/xml omit-xml-declaration=no";
 
 if (not(empty(request:get-attribute('text')))) then
 
@@ -11,7 +11,7 @@ if (not(empty(request:get-attribute('text')))) then
     let $doc := doc($text)
 
     (: create fop xml :)
-    let $xsl := doc('xsl/text_to_txt.xsl')
+    let $xsl := doc('xsl/text-to-vard-xml.xsl')
     return transform:transform($doc, $xsl, ())
 
 else

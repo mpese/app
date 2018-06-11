@@ -96,6 +96,17 @@ declare function local:serialize-text-xml($file) {
     </dispatch>
 };
 
+(: serialize a text as an xml file :)
+declare function local:serialize-vard-xml($file) {
+    let $file_mod := fn:replace($file, '.vard', '')
+        return
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+        <forward url="{$exist:controller}/modules/mpese-vard-xml.xql">
+            <set-attribute name="text" value="{$file_mod}"/>
+        </forward>
+    </dispatch>
+};
+
 (: serialize a text as a text file :)
 declare function local:serialize-text-txt($file) {
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
@@ -185,10 +196,12 @@ else if (fn:matches($exist:path, '^[^\.]*[^/]$')) then
 else if (fn:matches($exist:path, '^(/m/)(\w+|%20)+\.html$')) then
     (util:log('INFO', (' new mss homepage')),
     local:dispatch-attribute('/mss.html', 'mss', concat(local:item('mss'), '.xml')))
-else if (fn:matches($exist:path, '^(/t/)(\w+|%20)+\.(html|xml|pdf|txt)$')) then
+else if (fn:matches($exist:path, '^(/t/)(\w+|%20)+\.(html|vard\.xml|xml|pdf|txt)$')) then
     let $file := fn:concat(local:item('text'), '.xml')
     return
-        if (fn:ends-with($exist:path, '.xml')) then
+        if (fn:ends-with($exist:path, '.vard.xml')) then
+            local:serialize-vard-xml($file)
+        else if (fn:ends-with($exist:path, '.xml')) then
             local:serialize-text-xml($file)
         else if (fn:ends-with($exist:path, '.pdf')) then
             local:serialize-text-pdf($exist:path, $file)
