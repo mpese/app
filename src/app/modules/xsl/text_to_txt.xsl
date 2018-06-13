@@ -79,6 +79,9 @@
 
     <xsl:template match="tei:milestone"><xsl:apply-templates/></xsl:template>
 
+    <!-- supplied: just show -->
+    <xsl:template match="tei:supplied"><xsl:apply-templates/></xsl:template>
+
     <!-- unclear: just show -->
     <xsl:template match="tei:unclear"><xsl:apply-templates/></xsl:template>
 

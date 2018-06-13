@@ -184,10 +184,16 @@
         </xsl:choose>
     </xsl:template>
 
-     <xsl:template match="tei:unclear"><span class="tei-unclear">{<xsl:apply-templates/>}</span></xsl:template>
+    <!-- unclear text -->
+    <xsl:template match="tei:unclear"><span class="tei-unclear">{<xsl:apply-templates/>}</span></xsl:template>
 
-    <xsl:template match="tei:gap"><span class="mpese-gap"><xsl:apply-templates/></span></xsl:template>
+    <!-- supplied text -->
+     <xsl:template match="tei:supplied">{<xsl:apply-templates/>}</xsl:template>
 
+    <!-- gap: give reason -->
+    <xsl:template match="tei:gap">{<em>gap:<xsl:text> </xsl:text><xsl:value-of select="@reason/string()"/>}</em></xsl:template>
+
+    <!-- foreign -->
     <xsl:template match="tei:foreign"><em><xsl:apply-templates/></em></xsl:template>
 
     <!-- TODO: how to show corrections? -->
