@@ -11,7 +11,7 @@ if (not(empty(request:get-attribute('text')))) then
     let $doc := doc($text)
 
     (: create fop xml :)
-    let $xsl := doc('xsl/text-to-vard-xml.xsl')
+    let $xsl := doc('xsl/text-to-simple-xml.xsl')
     return transform:transform($doc, $xsl, ())
 
 else

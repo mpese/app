@@ -86,7 +86,15 @@
     <xsl:template match="tei:gap"><xsl:text>   </xsl:text><xsl:apply-templates/></xsl:template>
 
     <!-- foreign words -->
-    <xsl:template match="tei:foreign"><foreign lang="{@xml:lang}"><xsl:apply-templates/></foreign></xsl:template>
+    <xsl:template match="tei:foreign">
+        <xsl:variable name="language">
+            <xsl:choose>
+                <xsl:when test="lower-case(@xml:lang) eq 'la'">Latin</xsl:when>
+                <xsl:when test="lower-case(@xml:lang) eq 'fr'">French</xsl:when>
+                <xsl:otherwise><xsl:value-of select="@xml:lang/string()"/></xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        <foreign lang="{$language}"><xsl:apply-templates/></foreign></xsl:template>
 
     <!-- TODO: how to show corrections? -->
     <xsl:template match="tei:corr"></xsl:template>
