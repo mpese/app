@@ -111,7 +111,7 @@ declare function mpese-text:mss-details-include($include as element()?) as eleme
  : @param $doc      the TEI/XML document.
  : @return the <msIdentifier/> of the MSS the text is derived.
  :)
-declare function mpese-text:mss-details($doc as element()) as element()? {
+declare function mpese-text:mss-details($doc as element()?) as element()? {
 
     (: get the include :)
     let $include := $doc//tei:sourceDesc/tei:msDesc/xi:include

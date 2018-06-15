@@ -51,11 +51,11 @@ declare %test:assertTrue function test-search:search() {
 
 (: Tests getting a subset of results for paginaation :)
 declare %test:assertTrue function test-search:paginate-results() {
-    let $seq := (<result>1</result>,<result>2</result>,<result>3</result>,<result>4</result>,
+    let $seq := <results><result>1</result>,<result>2</result>,<result>3</result>,<result>4</result>,
                 <result>5</result>,<result>6</result>, <result>7</result>, <result>8</result>,
-                <result>9</result>, <result>10</result>)
+                <result>9</result>, <result>10</result></results>
     let $results := mpese-search:paginate-results($seq, 2, 5)
-    return ($results[1]/text() eq '2' and $results[5]/text() eq '6')
+    return ($results/result[1]/text() eq '2' and $results/result/[5]/text() eq '6')
 };
 
 (: we should have languages :)

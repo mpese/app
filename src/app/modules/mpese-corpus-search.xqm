@@ -21,27 +21,76 @@ import module namespace utils = "http://mpese.rit.bris.ac.uk/utils/" at 'utils.x
 
 (: Text search against the <tei:title/> of the document. Ordered by the title. :)
 declare function mpese-search:all() as element()* {
-    for $result in fn:collection($config:mpese-tei-corpus-texts)//tei:TEI[tei:text[not(@type) or @type='mpese_text']]
-    order by $result//tei:titleStmt/tei:title/text()
-    return $result
+    <results>{
+        for $result in fn:collection($config:mpese-tei-corpus-texts)//tei:TEI
+        order by $result//tei:titleStmt/tei:title/text()
+        return <result uri="{fn:base-uri($result)}"/>
+    }</results>
 };
+
+
+declare function mpese-search:search-original($phrase) {
+    <results>{
+        for $doc in fn:collection('/db/mpese/tei/corpus/texts/')/*[ft:query(.,$phrase)]
+        return
+            <result uri="{fn:base-uri($doc)}" score="{ft:score($doc)}">
+                <summary>{mpese-search:matches($doc)}</summary>
+            </result>
+    }</results>
+};
+
+declare function mpese-search:search-normalized($phrase) {
+    <result>{
+        for $doc in fn:collection('/db/mpese/normalized/texts')/*[ft:query(.,$phrase)]
+            let $uri := fn:base-uri($doc)
+            let $tmp := fn:replace($uri, '/db/mpese/normalized/texts/', '/db/mpese/tei/corpus/texts/')
+            return
+                <result uri="{fn:replace($tmp, '.simple', '')}" score="{ft:score($doc)}">
+                    <summary>{mpese-search:matches($doc)}</summary>
+                </result>
+    }</result>
+};
+
 
 (: Search against title, author and text :)
 declare function mpese-search:search($phrase) {
-    collection($config:mpese-tei-corpus-texts)/*[ft:query(.,$phrase)][tei:text[not(@type) or @type='mpese_text']]
+    let $a :=  mpese-search:search-original($phrase)
+    let $b :=  mpese-search:search-normalized($phrase)
+    let $uris := distinct-values(($a/result/@uri/string(), $b/result/@uri/string()))
+    return
+        <results>{
+            for $uri in $uris
+                let $score_a := $a/result[@uri=$uri]/@score/number()
+                let $score_b := $b/result[@uri=$uri]/@score/number()
+                return
+                    <result uri="{$uri}" score="{(if ($score_a) then $score_a else 0) + (if ($score_b) then $score_b else 0)}">{
+                        if (not(empty($a/result[@uri=$uri]/summary))) then
+                            $a/result[@uri=$uri]/summary
+                        else if (not(empty($b/result[@uri=$uri]/summary))) then
+                            $b/result[@uri=$uri]/summary
+                        else
+                            ()
+                    }</result>
+        }</results>
 };
 
 declare function mpese-search:search($phrase, $results_order) {
-    if ($results_order eq 'date') then
-        for $hit in mpese-search:search($phrase)
-        let $date := $hit//tei:profileDesc/tei:creation/tei:date[1]/@when/string()
-        order by $date ascending
-        return $hit
-    else
-        for $hit in mpese-search:search($phrase)
-        let $score := ft:score($hit)
-        order by $score descending
-        return $hit
+
+    let $results := mpese-search:search($phrase)
+
+    return
+    <results>{
+        if ($results_order eq 'date') then
+            for $result in $results/result
+            let $hit := fn:doc($result/@uri/fn:string())
+            let $date := $hit//tei:profileDesc/tei:creation/tei:date[1]/@when/string()
+            order by $date ascending
+            return $result
+        else
+            for $result in $results/result
+            order by $result/@score/string() descending
+            return $result
+    }</results>
 };
 
 (:
@@ -54,8 +103,10 @@ declare function mpese-search:search($phrase, $results_order) {
  : @returns a subset of results.
 :)
 declare function mpese-search:paginate-results($results as element()*, $start as xs:int, $num as xs:int) {
-    for $result in subsequence($results, $start, $num)
-    return $result
+    <results>{
+        for $result in subsequence($results/result, $start, $num)
+        return $result
+    }</results>
 };
 
 (:
@@ -276,7 +327,7 @@ declare function mpese-search:all($page as xs:integer, $num as xs:integer)  {
 
     let $start := mpese-search:seq-start($page, $num)
     let $sorted-results := mpese-search:all()
-    let $total := fn:count($sorted-results)
+    let $total := fn:count($sorted-results/result)
     let $pages := mpese-search:pages-total($total, $num)
     let $results := mpese-search:paginate-results($sorted-results, $start, $num)
     let $message := if ($total eq 1) then $total || ' text available' else $total || " texts available"
@@ -295,9 +346,9 @@ declare function mpese-search:all($page as xs:integer, $num as xs:integer)  {
         }
         <div class="list-group">{
 
-
-            for $item in $results
-                let $uri := fn:base-uri($item)
+            for $result in $results/result
+                let $uri := $result/@uri/fn:string()
+                let $item := doc($uri)/tei:TEI
                 let $name := utils:name-from-uri($uri)
                 let $title := mpese-text:title-label($item)
                 let $authors := $item//tei:fileDesc/tei:titleStmt/tei:author[not(@role)]
@@ -330,7 +381,7 @@ declare function mpese-search:everything($page as xs:integer, $num as xs:integer
 
     (: work out pagnation :)
     let $start := mpese-search:seq-start($page, $num)
-    let $total := fn:count($sorted-results)
+    let $total := fn:count($sorted-results/result)
     let $pages := mpese-search:pages-total($total, $num)
     let $results := mpese-search:paginate-results($sorted-results, $start, $num)
     let $message := if ($total eq 1) then $total || ' text available' else $total || " texts available"
@@ -350,8 +401,9 @@ declare function mpese-search:everything($page as xs:integer, $num as xs:integer
         }
         <div class="list-group">{
 
-            for $item in $results
-                let $uri := fn:base-uri($item)
+            for $result in $results/result
+                let $uri := $result/@uri/fn:string()
+                let $item := doc($uri)/tei:TEI
                 let $name := utils:name-from-uri($uri)
                 let $title := mpese-text:title-label($item)
                 let $authors :=  $item//tei:fileDesc/tei:titleStmt/tei:author[not(@role)]
@@ -359,7 +411,7 @@ declare function mpese-search:everything($page as xs:integer, $num as xs:integer
                 let $mss-label := mpese-mss:ident-label($mss)
                 let $author-label := mpese-text:author-label($authors)
                 let $link := './t/' || $name || '.html'
-                let $snippet := mpese-search:matches($item)
+                let $snippet := $result/summary
                 let $images := if (count($item//tei:facsimile/tei:graphic) > 0) then
                     (text{' '}, <span class="glyphicon glyphicon-camera" aria-hidden="true"></span>,
                     <span class="sr-only">Images available</span>) else ()
