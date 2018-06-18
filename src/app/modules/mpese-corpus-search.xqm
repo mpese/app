@@ -54,8 +54,11 @@ declare function mpese-search:search-normalized($phrase) {
 
 (: Search against title, author and text :)
 declare function mpese-search:search($phrase) {
-    let $a :=  mpese-search:search-original($phrase)
-    let $b :=  mpese-search:search-normalized($phrase)
+
+    let $query := mpese-search:build-query($phrase, (), ())
+
+    let $a :=  mpese-search:search-original($query)
+    let $b :=  mpese-search:search-normalized($query)
     let $uris := distinct-values(($a/result/@uri/string(), $b/result/@uri/string()))
     return
         <results>{
@@ -554,7 +557,7 @@ declare %templates:default("search", "") %templates:default("results_order", "re
             <div>
                 <p class="text-center">Order results by {$rel_order}
                     relevance or {$date_order} date. Alternatively,
-                    use the <a href="./advanced.html">advanced search</a> or <a href="">browse</a>.</p>
+                    use the <a href="./advanced.html">advanced search</a>.</p>
             </div>
     </form>
 

@@ -167,6 +167,18 @@
         </echoproperties>
     </target>
 
+        <!-- Create ms label -->
+    <target name="create-ms-label" depends="resolve, credentials">
+        <loadfile property="xquery_ms_label" srcFile="src/jobs/create_ms_label.xql"/>
+        <xdb:xquery uri="${xmlrpc}/db" user="${username}" password="${password}" ssl="${ssl}"
+                    query="${xquery_ms_label}" outputproperty="job_output"/>
+        <echoproperties>
+            <propertyset>
+                <propertyref name="job_output"/>
+            </propertyset>
+        </echoproperties>
+    </target>
+
    <!-- Proofreading report -->
     <target name="proofreading-report" depends="resolve, credentials">
         <loadfile property="xquery_report" srcFile="src/jobs/proofreading_report.xql"/>
