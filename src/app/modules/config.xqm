@@ -31,6 +31,8 @@ declare variable $config:mpese_group_desc := 'The MPESE project';
 (: collection paths :)
 declare variable $config:db-root := '/db';
 declare variable $config:mpese-root := concat($config:db-root, '/mpese');
+declare variable $config:mpese-normalized := concat($config:mpese-root, '/normalized');
+declare variable $config:mpese-normalized-texts := concat($config:mpese-normalized , '/texts');
 declare variable $config:mpese-word-root := concat($config:mpese-root, '/word');
 declare variable $config:mpese-tei := concat($config:mpese-root, '/tei');
 declare variable $config:mpese-tei-templates := concat($config:mpese-tei, '/templates');

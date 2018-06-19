@@ -57,6 +57,9 @@ declare function local:make-collections() {
     local:create-collection($config:mpese-tei-corpus-places),
     local:create-collection($config:mpese-tei-corpus-meta),
 
+    (: normalized text :)
+    local:create-collection($config:mpese-normalized-texts),
+
     (: docx storage  :)
     local:create-collection($config:mpese-word-docx),
 
@@ -67,7 +70,8 @@ declare function local:make-collections() {
 
 declare function local:create-indices() {
     (local:create-collection(concat('/db/system/config', $config:mpese-tei-corpus-texts)),
-    local:create-collection(concat('/db/system/config', $config:mpese-tei-corpus-mss)))
+    local:create-collection(concat('/db/system/config', $config:mpese-tei-corpus-mss)),
+    local:create-collection(concat('/db/system/config', $config:mpese-normalized-texts)))
 };
 
 util:log('INFO', ('MPESE: Running the pre-installation script ...')),

@@ -5,6 +5,8 @@
             <text qname="tei:author" boost="2.0"/>
             <text qname="tei:title" boost="5.0"/>
             <text qname="tei:text"/>
+            <text qname="tei:msDesc"/>
+            <text qname="tei:term" boost="3.0"/>
         </lucene>
         <range>
             <create qname="tei:term" type="xs:string" case="no"/>
@@ -18,6 +20,9 @@
             </create>
             <create qname="tei:keywords">
                 <field name="keywords-n" match="@n" type="xs:string"/>
+            </create>
+            <create qname="tei:graphic">
+                <field name="graphics-n" match="@n" type="xs:string"/>
             </create>
         </range>
     </index>

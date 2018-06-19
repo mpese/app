@@ -61,7 +61,10 @@ declare function local:copy-mpese-indices() {
     (
     xmldb:copy(concat($config:app-root, '/indices/'),
                concat('/db/system/config', $config:mpese-tei-corpus-texts), 'collection-texts.xconf'),
-    xmldb:rename(concat('/db/system/config', $config:mpese-tei-corpus-texts), 'collection-texts.xconf', 'collection.xconf')
+    xmldb:rename(concat('/db/system/config', $config:mpese-tei-corpus-texts), 'collection-texts.xconf', 'collection.xconf'),
+
+    xmldb:copy(concat($config:app-root, '/indices/'), concat('/db/system/config', $config:mpese-normalized-text), 'collection-normalized-texts.xconf'),
+    xmldb:rename(concat('/db/system/config', $config:mpese-normalized-text), 'collection-normalized-texts.xconf', 'collection.xconf')
     )
 
 };
@@ -91,6 +94,7 @@ local:chgrp-collection($config:mpese_group, $config:mpese-tei-corpus-places),
 local:chgrp-collection($config:mpese_group, $config:mpese-tei-corpus-meta),
 local:chgrp-collection($config:mpese_group, $config:mpese-word-docx),
 local:chgrp-collection($config:mpese_group, $config:mpese-word-unzip),
+local:chgrp-collection($config:mpese_group, $config:mpese-normalized-texts),
 
 (: set the group owner for certain paths (not recursively) :)
 sm:chgrp($mpese-app-dashboard, $config:mpese_group),
@@ -112,6 +116,8 @@ local:copy-mpese-meta(),
 local:copy-mpese-indices(),
 
 xmldb:reindex($config:mpese-tei-corpus-texts),
+
+xmldb:reindex($config:mpese-normalized-texts),
 
 (: force login for dash ... :)
 sm:chmod(xs:anyURI($mpese-app-dashboard), 'r-xr-x---'),
