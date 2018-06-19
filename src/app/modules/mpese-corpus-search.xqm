@@ -28,10 +28,16 @@ declare function mpese-search:all() as element()* {
     }</results>
 };
 
-
-declare function mpese-search:search-original($phrase) {
+(:
+:~
+ : Query the orignal TEI/XML documents.
+ :
+ : @param $query - an eXist <query/> to pass to Lucene.
+ : @returns a <results/> object.
+:)
+declare function mpese-search:search-original($query) {
     <results>{
-        for $doc in fn:collection('/db/mpese/tei/corpus/texts/')/*[ft:query(.,$phrase)]
+        for $doc in fn:collection($config:mpese-tei-corpus-texts)/*[ft:query(.,$query)]
         return
             <result uri="{fn:base-uri($doc)}" score="{ft:score($doc)}">
                 <summary>{mpese-search:matches($doc)}</summary>
@@ -43,7 +49,7 @@ declare function mpese-search:search-normalized($phrase) {
     <result>{
         for $doc in fn:collection('/db/mpese/normalized/texts')/*[ft:query(.,$phrase)]
             let $uri := fn:base-uri($doc)
-            let $tmp := fn:replace($uri, '/db/mpese/normalized/texts/', '/db/mpese/tei/corpus/texts/')
+            let $tmp := fn:replace($uri, '/db/mpese/normalized/texts/', $config:mpese-tei-corpus-texts)
             return
                 <result uri="{fn:replace($tmp, '.simple', '')}" score="{ft:score($doc)}">
                     <summary>{mpese-search:matches($doc)}</summary>
@@ -361,7 +367,7 @@ declare function mpese-search:all($page as xs:integer, $num as xs:integer)  {
                 let $text := doc($uri)//tei:text[1]/tei:body/tei:p[1]/string()
                 let $link := './t/' || $name || '.html'
                 let $snippet := <em>{fn:substring($text, 1, 200)} ...</em>
-                let $images := if (count($item//tei:facsimile/tei:graphic) > 0) then
+                let $images := if (exists($item//tei:facsimile/tei:graphic/@n)) then
                     (text{' '}, <span class="glyphicon glyphicon-camera" aria-hidden="true"></span>,
                     <span class="sr-only">Images available</span>) else ()
                 return mpese-search:result-entry($link, $title, $author-label, $snippet, $mss-label, $images)
@@ -430,7 +436,7 @@ declare function mpese-search:everything($page as xs:integer, $num as xs:integer
     </div>)
 };
 
-
+(: wrap a search query in eXist's XML wrapper :)
 declare function mpese-search:build-query($phrase, $type, $exclude) {
 
     (: tokenize the strings - clean up whitespace :)

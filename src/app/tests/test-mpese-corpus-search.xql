@@ -94,6 +94,12 @@ function test-search:results-message-2() {
 
 (: ------- test build query -----:)
 
+(: nothing just creates a wild card - default view on loading the application / empty basic search:)
+declare %test:assertXPath("deep-equal($result, <query><wildcard>*</wildcard></query>)")
+function test-search:build-query-basic-1() {
+    mpese-search:build-query((), (), ())
+};
+
 (: empty query creates wildcard :)
 declare %test:assertXPath("deep-equal($result, <query><wildcard>*</wildcard></query>)")
 function test-search:build-query-1() {
