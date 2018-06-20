@@ -63,8 +63,8 @@ declare function local:copy-mpese-indices() {
                concat('/db/system/config', $config:mpese-tei-corpus-texts), 'collection-texts.xconf'),
     xmldb:rename(concat('/db/system/config', $config:mpese-tei-corpus-texts), 'collection-texts.xconf', 'collection.xconf'),
 
-    xmldb:copy(concat($config:app-root, '/indices/'), concat('/db/system/config', $config:mpese-normalized-text), 'collection-normalized-texts.xconf'),
-    xmldb:rename(concat('/db/system/config', $config:mpese-normalized-text), 'collection-normalized-texts.xconf', 'collection.xconf')
+    xmldb:copy(concat($config:app-root, '/indices/'), concat('/db/system/config', $config:mpese-normalized-texts), 'collection-normalized-texts.xconf'),
+    xmldb:rename(concat('/db/system/config', $config:mpese-normalized-texts), 'collection-normalized-texts.xconf', 'collection.xconf')
     )
 
 };
