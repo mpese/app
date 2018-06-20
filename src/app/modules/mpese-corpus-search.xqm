@@ -49,7 +49,7 @@ declare function mpese-search:search-normalized($phrase) {
     <result>{
         for $doc in fn:collection('/db/mpese/normalized/texts')/*[ft:query(.,$phrase)]
             let $uri := fn:base-uri($doc)
-            let $tmp := fn:replace($uri, '/db/mpese/normalized/texts/', $config:mpese-tei-corpus-texts)
+            let $tmp := fn:replace($uri, '/db/mpese/normalized/texts', $config:mpese-tei-corpus-texts)
             return
                 <result uri="{fn:replace($tmp, '.simple', '')}" score="{ft:score($doc)}">
                     <summary>{mpese-search:matches($doc)}</summary>
@@ -241,7 +241,7 @@ declare function mpese-search:witness-count($item) as xs:string {
         if ($total eq 1) then '1 witness' else $total || ' witnesses'
 };
 
-declare function mpese-search:result-entry($item as node(), $show_kwic as xs:boolean) as node() {
+declare function mpese-search:result-entry($item as node(), $summary as node(), $show_kwic as xs:boolean) as node() {
 
     (: link to the text :)
     let $link := mpese-search:text-link($item)
@@ -258,7 +258,7 @@ declare function mpese-search:result-entry($item as node(), $show_kwic as xs:boo
     let $mss-label := mpese-mss:ident-label($mss)
 
     (: kiwc in snippet :)
-    let $snippet := if ($show_kwic) then mpese-search:matches($item)
+    let $snippet := if ($show_kwic) then $summary
             else <em>{substring($item//tei:text[1]/tei:body/tei:p[1]/string(), 1, 200)} ...</em>
     let $images := mpese-search:images($item)
 
@@ -501,40 +501,51 @@ declare function mpese-search:advanced($phrase, $type, $exclude, $image, $start-
     (: construct the query xml: will be pulled in via util:eval :)
     let $query := mpese-search:build-query($phrase, $type, $exclude)
 
+    (: unfiltered results :- parsed in the eval statement at the botton :)
+    let $results := mpese-search:search($query)
+
     (:::: we create the search as strings that can be evaluated ::::)
 
-    let $collection-predicate := "for $result in collection($config:mpese-tei-corpus-texts)/*"
+    (: we are filtering of <result/> objects :)
+    let $results_predicate := "for $result in $results/result "
 
-    (: keyword search on text :)
-    let $search-predicate := "[ft:query(.,$query)]"
+    (: need the doc of each result :)
+    let $doc_predicate := "let $doc := doc($result/@uri/string()) "
 
-    (: only texts with images :)
-    let $image-predicate := if ($image eq 'yes') then "[exists(./tei:facsimile)]" else ()
+    (: we need the date of the doc :)
+    let $date_predicate := "let $date := '' "
 
-    (:::: get the dates add as a string:::::)
-    let $date_predicate := " let $date := substring($result//tei:creation/tei:date[1]/@when/string(), 1, 4) "
+    (: are we filtering for images :)
+    let $image_predicate := if ($image eq 'yes') then "exists($doc//tei:facsimile) " else ()
 
-    let $start_date := if (not($start-range eq '')) then "number($date) >= number($start-range)" else ()
-    let $end_date := if (not($end-range eq '')) then "number($date) <= number($end-range)" else ()
-    let $date_filter := fn:string-join(($start_date, $end_date) , ' and ')
+    (: start date? :)
+    let $start_date := if (not($start-range eq '' or empty($start-range))) then "number($date) >= number($start-range)" else ()
 
-    let $where_predicate := if (not($date_filter eq '')) then 'where ' || $date_filter else () || ' '
+    (: end date? :)
+    let $end_date := if (not($end-range eq '' or empty($end-range))) then "number($date) <= number($end-range)" else ()
 
+    (: date filter :)
+    let $date_filter := if (not(empty($start_date) or empty($end_date))) then fn:string-join(($start_date, $end_date) , ' and ') else ()
+
+    (: might be filtering on date and images :)
+    let $where_filter := fn:string-join(($date_filter, $image_predicate), ' and ')
+
+    (: where predicate :)
+    let $where_predicate := if ($where_filter) then 'where ' || $where_filter else ()
+
+    (: order by :)
     let $order_by_predicate := if ($order-by eq 'date_d') then ' order by $date descending '
-                               else if ($order-by eq 'witness_d') then 'order by count($result//tei:listBibl[@xml:id="mss_witness_generated"]/tei:bibl) descending '
-                               else if ($order-by eq 'witness_a') then 'order by count($result//tei:listBibl[@xml:id="mss_witness_generated"]/tei:bibl) ascending '
+                               else if ($order-by eq 'witness_d') then ' order by count($doc//tei:listBibl[@xml:id="mss_witness_generated"]/tei:bibl) descending '
+                               else if ($order-by eq 'witness_a') then ' order by count($doc//tei:listBibl[@xml:id="mss_witness_generated"]/tei:bibl) ascending '
                                else ' order by $date ascending '
 
-    let $return_predicate := " return $result"
+    let $return_predicate := " return if ($doc) then $result else ()"
 
-    (: create the query as a string:)
-    let $search-string := concat($collection-predicate, $search-predicate, $image-predicate, $date_predicate,
-        $where_predicate, $order_by_predicate, $return_predicate)
+    let $query2 := concat($results_predicate, $doc_predicate, $date_predicate, $where_predicate, $order_by_predicate, $return_predicate)
 
-    (: evaluate :)
-    let $results := ((util:log('INFO', ($query))),(util:log('INFO', ($search-string))), util:eval($search-string))
+    let $return_results := <results>{util:eval($query2)}</results>
 
-    return $results
+    return (util:log('INFO', $results),util:log('INFO', count($results/result)),util:log('INFO', $query2),util:log('INFO', count($return_results/result)),$return_results)
 };
 
 
@@ -708,7 +719,7 @@ function mpese-search:advanced-results($node as node (), $model as map (*), $pag
                     else mpese-search:advanced($search, $type, $exclude, $image, $start-range, $end-range, $order-by)
 
     (: total number :)
-    let $total := count($results)
+    let $total := count($results/result)
 
     (: message about results :)
     let $message := mpese-search:results-message($total)
@@ -716,7 +727,7 @@ function mpese-search:advanced-results($node as node (), $model as map (*), $pag
     (:work out pagination :)
     let $start := mpese-search:seq-start($page, $num)
     let $pages := mpese-search:pages-total($total, $num)
-    let $results := mpese-search:paginate-results($results, $start, $num)
+    let $pag_results := mpese-search:paginate-results($results, $start, $num)
 
     (:track search parameters :)
     let $map := map { 'search' := $search, 'type' := $type, 'exclude' := $exclude, 'start-range' := $start-range,
@@ -736,14 +747,10 @@ function mpese-search:advanced-results($node as node (), $model as map (*), $pag
                 ""
         }
         <div class="list-group">{
-            for $item in $results
-                return mpese-search:result-entry($item, $show_kwic)
-        }</div>
-        {
-            if ($pages > 1) then
-                mpese-search:pagination($page, $pages, $map, "Bottom navigation", "adv")
-            else
-                ""
-        }
+            for $r in $pag_results/result
+                let $uri := $r/@uri/fn:string()
+                let $item := doc($uri)/tei:TEI
+                return mpese-search:result-entry($item, $r/summary, $show_kwic)}
+        </div>
     </div>)
 };
