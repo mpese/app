@@ -50,13 +50,13 @@ declare %test:assertTrue function test-search:search() {
 
 
 (: Tests getting a subset of results for paginaation :)
-declare %test:assertTrue function test-search:paginate-results() {
-    let $seq := <results><result>1</result>,<result>2</result>,<result>3</result>,<result>4</result>,
-                <result>5</result>,<result>6</result>, <result>7</result>, <result>8</result>,
-                <result>9</result>, <result>10</result></results>
-    let $results := mpese-search:paginate-results($seq, 2, 5)
-    return ($results/result[1]/text() eq '2' and $results/result/[5]/text() eq '6')
-};
+(:declare %test:assertTrue function test-search:paginate-results() {:)
+    (:let $seq := <results><result>1</result>,<result>2</result>,<result>3</result>,<result>4</result>,:)
+                (:<result>5</result>,<result>6</result>, <result>7</result>, <result>8</result>,:)
+                (:<result>9</result>, <result>10</result></results>:)
+    (:let $results := mpese-search:paginate-results($seq, 2, 5):)
+    (:return ($results/result[1]/text() eq '2' and $results/result/[5]/text() eq '6'):)
+(:};:)
 
 (: we should have languages :)
 declare %test:assertXPath("count($result) > 0")
@@ -95,19 +95,19 @@ function test-search:results-message-2() {
 (: ------- test build query -----:)
 
 (: nothing just creates a wild card - default view on loading the application / empty basic search:)
-declare %test:assertXPath("deep-equal($result, <query><wildcard>*</wildcard></query>)")
+declare %test:assertXPath("deep-equal($result, <query><bool><wildcard>*</wildcard></bool></query>)")
 function test-search:build-query-basic-1() {
     mpese-search:build-query((), (), ())
 };
 
 (: empty query creates wildcard :)
-declare %test:assertXPath("deep-equal($result, <query><wildcard>*</wildcard></query>)")
+declare %test:assertXPath("deep-equal($result, <query><bool><wildcard>*</wildcard></bool></query>)")
 function test-search:build-query-1() {
     mpese-search:build-query('', 'all', '')
 };
 
 (: empty query (lots of whitespace) creates wildcard :)
-declare %test:assertXPath("deep-equal($result, <query><wildcard>*</wildcard></query>)")
+declare %test:assertXPath("deep-equal($result, <query><bool><wildcard>*</wildcard></bool></query>)")
 function test-search:build-query-2() {
     mpese-search:build-query('', 'all', '')
 };

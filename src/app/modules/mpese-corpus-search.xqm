@@ -24,7 +24,10 @@ declare function mpese-search:all() as element()* {
     <results>{
         for $result in fn:collection($config:mpese-tei-corpus-texts)//tei:TEI
         order by $result//tei:titleStmt/tei:title/text()
-        return <result uri="{fn:base-uri($result)}"/>
+        return
+            <result uri="{fn:base-uri($result)}">
+                <summary>{<em>{substring($result//tei:text[1]/tei:body/tei:p[1]/string(), 1, 200)} ...</em>}</summary>
+            </result>
     }</results>
 };
 
@@ -61,26 +64,27 @@ declare function mpese-search:search-normalized($phrase) {
 (: Search against title, author and text :)
 declare function mpese-search:search($phrase) {
 
-    let $query := mpese-search:build-query($phrase, (), ())
+    if ($phrase eq '' or functx:all-whitespace($phrase)) then mpese-search:all() else
+        let $query := mpese-search:build-query($phrase, (), ())
 
-    let $a :=  mpese-search:search-original($query)
-    let $b :=  mpese-search:search-normalized($query)
-    let $uris := distinct-values(($a/result/@uri/string(), $b/result/@uri/string()))
-    return
-        <results>{
-            for $uri in $uris
-                let $score_a := $a/result[@uri=$uri]/@score/number()
-                let $score_b := $b/result[@uri=$uri]/@score/number()
-                return
-                    <result uri="{$uri}" score="{(if ($score_a) then $score_a else 0) + (if ($score_b) then $score_b else 0)}">{
-                        if (not(empty($a/result[@uri=$uri]/summary))) then
-                            $a/result[@uri=$uri]/summary
-                        else if (not(empty($b/result[@uri=$uri]/summary))) then
-                            $b/result[@uri=$uri]/summary
-                        else
-                            ()
-                    }</result>
-        }</results>
+        let $a :=  mpese-search:search-original($query)
+        let $b :=  mpese-search:search-normalized($query)
+        let $uris := distinct-values(($a/result/@uri/string(), $b/result/@uri/string()))
+        return
+            <results>{
+                for $uri in $uris
+                    let $score_a := $a/result[@uri=$uri]/@score/number()
+                    let $score_b := $b/result[@uri=$uri]/@score/number()
+                    return
+                        <result uri="{$uri}" score="{(if ($score_a) then $score_a else 0) + (if ($score_b) then $score_b else 0)}">{
+                            if (not(empty($a/result[@uri=$uri]/summary))) then
+                                $a/result[@uri=$uri]/summary
+                            else if (not(empty($b/result[@uri=$uri]/summary))) then
+                                $b/result[@uri=$uri]/summary
+                            else
+                                ()
+                        }</result>
+            }</results>
 };
 
 declare function mpese-search:search($phrase, $results_order) {
@@ -236,7 +240,7 @@ declare function mpese-search:images($item) as node()* {
 };
 
 declare function mpese-search:witness-count($item) as xs:string {
-    let $total := count($item//tei:listBibl[@xml:id='mss_witness_generated']/tei:bibl)
+    let $total := count($item//tei:listBibl[@xml:id='mss_witness_generated']/tei:bibl) + number(1)
     return
         if ($total eq 1) then '1 witness' else $total || ' witnesses'
 };
@@ -442,11 +446,11 @@ declare function mpese-search:build-query($phrase, $type, $exclude) {
     (: tokenize the strings - clean up whitespace :)
     let $search_tokens := tokenize(normalize-space($phrase), '\s+')
     let $exclude_tokens := tokenize(normalize-space($exclude), '\s+')
-    return
+    let $query :=
         <query>{
             (: wildcard search all for white space :)
             if (empty($search_tokens)) then
-                <wildcard>*</wildcard>
+                <bool><wildcard>*</wildcard></bool>
             else
                 if ($type eq 'phrase') then
                     <phrase>{string-join($search_tokens, ' ')}</phrase>
@@ -468,7 +472,8 @@ declare function mpese-search:build-query($phrase, $type, $exclude) {
                                 <term occur="not">{$token}</term>
                     }</bool>
         }</query>
-
+    return
+        (util:log('INFO', $query), $query)
 };
 
 (: get a list of available text types:)
@@ -499,10 +504,10 @@ declare function mpese-search:repositories() {
 declare function mpese-search:advanced($phrase, $type, $exclude, $image, $start-range, $end-range, $order-by) {
 
     (: construct the query xml: will be pulled in via util:eval :)
-    let $query := mpese-search:build-query($phrase, $type, $exclude)
-
     (: unfiltered results :- parsed in the eval statement at the botton :)
-    let $results := mpese-search:search($query)
+    let $results := if ($phrase eq '' or functx:all-whitespace($phrase)) then mpese-search:all()
+        else let $query := mpese-search:build-query($phrase, $type, $exclude)
+            return mpese-search:search($query)
 
     (:::: we create the search as strings that can be evaluated ::::)
 
@@ -545,7 +550,7 @@ declare function mpese-search:advanced($phrase, $type, $exclude, $image, $start-
 
     let $return_results := <results>{util:eval($query2)}</results>
 
-    return (util:log('INFO', $results),util:log('INFO', count($results/result)),util:log('INFO', $query2),util:log('INFO', count($return_results/result)),$return_results)
+    return $return_results
 };
 
 
@@ -588,10 +593,7 @@ declare %templates:default("page", 1) %templates:default("num", 10) %templates:d
     if (fn:string-length($search) eq 0) then
         mpese-search:all($page, $num)
     else
-        (
-            util:log('INFO', ('order by ' || $results_order )),
-            mpese-search:everything($page, $num, $search, $results_order)
-        )
+        mpese-search:everything($page, $num, $search, $results_order)
 };
 
 declare function mpese-search:last-change($node as node (), $model as map (*))  {
@@ -714,9 +716,8 @@ function mpese-search:advanced-results($node as node (), $model as map (*), $pag
     (: kwic on wildcard everything kills the app :)
     let $show_kwic := if ($search eq '') then false() else true()
 
-    (: all results, unpaginated - empty sequence if no search parameter :)
-    let $results := if (request:get-parameter('search', 'xxx-empty-xxx') eq 'xxx-empty-xxx') then ()
-                    else mpese-search:advanced($search, $type, $exclude, $image, $start-range, $end-range, $order-by)
+    (: all results, unpaginated :)
+    let $results := mpese-search:advanced($search, $type, $exclude, $image, $start-range, $end-range, $order-by)
 
     (: total number :)
     let $total := count($results/result)
