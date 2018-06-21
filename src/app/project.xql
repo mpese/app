@@ -136,7 +136,7 @@ declare variable $title := $data/project/title/text();
                         height="50"
                         alt="University of Bristol"/>
           </div>
-        <p>&#169; 2017 University of Birmingham, University of Bristol.</p>
+        <p>&#169; 2017–2018 University of Birmingham, University of Bristol.</p>
         <p
                     class="pull-right">Version: {$config:repo-descriptor//repo:version/text()}
         (deployed, {format-dateTime(xs:dateTime($config:repo-descriptor//repo:deployed/text()), "[D01]/[M01]/[Y0001]")})</p>
