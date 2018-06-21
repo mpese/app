@@ -1,0 +1,5 @@
+setup_name	default
+training_folder	/training
+encoding	detect
+word_regex	(?:\p{L}\p{M}*|[\'\-\^~=])+
+annotator_id	

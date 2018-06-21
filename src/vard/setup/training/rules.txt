@@ -1,0 +1,61 @@
+'		Start	
+-		Anywhere	
+e		End	
+	e	End	
+'	a	Start	
+'	e	Start	
+'d	ed	End	
+a	e	Anywhere	
+a	i	Anywhere	
+a	o	Anywhere	
+au	a	Anywhere	
+bb	b	Anywhere	
+c	s	Anywhere	
+cion	tion	End	#
+ck	c	End	
+ck	k	End	
+cy	ce	Anywhere	
+d	dd	Anywhere	
+d	t	Anywhere	
+e	a	Anywhere	
+e	ea	Anywhere	
+e	i	Anywhere	
+e	o	Anywhere	
+ea	e	Anywhere	
+ee	ea	Anywhere	
+ee	ie	Anywhere	
+ei	ie	Anywhere	
+es	s	End	
+ey	y	End	
+ff	f	Anywhere	#
+i	e	Anywhere	
+ie	y	End	
+ies	ys	End
+ij	y	End
+k	c	End	
+ll	l	Anywhere	
+nn	n	Anywhere	
+ou	o	Anywhere	
+p	pp	Anywhere	
+r	rr	Anywhere	
+rr	r	Anywhere	
+s	c	Anywhere	
+s	ss	Anywhere	
+s	z	Anywhere	
+ss	s	Anywhere	
+t	c	Anywhere	
+t	ed	End	
+t	tt	Anywhere	
+th	d	Anywhere	
+th	s	End	
+tt	t	Anywhere	
+u	v	Anywhere	
+v	u	Anywhere	
+vv	w	Anywhere	
+w	u	Anywhere	
+y	i	Anywhere	
+y	ie	Anywhere	
+yes	ies	End	
+z	s	Anywhere	
+z	zz	Anywhere	
+zz	z	Anywhere	

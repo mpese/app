@@ -1,0 +1,35 @@
+
+Fri Jun 08 13:53:54 BST 2018: 
+Words list (re)initialized
+
+Fri Jun 08 16:11:47 BST 2018: 
+removed: doe
+removed: Bee
+added: sackville
+added: zeeland
+added: kinloss
+added: tergoes
+added: sackeville
+added: worths
+added: Heydon
+added: antwerp
+added: authorless
+added: bergen op zoom
+added: ffraunce
+added: Captived
+added: conformable
+added: cranfield
+added: Hereunto
+added: sackville's
+added: incontinently
+added: afore
+added: bruce's
+added: restriving
+added: forenamed
+added: louvain
+removed: wee
+added: redemanded
+added: satisaction
+added: anno
+added: assuredness
+removed: Butt

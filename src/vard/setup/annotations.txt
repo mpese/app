@@ -1,0 +1,15 @@
+annotator_id_attribute	a_id
+normalised_tag	normalised
+normalised_original_attribute	orig
+normalised_auto_attribute	auto
+variant_tag	variant
+notvariant_tag	notvariant
+foreign_tag	foreign
+foreign_language_attribute	lang
+join_tag	join
+join_original_attribute	original
+join_linebreak_marker	[lb]
+partition_tag	vard:partition
+partition_sequence_attribute	seq
+partition_count_attribute	words
+partition_state_attribute	state

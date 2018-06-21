@@ -1,0 +1,11 @@
+
+Fri Jun 08 13:53:54 BST 2018: 
+Rules list (re)initialized
+
+Fri Jun 08 15:59:50 BST 2018: 
+added: Substitute ff > f (Start)
+added: Substitute cion > tion (End)
+removed: Substitute ff > f (Start)
+
+Fri Jun 08 16:13:29 BST 2018: 
+added: Substitute ff > f (Anywhere)

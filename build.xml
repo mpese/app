@@ -167,7 +167,7 @@
         </echoproperties>
     </target>
 
-        <!-- Create ms label -->
+    <!-- Create ms label -->
     <target name="create-ms-label" depends="resolve, credentials">
         <loadfile property="xquery_ms_label" srcFile="src/jobs/create_ms_label.xql"/>
         <xdb:xquery uri="${xmlrpc}/db" user="${username}" password="${password}" ssl="${ssl}"
@@ -179,7 +179,7 @@
         </echoproperties>
     </target>
 
-   <!-- Proofreading report -->
+    <!-- Proofreading report -->
     <target name="proofreading-report" depends="resolve, credentials">
         <loadfile property="xquery_report" srcFile="src/jobs/proofreading_report.xql"/>
         <xdb:xquery uri="${xmlrpc}/db" user="${username}" password="${password}" ssl="${ssl}"
@@ -189,6 +189,22 @@
                 <propertyref name="job_output"/>
             </propertyset>
         </echoproperties>
+    </target>
+
+    <target name="get-texts">
+        <mkdir dir="data/texts-original"/>
+        <exec dir="src/python" executable="python">
+            <arg line="get_texts.py ${server.base.url} ${basedir}/data/texts-original"/>
+        </exec>
+    </target>
+
+    <target name="run-vard">
+        <mkdir dir="data/texts-normalized"/>
+        <java jar="${vard.home}/clui.jar" fork="true" dir="${vard.home}">
+            <jvmarg value="-Xms256M"/>
+            <jvmarg value="-Xmx512M"/>
+            <arg line="${basedir}vard/setup 50 1 ${basedir}/data/texts-original true  ${basedir}/data/text-normalized true"/>
+        </java>
     </target>
 
 </project>
