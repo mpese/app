@@ -191,6 +191,7 @@
         </echoproperties>
     </target>
 
+    <!-- use python script to get 'simple' texts -->
     <target name="get-texts">
         <mkdir dir="data/texts-original"/>
         <exec dir="src/python" executable="python">
@@ -198,6 +199,7 @@
         </exec>
     </target>
 
+    <!-- normalize texts with Vard -->
     <target name="run-vard">
         <mkdir dir="data/texts-normalized"/>
         <java jar="${vard.home}/clui.jar" fork="true" dir="${vard.home}">
@@ -206,5 +208,18 @@
             <arg line="${basedir}vard/setup 50 1 ${basedir}/data/texts-original true  ${basedir}/data/text-normalized true"/>
         </java>
     </target>
+
+    <!-- store normalized texts -->
+    <target name="store-normalized" depends="resolve,credentials">
+        <xdb:store uri="${xmlrpc}/db/mpese/normalized/texts" ssl="${ssl}"
+                   createcollection="true" user="${username}" password="${password}">
+            <fileset dir="${basedir}/data/text-normalized/varded(50%) - Changes Tagged">
+                <include name="*.xml"/>
+            </fileset>
+        </xdb:store>
+    </target>
+
+    <!-- normalize texts -->
+    <target name="normalize-texts" depends="get-texts,run-vard,store-normalized"/>
 
 </project>
