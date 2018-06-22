@@ -65,7 +65,7 @@ declare function mpese-search:search-normalized($phrase) {
 declare function mpese-search:search($phrase) {
 
     if ($phrase eq '' or functx:all-whitespace($phrase)) then mpese-search:all() else
-        let $query := mpese-search:build-query($phrase, (), ())
+        let $query := mpese-search:build-simple-query($phrase)
 
         let $a :=  mpese-search:search-original($query)
         let $b :=  mpese-search:search-normalized($query)
@@ -440,40 +440,68 @@ declare function mpese-search:everything($page as xs:integer, $num as xs:integer
     </div>)
 };
 
+
+declare function mpese-search:build-query-term($token, $type) {
+    let $elmnt :=   if (fn:ends-with($token, '~')) then
+                        let $length := fn:string-length($token)
+                        return
+                            if ($length eq 1) then ()
+                            else <fuzzy>{fn:substring($token, 1, ($length - 1))}</fuzzy>
+                    else if (contains($token, '*')) then <wildcard>{$token}</wildcard>
+                    else <term>{$token}</term>
+    return
+        if ($elmnt and $type eq 'all') then
+            element { node-name($elmnt) } {attribute { 'occur' } { 'must'}, $elmnt/string()}
+        else
+        $elmnt
+};
+
 (: wrap a search query in eXist's XML wrapper :)
 declare function mpese-search:build-query($phrase, $type, $exclude) {
 
     (: tokenize the strings - clean up whitespace :)
-    let $search_tokens := tokenize(normalize-space($phrase), '\s+')
-    let $exclude_tokens := tokenize(normalize-space($exclude), '\s+')
+    let $search_tokens := fn:tokenize(fn:normalize-space($phrase), '\s+')
+    let $exclude_tokens := fn:tokenize(fn:normalize-space($exclude), '\s+')
     let $query :=
         <query>{
             (: wildcard search all for white space :)
-            if (empty($search_tokens)) then
-                <bool><wildcard>*</wildcard></bool>
+            if (fn:empty($search_tokens)) then
+                ()
             else
                 if ($type eq 'phrase') then
-                    <phrase>{string-join($search_tokens, ' ')}</phrase>
+                    <phrase>{fn:string-join($search_tokens, ' ')}</phrase>
                 else
                     <bool>{
                         for $token in $search_tokens
-                            return
-                                let $elmnt := if (contains($token, '*')) then <wildcard>{$token}</wildcard> else <term>{$token}</term>
-                                return
-                                    if ($type eq 'all') then
-                                        element { node-name($elmnt) } {attribute { 'occur' } { 'must'}, $elmnt/string()}
-                                    else
-                                        $elmnt
-
-
+                            return mpese-search:build-query-term($token, $type)
                     } {
                         for $token in $exclude_tokens
                             return
                                 <term occur="not">{$token}</term>
                     }</bool>
         }</query>
+    return $query
+};
+
+(:
+:~
+ : Create query XML for a simple search.
+ :
+ : @param $phrase - original search phrase.
+ : @returns XML for a lucene query.
+:)
+declare function mpese-search:build-simple-query($phrase) {
+
+    (: :)
+    let $tmp := fn:normalize-space($phrase)
     return
-        (util:log('INFO', $query), $query)
+        if (fn:starts-with($tmp, '"') and fn:ends-with($tmp, '"')) then
+            mpese-search:build-query(fn:replace($tmp, '"', ''), 'phrase', ())
+        else
+            let $tokens := for $token in fn:tokenize($tmp) return
+                                if (not(fn:ends-with($token, '*')) and not(fn:ends-with($token, '~'))) then
+                                    $token || '*' else $token
+            return mpese-search:build-query(fn:string-join($tokens, ' '), (), ())
 };
 
 (: get a list of available text types:)
