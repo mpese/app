@@ -669,6 +669,27 @@ declare function mpese-text:image($node as node (), $model as map (*)) {
 (: ----- Text details tab -----:)
 
 (:~
+ : Display the introduction of the text.
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @return the introducton of the text.
+ :)
+declare function mpese-text:introduction($node as node (), $model as map (*)) {
+
+    let $text := fn:doc($model('text'))
+    return
+        <div id="text-introduction">{
+
+            if ($text//tei:profileDesc/tei:abstract/tei:p/string()) then
+                for $p in $text//tei:profileDesc/tei:abstract/tei:p
+                    return <p>{$p}</p>
+            else
+                <p>No introduction.</p>
+        }</div>
+};
+
+(:~
  : Display basic mss details with link to MSS and the mss name
  :
  : @param $node     the HTML node being processes

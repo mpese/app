@@ -659,3 +659,15 @@ function test-text:text-topic() {
     let $map := mpese-text:text($node, $model, $text)
     return mpese-text:text-topic($node, $map)
 };
+
+(: check we get an introduction :)
+declare %test:assertXPath("count($result//p) > 0")
+function test-text:introduction() {
+
+    let $node := <test></test>
+    let $model := map {}
+    let $text := 'RaleighSpeechDeath1618.xml'
+    let $map := mpese-text:introduction($node, $model)
+    return
+        mpese-text:transcript($node, $map)
+};
