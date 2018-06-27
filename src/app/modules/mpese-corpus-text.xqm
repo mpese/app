@@ -503,24 +503,44 @@ declare function mpese-text:bibliography($biblio_list) {
         <ul>{
             for $item in $biblio_list
                 return
+                if ($item/@type/string() eq 'article') then
                     <li>{
                         let $authors := mpese-text:bibl-author($item)
-                        let $title := mpese-text:bibl-title($item)
-                        let $pub := mpese-text:bibl-pub($item)
-                        let $id := mpese-text:bibl-idno($item)
-                        let $vols := mpese-text:biblio-vol($item)
-                        let $parts := mpese-text:biblio-part($item)
+                        let $title := "'" || $item/tei:title[@level eq 'a']/fn:string() || "'"
                         let $seq := ($authors, $title)
-                        let $f := for $item at $pos in $seq
+                        let $f := for $a at $pos in $seq
                             return
-                                if ($item and $seq[$pos + 1]) then
-                                    ($item, text { ', '})
+                                if ($a and $seq[$pos + 1]) then
+                                    ($a, text { ', '})
                                 else
-                                    $item
+                                    $a
+                        let $journal := (text{", "}, <em>{$item/tei:title[@level eq 'j']/fn:string()}</em>, text{", "})
+                        let $vol := $item/tei:biblScope[@unit eq 'volume']/string()
+                        let $no := $item/tei:biblScope[@unit eq 'number']/string()
+                        let $vol_no := if ($vol or $no) then fn:string-join(($vol, $no), '/') else ()
+                        let $pub := mpese-text:bibl-pub($item)
                         let $scope := mpese-text:biblScopePrefix($item)
-                        return
-                            ($f, fn:string-join(($pub, $id, $vols, $parts, $scope), ''))
+                        return ($f, $journal, $vol_no, $pub, $scope)
                     }</li>
+                else
+                        <li>{
+                            let $authors := mpese-text:bibl-author($item)
+                            let $title := mpese-text:bibl-title($item)
+                            let $pub := mpese-text:bibl-pub($item)
+                            let $id := mpese-text:bibl-idno($item)
+                            let $vols := mpese-text:biblio-vol($item)
+                            let $parts := mpese-text:biblio-part($item)
+                            let $seq := ($authors, $title)
+                            let $f := for $item at $pos in $seq
+                                return
+                                    if ($item and $seq[$pos + 1]) then
+                                        ($item, text { ', '})
+                                    else
+                                        $item
+                            let $scope := mpese-text:biblScopePrefix($item)
+                            return
+                                ($f, fn:string-join(($pub, $id, $vols, $parts, $scope), ''))
+                        }</li>
         }</ul>
 
 };
@@ -831,6 +851,21 @@ declare function mpese-text:contemporary-witnesses($node as node (), $model as m
 declare function mpese-text:modern-witnesses($node as node (), $model as map (*)) {
 
     let $witnesses := doc($model('text'))//tei:sourceDesc/tei:listBibl[@xml:id = 'modern_print_witness']/tei:bibl
+
+    return
+        mpese-text:bibliography($witnesses)
+};
+
+(:~
+ : Display the modern selected criticism.
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @return the list of selected criticism.
+:)
+declare function mpese-text:selected-criticism($node as node (), $model as map (*)) {
+
+    let $witnesses := doc($model('text'))//tei:sourceDesc/tei:listBibl[@xml:id = 'selected_criticism']/tei:bibl
 
     return
         mpese-text:bibliography($witnesses)
