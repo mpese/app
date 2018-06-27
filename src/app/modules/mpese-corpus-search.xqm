@@ -460,8 +460,8 @@ declare function mpese-search:build-query-term($token, $type) {
 declare function mpese-search:build-query($phrase, $type, $exclude) {
 
     (: tokenize the strings - clean up whitespace :)
-    let $search_tokens := fn:tokenize(fn:normalize-space($phrase), '\s+')
-    let $exclude_tokens := fn:tokenize(fn:normalize-space($exclude), '\s+')
+    let $search_tokens := fn:tokenize(fn:normalize-space(fn:lower-case($phrase)), '\s+')
+    let $exclude_tokens := fn:tokenize(fn:normalize-space(fn:lower-case($exclude)), '\s+')
     let $query :=
         <query>{
             (: wildcard search all for white space :)
@@ -493,7 +493,7 @@ declare function mpese-search:build-query($phrase, $type, $exclude) {
 declare function mpese-search:build-simple-query($phrase) {
 
     (: :)
-    let $tmp := fn:normalize-space($phrase)
+    let $tmp := fn:normalize-space(fn:lower-case($phrase))
     return
         if (fn:starts-with($tmp, '"') and fn:ends-with($tmp, '"')) then
             mpese-search:build-query(fn:replace($tmp, '"', ''), 'phrase', ())
