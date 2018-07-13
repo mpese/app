@@ -153,6 +153,43 @@ declare function local:dashboard() {
         local:default())
 };
 
+(: handle URL to a text:)
+declare function local:texts() {
+    (: work out name of the file :)
+    let $file := fn:concat(local:item('text'), '.xml')
+    return
+        (: throw a 404 if the file doesn't exist :)
+        if (fn:not(fn:doc-available('/db/mpese/tei/corpus/texts/' || $file))) then
+            (response:set-status-code(404), local:dispatch('/sub404.html'))
+        else
+            (: simple xml, used for processing with VARD :)
+            if (fn:ends-with($exist:path, '.simple.xml')) then
+                local:serialize-simple-xml($file)
+            (: TEI/XML :)
+            else if (fn:ends-with($exist:path, '.xml')) then
+                local:serialize-text-xml($file)
+            (: we want a PDF :)
+            else if (fn:ends-with($exist:path, '.pdf')) then
+                local:serialize-text-pdf($exist:path, $file)
+            (: a txt file :)
+            else if (fn:ends-with($exist:path, '.txt')) then
+                local:serialize-text-txt($file)
+            (: HTML version of the text :)
+            else
+                local:dispatch-attribute('/text.html', 'text', $file)
+};
+
+(: handle URL to a manuscript :)
+declare function local:mss() {
+    let $file := fn:concat(local:item('mss'), '.xml')
+    return
+        if (fn:not(fn:doc-available('/db/mpese/tei/corpus/mss/' || $file))) then
+            (response:set-status-code(404), local:dispatch('/sub404.html'))
+        else
+            local:dispatch-attribute('/mss.html', 'mss', $file)
+};
+
+
 util:log('INFO', ($exist:path)),
 
 
@@ -194,41 +231,11 @@ else if (fn:matches($exist:path, '^[^\.]*[^/]$')) then
     (util:log('INFO', ('URL without trailing slash')),
     local:redirect-with-slash())
 else if (fn:matches($exist:path, '^(/m/)(\w+|%20)+\.html$')) then
-    (util:log('INFO', (' new mss homepage')),
-    local:dispatch-attribute('/mss.html', 'mss', concat(local:item('mss'), '.xml')))
+    local:mss()
 else if (fn:matches($exist:path, '^(/t/)(\w+|%20)+\.(html|simple\.xml|xml|pdf|txt)$')) then
-    let $file := fn:concat(local:item('text'), '.xml')
-    return
-        if (fn:ends-with($exist:path, '.simple.xml')) then
-            local:serialize-simple-xml($file)
-        else if (fn:ends-with($exist:path, '.xml')) then
-            local:serialize-text-xml($file)
-        else if (fn:ends-with($exist:path, '.pdf')) then
-            local:serialize-text-pdf($exist:path, $file)
-        else if (fn:ends-with($exist:path, '.txt')) then
-            local:serialize-text-txt($file)
-        else
-            local:dispatch-attribute('/text.html', 'text', $file)
+    local:texts()
 else if (fn:matches($exist:path, '^(/p/)(\w+|%20)+\.html$')) then
-    (util:log('INFO', (' new person homepage')),
-    local:dispatch-attribute('/person.html', 'person_id', local:item('person_id')))
-else if ($exist:path eq '/about.html') then
-    (util:log('INFO', ("About page")),
-    local:dispatch('/about.html'))
-else if ($exist:path eq '/advanced.html') then
-    (util:log('INFO', ("Advanced search form")),
-    local:dispatch('/advanced.html'))
-else if ($exist:path eq '/results.html') then
-    (util:log('INFO', ("Advanced search results")),
-    local:dispatch('/results.html'))
-else if ($exist:path eq '/introduction.html') then
-    local:dispatch('/introduction.html')
-else if ($exist:path eq '/scope.html') then
-    local:dispatch('/scope.html')
-else if ($exist:path eq '/conventions.html') then
-    local:dispatch('/conventions.html')
-else if ($exist:path eq '/teaching.html') then
-    local:dispatch('/teaching.html')
+    local:dispatch-attribute('/person.html', 'person_id', local:item('person_id'))
 else if (fn:starts-with($exist:path, "/resources/")) then
     (:<ignore xmlns="http://exist.sourceforge.net/NS/exist">:)
         (:<set-header name="Cache-Control" value="max-age=3600, must-revalidate"/>:)
@@ -238,6 +245,8 @@ else if (fn:starts-with($exist:path, "/dashboard/")) then
     (: forward dashboard :)
     (util:log('INFO', ('dashboard URL')),
     local:dashboard())
+else if (fn:ends-with($exist:path, ".html")) then
+    local:dispatch($exist:path)
 else
     (: everything else is passed through :)
     (util:log('INFO', ('Default handling')),
