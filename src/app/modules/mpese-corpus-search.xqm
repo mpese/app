@@ -22,7 +22,7 @@ import module namespace utils = "http://mpese.rit.bris.ac.uk/utils/" at 'utils.x
 (: Text search against the <tei:title/> of the document. Ordered by the title. :)
 declare function mpese-search:all() as element()* {
     <results>{
-        for $result in fn:collection($config:mpese-tei-corpus-texts)//tei:TEI
+        for $result in fn:collection($config:mpese-tei-corpus-texts)
         order by $result//tei:titleStmt/tei:title/text()
         return
             <result uri="{fn:base-uri($result)}">
@@ -729,7 +729,7 @@ function mpese-search:advanced-form($node as node (), $model as map (*),
 
 declare
 %templates:default("page", 1)
-%templates:default("num", 10)
+%templates:default("num", 20)
 %templates:default("search", "")
 %templates:default("type", "any")
 %templates:default("exclude", "")
