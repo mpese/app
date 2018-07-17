@@ -294,9 +294,30 @@ declare function mpese-search:pagination-link($page, $map, $type) {
 };
 
 declare function mpese-search:pagination($page, $pages, $map, $label, $type) {
+    (: max pages shown in pagination :)
+    let $max_pag_pages := 10
+
+    (: current pagination part :)
+    let $current_pag_part := ceiling($page div $max_pag_pages)
+
+    (: starting page number in pagination :)
+    let $offset := $max_pag_pages - 1
+    let $pag_start := xs:integer($current_pag_part * $max_pag_pages - $offset)
+    let $pag_end := if (($pag_start + $offset) > $pages) then $pages else ($pag_start + $offset)
+
+
+    return
     <nav id="paginaton" aria-label="{$label}">
         <div class="text-center">
             <ul class="pagination">
+                {
+                    if ($pages > $max_pag_pages) then
+                        if ($page eq 1) then
+                            <li class="page-item disabled"><a class="page-link" tabindex="-1" href="">First</a></li>
+                        else
+                            <li class="page-item"><a class="page-link" href="{mpese-search:pagination-link(1, $map, $type)}">First</a></li>
+                    else ()
+                }
                 {
                     if ($page eq 1) then
                         <li class="page-item disabled"><a class="page-link" tabindex="-1" href="">Previous</a></li>
@@ -304,7 +325,7 @@ declare function mpese-search:pagination($page, $pages, $map, $label, $type) {
                         <li class="page-item"><a class="page-link" href="{mpese-search:pagination-link($page - 1, $map, $type)}">Previous</a></li>
                 }
                 {
-                    for $count in 1 to $pages
+                    for $count in $pag_start to $pag_end
                         return
                             if ($count eq $page) then
                                 <li class="page-item active"><a class="page-link" href="{mpese-search:pagination-link($count, $map, $type)}">{$count}</a></li>
@@ -316,6 +337,14 @@ declare function mpese-search:pagination($page, $pages, $map, $label, $type) {
                         <li class="page-item disabled"><a class="page-link" tabindex="-1" href="">Next</a></li>
                     else
                         <li class="page-item"><a class="page-link" href="{mpese-search:pagination-link($page + 1, $map, $type)}">Next</a></li>
+                }
+                {
+                    if ($pages > $max_pag_pages) then
+                        if ($page eq $pages) then
+                            <li class="page-item disabled"><a class="page-link" tabindex="-1" href="">Last</a></li>
+                        else
+                            <li class="page-item"><a class="page-link" href="{mpese-search:pagination-link($pages, $map, $type)}">Last</a></li>
+                    else ()
                 }
             </ul>
         </div>
@@ -576,7 +605,7 @@ declare function mpese-search:advanced($phrase, $type, $exclude, $image, $start-
 
     let $query2 := concat($results_predicate, $doc_predicate, $date_predicate, $where_predicate, $order_by_predicate, $return_predicate)
 
-    let $return_results := <results>{util:eval($query2)}</results>
+    let $return_results := <results>{util:eval($query2, fn:true())}</results>
 
     return $return_results
 };
@@ -614,7 +643,7 @@ declare %templates:default("search", "") %templates:default("results_order", "re
 };
 
 (: homepage with search  :)
-declare %templates:default("page", 1) %templates:default("num", 10) %templates:default("search", "")
+declare %templates:default("page", 1) %templates:default("num", 20) %templates:default("search", "")
     %templates:default("results_order", "relevance") function mpese-search:default($node as node (), $model as map (*), $page as xs:integer, $num as xs:integer,
                                   $search as xs:string, $results_order as xs:string)  {
 
