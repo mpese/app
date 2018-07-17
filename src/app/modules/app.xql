@@ -88,3 +88,9 @@ declare function app:advisory($node as node(), $model as map(*)) {
     </div>
 };
 
+(: Give copyright details, ranges to the current year :)
+declare function app:copyright($node as node(), $model as map(*)) {
+    let $date := fn:current-date()
+    let $year := fn:year-from-date($date)
+    return text { '&#169; 2017–' || $year || ' University of Birmingham, University of Bristol.' }
+};
