@@ -138,7 +138,7 @@ declare function utils:name-from-uri($uri as xs:string) as xs:string  {
 declare function utils:search-nav($base-uri) as element()? {
 
     let $basic-search-params := ('mpese-search-search', 'mpese-search-page', 'mpese-search-order')
-    let $search-type := request:get-cookie-value('mpese-search-type')
+    let $search-type := util:base64-decode(request:get-cookie-value('mpese-search-type'))
     let $url := if ($search-type eq 'basic') then $base-uri || '?' else $base-uri || 'results.html?'
 
     let $params := if ($search-type eq 'basic') then
