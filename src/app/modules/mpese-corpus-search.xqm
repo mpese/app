@@ -23,10 +23,13 @@ import module namespace utils = "http://mpese.rit.bris.ac.uk/utils/" at 'utils.x
 declare function mpese-search:all() as element()* {
     <results>{
         for $result in fn:collection($config:mpese-tei-corpus-texts)
-        order by $result//tei:titleStmt/tei:title/text()
+        order by $result//tei:titleStmt/tei:title/string()
         return
             <result uri="{fn:base-uri($result)}">
-                <summary>{<em>{substring($result//tei:text[1]/tei:body/tei:p[1]/string(), 1, 200)} ...</em>}</summary>
+                {
+                    let $val := fn:substring($result//tei:text[1]/tei:body/tei:p[1]/string(), 1, 200)
+                    return if (fn:not(fn:normalize-space($val) eq '')) then <summary><em>{$val}</em> ...</summary> else ()
+                }
             </result>
     }</results>
 };
@@ -372,7 +375,7 @@ declare function mpese-search:all($page as xs:integer, $num as xs:integer)  {
     let $total := fn:count($sorted-results/result)
     let $pages := mpese-search:pages-total($total, $num)
     let $results := mpese-search:paginate-results($sorted-results, $start, $num)
-    let $message := if ($total eq 1) then $total || ' text available' else $total || " texts available"
+    let $message := mpese-search:results-message($total)
 
     return
         ( response:set-cookie('mpese-search-search', util:base64-encode('')), response:set-cookie('mpese-search-page', util:base64-encode($page)),
@@ -397,9 +400,8 @@ declare function mpese-search:all($page as xs:integer, $num as xs:integer)  {
                 let $mss := mpese-text:mss-details($item)
                 let $mss-label := mpese-mss:ident-label($mss)
                 let $author-label := mpese-text:author-label($authors)
-                let $text := doc($uri)//tei:text[1]/tei:body/tei:p[1]/string()
                 let $link := './t/' || $name || '.html'
-                let $snippet := <em>{fn:substring($text, 1, 200)} ...</em>
+                let $snippet := $result/summary
                 let $images := if (exists($item//tei:facsimile/tei:graphic/@n)) then
                     (text{' '}, <span class="glyphicon glyphicon-camera" aria-hidden="true"></span>,
                     <span class="sr-only">Images available</span>) else ()

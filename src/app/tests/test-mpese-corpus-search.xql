@@ -8,6 +8,8 @@ declare namespace tei = 'http://www.tei-c.org/ns/1.0';
 import module namespace mpese-search = 'http://mpese.ac.uk/corpus/search/'  at '../modules/mpese-corpus-search.xqm';
 
 
+
+
 (: Test the calculation of the starts of a results sequence, based on the selected page :)
 declare
 %test:arg("page", 1) %test:arg("num", 10) %test:assertEquals(1)
@@ -31,7 +33,7 @@ function test-search:pages-results-1($total as xs:integer, $num as xs:integer) a
 declare %test:assertTrue function test-search:default-all() {
     let $results := mpese-search:all()
     return
-        fn:count($results) > 0
+        fn:count($results/result) > 0
 };
 
 (: Test searching a keyword returns results :)
