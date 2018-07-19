@@ -3,20 +3,86 @@ xquery version "3.1";
 module namespace mpese-search = 'http://mpese.ac.uk/corpus/search/';
 
 declare namespace tei = 'http://www.tei-c.org/ns/1.0';
-declare namespace xi = 'http://www.w3.org/2001/XInclude';
 
+import module namespace ft = 'http://exist-db.org/xquery/lucene';
 import module namespace kwic = 'http://exist-db.org/xquery/kwic';
 import module namespace util = 'http://exist-db.org/xquery/util';
-import module namespace request = 'http://exist-db.org/xquery/request';
-import module namespace session = 'http://exist-db.org/xquery/session';
 import module namespace templates = 'http://exist-db.org/xquery/templates';
-import module namespace xmldb = 'http://exist-db.org/xquery/xmldb';
 import module namespace functx = 'http://www.functx.com' at 'functx-1.0.xql';
 import module namespace config = 'http://mpese.rit.bris.ac.uk/config' at 'config.xqm';
 import module namespace mpese-text = 'http://mpese.rit.bris.ac.uk/corpus/text/' at 'mpese-corpus-text.xqm';
 import module namespace mpese-mss = 'http://mpese.rit.bris.ac.uk/corpus/mss/' at 'mpese-corpus-mss.xqm';
 import module namespace utils = 'http://mpese.rit.bris.ac.uk/utils/' at 'utils.xql';
 
+
+(: ---------- CONSTRUCT FREE TEXT SEARCH ---------- :)
+
+(:~
+ :  Build a suitable search term for a token. If the keyword ends in ~ then <fuzzy/> or * then
+ :  <wildcard/>, otherwise <term/>. Add an attribute if needed.
+ :)
+declare function mpese-search:build-query-term($token, $type) {
+    let $elmnt :=   if (fn:ends-with($token, '~')) then
+                        let $length := fn:string-length($token)
+                        return
+                            if ($length eq 1) then ()
+                            else <fuzzy>{fn:substring($token, 1, ($length - 1))}</fuzzy>
+                    else if (contains($token, '*')) then <wildcard>{$token}</wildcard>
+                    else <term>{$token}</term>
+    return
+        if ($elmnt and $type eq 'all') then
+            element { node-name($elmnt) } {attribute { 'occur' } { 'must'}, $elmnt/string()}
+        else
+        $elmnt
+};
+
+(: wrap a search query in eXist's XML wrapper :)
+declare function mpese-search:build-query($phrase, $type, $exclude) {
+
+    (: tokenize the strings - clean up whitespace :)
+    let $search_tokens := fn:tokenize(fn:normalize-space(fn:lower-case($phrase)), '\s+')
+    let $exclude_tokens := fn:tokenize(fn:normalize-space(fn:lower-case($exclude)), '\s+')
+    let $query :=
+        <query>{
+            (: wildcard search all for white space :)
+            if (fn:empty($search_tokens)) then
+                ()
+            else
+                if ($type eq 'phrase') then
+                    <phrase>{fn:string-join($search_tokens, ' ')}</phrase>
+                else
+                    <bool>{
+                        for $token in $search_tokens
+                            return mpese-search:build-query-term($token, $type)
+                    } {
+                        for $token in $exclude_tokens
+                            return
+                                <term occur="not">{$token}</term>
+                    }</bool>
+        }</query>
+    return $query
+};
+
+(:
+:~
+ : Create query XML for a simple search.
+ :
+ : @param $phrase - original search phrase.
+ : @returns XML for a lucene query.
+:)
+declare function mpese-search:build-simple-query($phrase) {
+
+    (: :)
+    let $tmp := fn:normalize-space(fn:lower-case($phrase))
+    return
+        if (fn:starts-with($tmp, '"') and fn:ends-with($tmp, '"')) then
+            mpese-search:build-query(fn:replace($tmp, '"', ''), 'phrase', ())
+        else
+            let $tokens := for $token in fn:tokenize($tmp) return
+                                if (not(fn:ends-with($token, '*')) and not(fn:ends-with($token, '~'))) then
+                                    $token || '*' else $token
+            return mpese-search:build-query(fn:string-join($tokens, ' '), (), ())
+};
 
 (: ---------- SEARCHING AND PROCESSING RESULTS ---------- :)
 
@@ -62,9 +128,9 @@ declare function mpese-search:search-original($query) {
  : @param $query - an eXist <query/> to pass to Lucene.
  : @return <results/> object.
 :)
-declare function mpese-search:search-normalized($phrase) {
+declare function mpese-search:search-normalized($query) {
     <result>{
-        for $doc in fn:collection($config:mpese-normalized-texts)/*[ft:query(.,$phrase)]
+        for $doc in fn:collection($config:mpese-normalized-texts)/*[ft:query(.,$query)]
             let $uri := fn:base-uri($doc)
             let $tmp := fn:replace($uri, $config:mpese-normalized-texts, $config:mpese-tei-corpus-texts)
             return
@@ -76,10 +142,7 @@ declare function mpese-search:search-normalized($phrase) {
 
 
 (: Search against title, author and text :)
-declare function mpese-search:search($phrase) {
-
-    if ($phrase eq '' or functx:all-whitespace($phrase)) then mpese-search:all() else
-        let $query := mpese-search:build-simple-query($phrase)
+declare function mpese-search:search($query) {
 
         let $a :=  mpese-search:search-original($query)
         let $b :=  mpese-search:search-normalized($query)
@@ -103,7 +166,9 @@ declare function mpese-search:search($phrase) {
 
 declare function mpese-search:search($phrase, $results_order) {
 
-    let $results := mpese-search:search($phrase)
+    let $results := if ($phrase eq '' or functx:all-whitespace($phrase)) then mpese-search:all()
+        else let $query := mpese-search:build-query($phrase, (), ())
+            return (mpese-search:search($query), util:log('INFO', ($query)))
 
     return
     <results>{
@@ -120,8 +185,60 @@ declare function mpese-search:search($phrase, $results_order) {
     }</results>
 };
 
-(:
-:~
+declare function mpese-search:advanced($phrase, $type, $exclude, $image, $start-range, $end-range, $order-by) {
+
+    (: construct the query xml: will be pulled in via util:eval :)
+    (: unfiltered results :- parsed in the eval statement at the botton :)
+    let $results := if ($phrase eq '' or functx:all-whitespace($phrase)) then mpese-search:all()
+        else let $query := mpese-search:build-query($phrase, $type, $exclude)
+            return (mpese-search:search($query), util:log('INFO', ($query)))
+
+    (:::: we create the search as strings that can be evaluated ::::)
+
+    (: we are filtering of <result/> objects :)
+    let $results_predicate := "for $result in $results/result "
+
+    (: need the doc of each result :)
+    let $doc_predicate := "let $doc := doc($result/@uri/string()) "
+
+    (: we need the date of the doc :)
+    let $date_predicate := "let $date := substring($doc//tei:creation/tei:date[1]/@when/string(), 1, 4) "
+
+    (: are we filtering for images :)
+    let $image_predicate := if ($image eq 'yes') then "exists($doc//tei:facsimile) " else ()
+
+    (: start date? :)
+    let $start_date := if (not($start-range eq '' or empty($start-range))) then "number($date) >= number($start-range)" else ()
+
+    (: end date? :)
+    let $end_date := if (not($end-range eq '' or empty($end-range))) then "number($date) <= number($end-range)" else ()
+
+    (: date filter :)
+    let $date_filter := if (not(empty($start_date) or empty($end_date))) then fn:string-join(($start_date, $end_date) , ' and ') else ()
+
+    (: might be filtering on date and images :)
+    let $where_filter := fn:string-join(($date_filter, $image_predicate), ' and ')
+
+    (: where predicate :)
+    let $where_predicate := if ($where_filter) then 'where ' || $where_filter else ()
+
+    (: order by :)
+    let $order_by_predicate := if ($order-by eq 'date_d') then ' order by $date descending '
+                               else if ($order-by eq 'witness_d') then ' order by count($doc//tei:listBibl[@xml:id="mss_witness_generated"]/tei:bibl) descending '
+                               else if ($order-by eq 'witness_a') then ' order by count($doc//tei:listBibl[@xml:id="mss_witness_generated"]/tei:bibl) ascending '
+                               else ' order by $date ascending '
+
+    let $return_predicate := " return if ($doc) then $result else ()"
+
+    let $query2 := concat($results_predicate, $doc_predicate, $date_predicate, $where_predicate, $order_by_predicate, $return_predicate)
+
+    let $return_results := <results>{(util:eval($query2, fn:true()), util:log('INFO', ($query2)))}</results>
+
+    return $return_results
+};
+
+
+(:~
  : Return a subset of the results to support pagination.
  :
  : @param $results - the unpaginated results.
@@ -136,8 +253,7 @@ declare function mpese-search:paginate-results($results as element()*, $start as
     }</results>
 };
 
-(:
-:~
+(:~
  : Calculate the starting point in a sequence of results based on the current page.
  :
  : @param $page - the current page.
@@ -148,8 +264,7 @@ declare function mpese-search:seq-start($page as xs:integer, $num as xs:integer)
     ($page * $num) - ($num - 1)
 };
 
-(:
-:~
+(:~
  : Calculate the total number of pages based on the results.
  :
  : @param $total - the number of results.
@@ -193,7 +308,6 @@ declare function mpese-search:result-title($doc) {
     let $date  := ( if (fn:string-length($tmp_date) > 0) then $tmp_date else fn:string('No date') )
     return
         concat($title, ' (', $date, ')')
-
 };
 
 (:~
@@ -204,23 +318,22 @@ declare function mpese-search:result-title($doc) {
  : @param $author - the author(s)
  : @param $snippet - preview of matching text
  : @param $mss - the manuscript the text is from
+ : @param $witneses – number of witnesses
  : @returns a formatted result item
 :)
 declare function mpese-search:result-entry($link as xs:string, $title as xs:string, $author as xs:string*,
-        $snippet as node()*, $mss as xs:string, $images as node()*, $transcripts as node()*) as node() {
+                                           $snippet as node()*, $mss as xs:string, $images as node()*,
+                                           $transcripts as node()*, $witnesses as xs:string) as node() {
     <a href="{$link}" class="list-group-item">{
         <div class="result-entry">
             <h4 class="list-group-item-heading result-entry-title">{$title}{$images}{$transcripts}</h4>
             <p class="list-group-item-text result-entry-author">{$author}</p>
             <p class="list-group-item-text result-entry-snippet">{$snippet}</p>
+            <p class="list-group-item-text result-entry-witness">{$witnesses}</p>
             <p class="list-group-item-text result-entry-mss"><strong>{$mss}</strong></p>
         </div>
     }</a>
 };
-
-
-(:// MAKE AUTHORS A METHOD:)
-(:// MAKE IMAHES A METHOD:)
 
 (:~
  : Create an application specific partial URL for rendering a text
@@ -236,6 +349,7 @@ declare function mpese-search:text-link($item as node()) as xs:string {
 (:~
  : Do we show 'authors' who have been assigned role? This can make a long list with
  : signatories. We could update this method to filter the type of role.
+ :
  : @param $item - an item from a result set.
  : @return a partal app URL for a text
  :)
@@ -246,6 +360,12 @@ declare function mpese-search:author-list($item, $include_roles as xs:boolean) {
         $item//tei:fileDesc/tei:titleStmt/tei:author[not(@role)]
 };
 
+(:~
+ : Show an icon to represent a search result has images?
+ :
+ : @param $item – an item from a result set
+ : @return an icon or nothing
+ :)
 declare function mpese-search:images($item) as node()* {
     if (count($item//tei:facsimile/tei:graphic) > 0) then
         (text{' '}, <span class="glyphicon glyphicon-camera" aria-hidden="true"></span>,
@@ -253,63 +373,61 @@ declare function mpese-search:images($item) as node()* {
     else ()
 };
 
+(:~
+ : Show an icon to represent a search result has a transcript?
+ :
+ : @param $item – an item from a result set
+ : @return an icon or nothing
+ :)
+declare function mpese-search:transcript($item) as node()* {
+    if (fn:not(fn:normalize-space($item//tei:text[1]) eq '')) then
+        (text{' '}, <span class="glyphicon glyphicon-file" aria-hidden="true"></span>,
+        <span class="sr-only">Transcript available</span>)
+    else ()
+};
+
+(:~
+ : Give a witness count. Add 1 to include that text ... 0 looks weird
+ :
+ : @param $item – an item from a result set
+ :)
 declare function mpese-search:witness-count($item) as xs:string {
-    let $total := count($item//tei:listBibl[@xml:id='mss_witness_generated']/tei:bibl) + number(1)
+    let $total := fn:count($item//tei:listBibl[@xml:id='mss_witness_generated']/tei:bibl) + fn:number(1)
     return
         if ($total eq 1) then '1 witness' else $total || ' witnesses'
 };
 
-declare function mpese-search:result-entry($item as node(), $summary as node(), $show_kwic as xs:boolean) as node() {
-
-    (: link to the text :)
-    let $link := mpese-search:text-link($item)
-
-    (: title to display :)
-    let $title := mpese-text:title-label($item)
-
-    (: authors to display :)
-    let $authors :=  mpese-search:author-list($item, false())
-    let $author-label := mpese-text:author-label($authors)
-
-    (: mss details to display :)
-    let $mss := mpese-text:mss-details($item)
-    let $mss-label := mpese-mss:ident-label($mss)
-
-    (: kiwc in snippet :)
-    let $snippet := if ($show_kwic) then $summary
-            else <em>{substring($item//tei:text[1]/tei:body/tei:p[1]/string(), 1, 200)} ...</em>
-    let $images := mpese-search:images($item)
-
-    (: witnesses :)
-    let $witnesses := mpese-search:witness-count($item)
-
-    return
-        <a href="{$link}" class="list-group-item">{
-        <div class="result-entry">
-            <h4 class="list-group-item-heading result-entry-title">{$title}{$images}</h4>
-            <p class="list-group-item-text result-entry-author">{$author-label}</p>
-            <p class="list-group-item-text result-entry-snippet">{$snippet}</p>
-            <p class="list-group-item-text result-entry-witness">{$witnesses}</p>
-            <p class="list-group-item-text result-entry-mss"><strong>{$mss-label}</strong></p>
-        </div>}
-    </a>
-};
-
-
-
+(:~
+ : Create a pagination link, i.e. a link to a page in the navigation.
+ :
+ : @page – the page in the navigation
+ : @map – map of key/value pairs that will be request parameters
+ : @type – type of search ('basic', adv')
+ : @return a string that represents a URL
+ :)
 declare function mpese-search:pagination-link($page, $map, $type) {
     let $base := if ($type eq 'adv') then './results.html?page=' else './?page='
     let $params := for $key in map:keys($map)
         return
         if ($key eq 'page') then ()
-        else if ($map($key) eq 'basic') then ()
         else if ($map($key) eq '') then ()
-        else $key || '=' || fn:encode-for-uri($map($key))
+        else ($key || '=' || fn:encode-for-uri($map($key)))
     return
         $base || $page || '&amp;' || fn:string-join($params, '&amp;')
 };
 
-declare function mpese-search:pagination($page, $pages, $map, $label, $type) {
+(:~
+ : Create a navigation bar that provides pagination for search results. The pagination will only
+ : show 10 pages at a time.
+ :
+ : @page – the currently selected page
+ : @pages - the total number of pages (but we only show 10 max)
+ : @map – a map of key/value pairs used to construct a URL
+ : @label – label for the pagination (used in aria-label)
+ : @return a <nav/> with pagination.
+ :)
+declare function mpese-search:pagination($page as xs:integer, $pages as xs:integer,
+    $map as map(xs:string, xs:string), $label as xs:string, $type as xs:string) as node() {
 
     (: max pages shown in pagination :)
     let $max_pag_pages := 10
@@ -374,7 +492,18 @@ declare function mpese-search:matches($result) {
         return $match//*
 };
 
-declare function mpese-search:cookies($type, $map) {
+
+(:~
+ : Set cookies with values of parameters that can be used in reconstructing the URL of a search,
+ : including pagination, so we can return to the search results after the end-user as
+ : navigated to a text and beyond!
+ :
+ : @type the type of meeting ('adv','basic'), since they have a different URL for the results
+ : @param a map of the key/value pairs that can construct a search URL
+ : @return set a cookie
+ :)
+declare function mpese-search:cookies($type as xs:string, $map as map(xs:string, xs:string)) as item()? {
+    utils:reset-cookies(),
     response:set-cookie('mpese-search-type', $type),
     for $key in map:keys($map)
         return response:set-cookie('mpese-search-' || $key, util:base64-encode(($map($key))))
@@ -387,20 +516,19 @@ declare function mpese-search:cookies($type, $map) {
  : resultset and the calling function creates this subset. This function then queries the documents
  : of interest to pull out additional information which is needed in the results page.
  :
- : @param $search – the search string
  : @param $page – the current pages number in the pagination
  : @param $order – type of results ordering
  : @param $total – total number of results
  : @param $results – the results to display (possibly a subset of all)
  : @return a <div/> with the search results for rendering in the browser
  :)
-declare function mpese-search:render-results($search as xs:string, $page as xs:integer, $order as xs:string,
-                                             $type as xs:string, $pages as xs:integer, $total as xs:integer,
-                                             $results as node(), $map) as node()* {
+declare function mpese-search:render-results($page as xs:integer, $type as xs:string, $pages as xs:integer,
+                                             $total as xs:integer, $results as node(),
+                                             $map as map(xs:string, xs:string)) as node()* {
 
     let $message := mpese-search:results-message($total)
     return
-    ( mpese-search:cookies($type, $map), util:log('INFO', ($type)),
+    (
     <div id="search-results">
         {
             if ($type eq 'adv') then <p class="text-center results-total">{$message, text{" "}}
@@ -411,7 +539,6 @@ declare function mpese-search:render-results($search as xs:string, $page as xs:i
             if ($pages > 1) then
                 mpese-search:pagination($page, $pages, $map, "Top navigation", $type)
             else
-
                 ""
         }
         <div class="list-group">{
@@ -419,21 +546,18 @@ declare function mpese-search:render-results($search as xs:string, $page as xs:i
             for $result in $results/result
                 let $uri := $result/@uri/fn:string()
                 let $item := doc($uri)/tei:TEI
-                let $name := utils:name-from-uri($uri)
                 let $title := mpese-text:title-label($item)
                 let $authors := $item//tei:fileDesc/tei:titleStmt/tei:author[not(@role)]
                 let $mss := mpese-text:mss-details($item)
                 let $mss-label := mpese-mss:ident-label($mss)
                 let $author-label := mpese-text:author-label($authors)
-                let $link := './t/' || $name || '.html'
+                let $link := mpese-search:text-link($item)
                 let $snippet := $result/summary
-                let $images := if (exists($item//tei:facsimile/tei:graphic/@n)) then
-                    (text{' '}, <span class="glyphicon glyphicon-camera" aria-hidden="true"></span>,
-                    <span class="sr-only">Images available</span>) else ()
-                let $transcripts := if (not(fn:normalize-space($item//tei:text) eq '')) then
-                    (text{' '}, <span class="glyphicon glyphicon-file" aria-hidden="true"></span>,
-                    <span class="sr-only">Transcript available</span>) else ()
-                return mpese-search:result-entry($link, $title, $author-label, $snippet, $mss-label, $images, $transcripts)
+                let $images := mpese-search:images($item)
+                let $transcripts := mpese-search:transcript($item)
+                let $witnesses := mpese-search:witness-count($item)
+                return mpese-search:result-entry($link, $title, $author-label, $snippet, $mss-label, $images,
+                                                 $transcripts, $witnesses)
         }
         </div>
         {
@@ -473,21 +597,23 @@ declare function mpese-search:all($page as xs:integer, $num as xs:integer) as no
     (: subset :)
     let $results_subset := mpese-search:paginate-results($results, $start, $num)
 
-    (: rebuild search in pagination :)
-    let $map := map { 'search' := '', 'type' := $type, 'exclude' := '', 'start-range' := '',
-                      'end-range' := '', 'image' := '', 'order-by' := '', 'page' := $page }
+    (: rebuild search in pagination / cookie after navigating :)
+    let $map := map { 'page' := $page }
 
     (: render the subset :)
     return
-        mpese-search:render-results('', $page, '', $type, $pages, $total, $results_subset, $map)
+        mpese-search:render-results($page, $type, $pages, $total, $results_subset, $map)
 };
 
 (:~
- : Basic search against the corpus. After getting the results we create a subset of the results based on which page
- : of results was requested to be displayed.
+ : Basic search against the corpus. After getting the results we create a subset of the results based
+ : on which page of results was requested to be displayed.
  :
  : @param $page – the selected page in the navigation
  : @param $num – the number of results to display per page.
+ : @param $search – the search string
+ : @param $order-by – order by date  ...
+ : @return search results
  :)
 declare function mpese-search:basic-search($page as xs:integer, $num as xs:integer, $search as xs:string,
                                            $order-by as xs:string) as node() * {
@@ -511,23 +637,37 @@ declare function mpese-search:basic-search($page as xs:integer, $num as xs:integ
     let $results_subset := mpese-search:paginate-results($results, $start, $num)
 
     (: rebuild search in pagination :)
-    let $map := map { 'search' := '', 'type' := $type, 'exclude' := '', 'start-range' := '',
+    let $map := map { 'search' := $search, 'exclude' := '', 'start-range' := '',
                       'end-range' := '', 'image' := '', 'order-by' := '', 'page' := $page }
 
     return
-        mpese-search:render-results($search, $page, $order-by, $type, $pages, $total, $results_subset, $map)
+        mpese-search:render-results($page, $type, $pages, $total, $results_subset, $map)
 };
 
-declare function mpese-search:advanced-search($page, $num, $search, $exclude, $image, $start-range, $end-range, $order-by) as node() {
+(:~
+ : Advanced search against the corpus. After getting the results we create a subset of the results based
+ : on which page of results was requested to be displayed.
+ :
+ : @param $page – the selected page in the navigation
+ : @param $num – the number of results to display per page
+ : @param $search – the search string
+ : @param $keyword-type – type of search on keyword, e.g. 'all'
+ : @param $exclude – keywords to exclude
+ : @param $start-range – start date range
+ : @param $end-date – end date range
+ : @param $order-by – order by date  ...
+ : @return search results
+ :)
+declare function mpese-search:advanced-search($page as xs:integer, $num as xs:integer, $search as xs:string,
+                                              $keyword_type as xs:string, $exclude as xs:string, $image as xs:string,
+                                              $start-range as xs:string, $end-range as xs:string,
+                                              $order-by as xs:string) as node() {
 
     (: type of search :)
     let $type := 'adv'
 
-    (: kwic on wildcard everything kills the app :)
-    let $show_kwic := if ($search eq '') then false() else true()
-
     (: all results, unpaginated :)
-    let $results := mpese-search:advanced($search, $type, $exclude, $image, $start-range, $end-range, $order-by)
+    let $results := mpese-search:advanced($search, $keyword_type, $exclude, $image, $start-range, $end-range, $order-by)
 
     (: total hits :)
     let $total := fn:count($results/result)
@@ -542,74 +682,12 @@ declare function mpese-search:advanced-search($page, $num, $search, $exclude, $i
     let $results_subset := mpese-search:paginate-results($results, $start, $num)
 
     (: rebuild search in pagination :)
-    let $map := map { 'search' := $search, 'type' := $type, 'exclude' := $exclude, 'start-range' := $start-range,
+    let $map := map { 'search' := $search, 'keyord-type' := $keyword_type, 'exclude' := $exclude, 'start-range' := $start-range,
                       'end-range' := $end-range, 'image' := $image, 'order-by' := $order-by, 'page' := $page }
 
-    return mpese-search:render-results($search, $page, $order-by, $type, $pages, $total, $results_subset, $map)
+    return mpese-search:render-results($page, $type, $pages, $total, $results_subset, $map)
 };
 
-declare function mpese-search:build-query-term($token, $type) {
-    let $elmnt :=   if (fn:ends-with($token, '~')) then
-                        let $length := fn:string-length($token)
-                        return
-                            if ($length eq 1) then ()
-                            else <fuzzy>{fn:substring($token, 1, ($length - 1))}</fuzzy>
-                    else if (contains($token, '*')) then <wildcard>{$token}</wildcard>
-                    else <term>{$token}</term>
-    return
-        if ($elmnt and $type eq 'all') then
-            element { node-name($elmnt) } {attribute { 'occur' } { 'must'}, $elmnt/string()}
-        else
-        $elmnt
-};
-
-(: wrap a search query in eXist's XML wrapper :)
-declare function mpese-search:build-query($phrase, $type, $exclude) {
-
-    (: tokenize the strings - clean up whitespace :)
-    let $search_tokens := fn:tokenize(fn:normalize-space(fn:lower-case($phrase)), '\s+')
-    let $exclude_tokens := fn:tokenize(fn:normalize-space(fn:lower-case($exclude)), '\s+')
-    let $query :=
-        <query>{
-            (: wildcard search all for white space :)
-            if (fn:empty($search_tokens)) then
-                ()
-            else
-                if ($type eq 'phrase') then
-                    <phrase>{fn:string-join($search_tokens, ' ')}</phrase>
-                else
-                    <bool>{
-                        for $token in $search_tokens
-                            return mpese-search:build-query-term($token, $type)
-                    } {
-                        for $token in $exclude_tokens
-                            return
-                                <term occur="not">{$token}</term>
-                    }</bool>
-        }</query>
-    return $query
-};
-
-(:
-:~
- : Create query XML for a simple search.
- :
- : @param $phrase - original search phrase.
- : @returns XML for a lucene query.
-:)
-declare function mpese-search:build-simple-query($phrase) {
-
-    (: :)
-    let $tmp := fn:normalize-space(fn:lower-case($phrase))
-    return
-        if (fn:starts-with($tmp, '"') and fn:ends-with($tmp, '"')) then
-            mpese-search:build-query(fn:replace($tmp, '"', ''), 'phrase', ())
-        else
-            let $tokens := for $token in fn:tokenize($tmp) return
-                                if (not(fn:ends-with($token, '*')) and not(fn:ends-with($token, '~'))) then
-                                    $token || '*' else $token
-            return mpese-search:build-query(fn:string-join($tokens, ' '), (), ())
-};
 
 (: get a list of available text types:)
 declare function mpese-search:keywords-list() {
@@ -636,57 +714,6 @@ declare function mpese-search:repositories() {
     order by $repo return if ($repo = "") then () else $repo
 };
 
-declare function mpese-search:advanced($phrase, $type, $exclude, $image, $start-range, $end-range, $order-by) {
-
-    (: construct the query xml: will be pulled in via util:eval :)
-    (: unfiltered results :- parsed in the eval statement at the botton :)
-    let $results := if ($phrase eq '' or functx:all-whitespace($phrase)) then mpese-search:all()
-        else let $query := mpese-search:build-query($phrase, $type, $exclude)
-            return mpese-search:search($query)
-
-    (:::: we create the search as strings that can be evaluated ::::)
-
-    (: we are filtering of <result/> objects :)
-    let $results_predicate := "for $result in $results/result "
-
-    (: need the doc of each result :)
-    let $doc_predicate := "let $doc := doc($result/@uri/string()) "
-
-    (: we need the date of the doc :)
-    let $date_predicate := "let $date := '' "
-
-    (: are we filtering for images :)
-    let $image_predicate := if ($image eq 'yes') then "exists($doc//tei:facsimile) " else ()
-
-    (: start date? :)
-    let $start_date := if (not($start-range eq '' or empty($start-range))) then "number($date) >= number($start-range)" else ()
-
-    (: end date? :)
-    let $end_date := if (not($end-range eq '' or empty($end-range))) then "number($date) <= number($end-range)" else ()
-
-    (: date filter :)
-    let $date_filter := if (not(empty($start_date) or empty($end_date))) then fn:string-join(($start_date, $end_date) , ' and ') else ()
-
-    (: might be filtering on date and images :)
-    let $where_filter := fn:string-join(($date_filter, $image_predicate), ' and ')
-
-    (: where predicate :)
-    let $where_predicate := if ($where_filter) then 'where ' || $where_filter else ()
-
-    (: order by :)
-    let $order_by_predicate := if ($order-by eq 'date_d') then ' order by $date descending '
-                               else if ($order-by eq 'witness_d') then ' order by count($doc//tei:listBibl[@xml:id="mss_witness_generated"]/tei:bibl) descending '
-                               else if ($order-by eq 'witness_a') then ' order by count($doc//tei:listBibl[@xml:id="mss_witness_generated"]/tei:bibl) ascending '
-                               else ' order by $date ascending '
-
-    let $return_predicate := " return if ($doc) then $result else ()"
-
-    let $query2 := concat($results_predicate, $doc_predicate, $date_predicate, $where_predicate, $order_by_predicate, $return_predicate)
-
-    let $return_results := <results>{util:eval($query2, fn:true())}</results>
-
-    return $return_results
-};
 
 
 (: ---------- TEMPLATE FUNCTIONS ----------- :)
@@ -750,14 +777,14 @@ function mpese-search:advanced-form($node as node (), $model as map (*),
         $search as xs:string, $type as xs:string, $exclude as xs:string, $start-range as xs:string,
         $end-range as xs:string, $image as xs:string, $order-by as xs:string)  {
 
-    let $input_any := if ($type eq 'any') then <input type="radio" name="type" id="adv_search_type1" value="any" checked="checked"/>
-                      else <input type="radio" name="type" id="adv_search_type1" value="any"/>
+    let $input_any := if ($type eq 'any') then <input type="radio" name="keyword_type" id="adv_search_type1" value="any" checked="checked"/>
+                      else <input type="radio" name="keyword_type" id="adv_search_type1" value="any"/>
 
     let $input_all := if ($type eq 'all') then <input type="radio" name="type" id="adv_search_type2" value="all" checked="checked"/>
-                      else <input type="radio" name="type" id="adv_search_type2" value="all"/>
+                      else <input type="radio" name="keyword_type" id="adv_search_type2" value="all"/>
 
     let $input_phrase := if ($type eq 'phrase') then <input type="radio" name="type" id="adv_search_type3" value="phrase" checked="checked"/>
-                         else <input type="radio" name="type" id="adv_search_type3" value="phrase"/>
+                         else <input type="radio" name="keyword_type" id="adv_search_type3" value="phrase"/>
 
     let $text_with_images := if ($image eq 'yes') then <input type="checkbox" name="image" id="adv_image_only" value="yes" checked="checked"/>
                              else <input type="checkbox" name="image" id="adv_image_only" value="yes"/>
@@ -848,45 +875,5 @@ function mpese-search:advanced-results($node as node (), $model as map (*), $pag
         $search as xs:string, $type as xs:string, $exclude as xs:string, $start-range as xs:string,
         $end-range as xs:string, $image as xs:string, $order-by as xs:string)  {
 
-    (: kwic on wildcard everything kills the app :)
-    let $show_kwic := if ($search eq '') then false() else true()
-
-    (: all results, unpaginated :)
-    let $results := mpese-search:advanced($search, $type, $exclude, $image, $start-range, $end-range, $order-by)
-
-    (: total number :)
-    let $total := count($results/result)
-
-    (: message about results :)
-    let $message := mpese-search:results-message($total)
-
-    (:work out pagination :)
-    let $start := mpese-search:seq-start($page, $num)
-    let $pages := mpese-search:pages-total($total, $num)
-    let $pag_results := mpese-search:paginate-results($results, $start, $num)
-
-    (:track search parameters :)
-    let $map := map { 'search' := $search, 'type' := $type, 'exclude' := $exclude, 'start-range' := $start-range,
-                      'end-range' := $end-range, 'image' := $image, 'order-by' := $order-by, 'page' := $page }
-
-    (: edit form link :)
-    let $edit-link := mpese-search:results-edit-search-link($map)
-
-    return
-    (mpese-search:cookies('adv', $map),
-    <div id="search-results">
-        <p class="text-center results-total">{$message, text{" "}} <a href="{$edit-link}">Edit search</a>.</p>
-        {
-            if ($pages > 1) then
-                mpese-search:pagination($page, $pages, $map, "Top navigation", "adv")
-            else
-                ""
-        }
-        <div class="list-group">{
-            for $r in $pag_results/result
-                let $uri := $r/@uri/fn:string()
-                let $item := doc($uri)/tei:TEI
-                return mpese-search:result-entry($item, $r/summary, $show_kwic)}
-        </div>
-    </div>)
+    mpese-search:advanced-search($page, $num, $search, $type, $exclude, $image, $start-range, $end-range, $order-by)
 };

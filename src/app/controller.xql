@@ -24,10 +24,9 @@ declare function local:item($type) {
 (: default: everything is passed through :)
 declare function local:default() {
     (: don't cache ... bad responses can be cached :)
-    (util:log('INFO', ('local:default')),
     <ignore xmlns="http://exist.sourceforge.net/NS/exist">
         <cache-control cache="no"/>
-    </ignore>)
+    </ignore>
 };
 
 (: add a / to a request and redirect :)
@@ -41,8 +40,7 @@ declare function local:redirect-with-slash() {
 declare function local:dispatch($uri as xs:string) {
     (: if HEAD or OPTIONS don't forward to the templating system :)
     if (request:get-method() = ('OPTIONS', 'HEAD')) then
-        (util:log('INFO', ('OPTIONS or HEAD in local:dispatch')),
-        response:set-status-code(200),<empty/>)
+        (response:set-status-code(200),<empty/>)
     (: otherwise, use the templating system :)
     else
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
@@ -53,7 +51,6 @@ declare function local:dispatch($uri as xs:string) {
 
 (: forward to html page via the view with attribute :)
 declare function local:dispatch-attribute($uri as xs:string, $param as xs:string, $value as xs:string) {
-    (util:log('INFO', (concat('local:dispatch-attribute', ' ', $uri, ' ', $param, ' ', $value))),
     <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
         <forward url="{$exist:controller}{$uri}">
             <set-attribute name="{$param}" value="{$value}"/>
@@ -65,7 +62,7 @@ declare function local:dispatch-attribute($uri as xs:string, $param as xs:string
             <forward url="{$exist:controller}/error-page.html" method="get"/>
             <forward url="{$exist:controller}/modules/view.xql"/>
         </error-handler>
-     </dispatch>)
+     </dispatch>
 };
 
 (: serialize some xml file :)
@@ -189,10 +186,6 @@ declare function local:mss() {
             local:dispatch-attribute('/mss.html', 'mss', $file)
 };
 
-
-util:log('INFO', ($exist:path)),
-
-
 response:set-header("Content-Security-Policy", "default-src 'self'; style-src 'self' 'unsafe-inline' https://bristoluni.atlassian.net; font-src 'self' data:; script-src 'self' 'sha256-L4AzP9MUZYNVRYika4e6OBmwyY3gi5eLSif8+rGWHjY=' https://bristoluni.atlassian.net; img-src 'self' https://bristoluni.atlassian.net data:; frame-src 'self' https://bristoluni.atlassian.net"),
 response:set-header("X-Content-Type-Options", "nosniff"),
 response:set-header("X-Frame-Options", "Deny"),
@@ -217,19 +210,15 @@ else if (not (request:get-method() = $methods) or (request:get-method() eq 'POST
 (: limit the options ... needs nginx to rewrite this though :)
 (: empty path :)
 else if ($exist:path eq "") then
-    (util:log('INFO', ('Homepage, no slash')),
-    local:redirect-with-slash())
+    local:redirect-with-slash()
 (: homepage, / or /index.html :)
 else if ($exist:path eq '/' or $exist:path eq '/index.html') then
-    (util:log('INFO', ("Hompage, / or /index.html")),
-    local:dispatch('/home.html'))
+    local:dispatch('/home.html')
 else if ($exist:path eq '/changes.html') then
-    (util:log('INFO', ('Changes')),
-    local:dispatch('/changes.html'))
+    local:dispatch('/changes.html')
 (: handle URL that ends without a slash, eg. /dashboard :)
 else if (fn:matches($exist:path, '^[^\.]*[^/]$')) then
-    (util:log('INFO', ('URL without trailing slash')),
-    local:redirect-with-slash())
+    local:redirect-with-slash()
 else if (fn:matches($exist:path, '^(/m/)(\w+|%20)+\.html$')) then
     local:mss()
 else if (fn:matches($exist:path, '^(/t/)(\w+|%20)+\.(html|simple\.xml|xml|pdf|txt)$')) then
@@ -243,11 +232,9 @@ else if (fn:starts-with($exist:path, "/resources/")) then
     local:default()
 else if (fn:starts-with($exist:path, "/dashboard/")) then
     (: forward dashboard :)
-    (util:log('INFO', ('dashboard URL')),
-    local:dashboard())
+    local:dashboard()
 else if (fn:ends-with($exist:path, ".html")) then
     local:dispatch($exist:path)
 else
     (: everything else is passed through :)
-    (util:log('INFO', ('Default handling')),
-    local:default())
+    local:default()

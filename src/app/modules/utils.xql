@@ -129,6 +129,15 @@ declare function utils:name-from-uri($uri as xs:string) as xs:string  {
     return $seq2[1]
 };
 
+declare function utils:reset-cookies() {
+    for $cookie in request:get-cookie-names()
+        return
+            if (fn:starts-with($cookie, 'mpese-')) then
+                response:set-cookie($cookie, '')
+            else
+                ()
+};
+
 (:~
  : We use cookies to keep track of searches, so we can have some basic navigation. We reconstruct
  : the parameters used in the search.
@@ -137,20 +146,17 @@ declare function utils:name-from-uri($uri as xs:string) as xs:string  {
  :)
 declare function utils:search-nav($base-uri) as element()? {
 
-    let $basic-search-params := ('mpese-search-search', 'mpese-search-page', 'mpese-search-order')
-    let $search-type := util:base64-decode(request:get-cookie-value('mpese-search-type'))
+    let $search-type := request:get-cookie-value('mpese-search-type')
     let $url := if ($search-type eq 'basic') then $base-uri || '?' else $base-uri || 'results.html?'
 
-    let $params := if ($search-type eq 'basic') then
-                        for $param in $basic-search-params
-                            let $value := request:get-cookie-value($param)
-                                return substring-after($param, 'mpese-search-') || '=' || encode-for-uri(util:base64-decode($value))
-                   else
-                        for $cookie in request:get-cookie-names()
+    let $params := for $cookie in request:get-cookie-names()
                         return
-                            if (starts-with($cookie, 'mpese-') and $cookie != 'mpese-search-type') then
+                            if (fn:starts-with($cookie, 'mpese-') and fn:not($cookie eq 'mpese-search-type')) then
                                 let $value := request:get-cookie-value($cookie)
-                                    return substring-after($cookie, 'mpese-search-') || '=' || encode-for-uri(util:base64-decode($value))
+                                    return
+                                        if (fn:not($value eq '')) then
+                                            fn:substring-after($cookie, 'mpese-search-') || '=' || encode-for-uri(util:base64-decode($value))
+                                        else ()
                             else ()
     return <p class="mpese-search-nav"><a href="{$url}{string-join($params, '&amp;')}">Back to search results</a></p>
 };
