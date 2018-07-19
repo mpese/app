@@ -208,13 +208,16 @@ declare function mpese-search:advanced($phrase, $type, $exclude, $image, $start-
     let $image_predicate := if ($image eq 'yes') then "exists($doc//tei:facsimile) " else ()
 
     (: start date? :)
-    let $start_date := if (not($start-range eq '' or empty($start-range))) then "number($date) >= number($start-range)" else ()
+    let $start_date := if (fn:not($start-range eq '' or fn:empty($start-range)) and functx:is-a-number($start-range))
+        then "number($date) >= number($start-range)" else ()
 
     (: end date? :)
-    let $end_date := if (not($end-range eq '' or empty($end-range))) then "number($date) <= number($end-range)" else ()
+    let $end_date := if (fn:not($end-range eq '' or fn:empty($end-range)) and functx:is-a-number($end-range))
+        then "number($date) <= number($end-range)" else ()
 
     (: date filter :)
-    let $date_filter := if (not(empty($start_date) or empty($end_date))) then fn:string-join(($start_date, $end_date) , ' and ') else ()
+    let $date_filter := if (fn:not(empty($start_date) or fn:empty($end_date)))
+        then fn:string-join(($start_date, $end_date) , ' and ') else ()
 
     (: might be filtering on date and images :)
     let $where_filter := fn:string-join(($date_filter, $image_predicate), ' and ')
@@ -528,7 +531,7 @@ declare function mpese-search:render-results($page as xs:integer, $type as xs:st
 
     let $message := mpese-search:results-message($total)
     return
-    (
+    (mpese-search:cookies($type, $map),
     <div id="search-results">
         {
             if ($type eq 'adv') then <p class="text-center results-total">{$message, text{" "}}
@@ -682,7 +685,7 @@ declare function mpese-search:advanced-search($page as xs:integer, $num as xs:in
     let $results_subset := mpese-search:paginate-results($results, $start, $num)
 
     (: rebuild search in pagination :)
-    let $map := map { 'search' := $search, 'keyord-type' := $keyword_type, 'exclude' := $exclude, 'start-range' := $start-range,
+    let $map := map { 'search' := $search, 'keyword-type' := $keyword_type, 'exclude' := $exclude, 'start-range' := $start-range,
                       'end-range' := $end-range, 'image' := $image, 'order-by' := $order-by, 'page' := $page }
 
     return mpese-search:render-results($page, $type, $pages, $total, $results_subset, $map)
@@ -767,24 +770,24 @@ declare function mpese-search:last-change($node as node (), $model as map (*))  
 
 declare
 %templates:default("search", "")
-%templates:default("type", "any")
+%templates:default("keyword-type", "any")
 %templates:default("exclude", "")
 %templates:default("start-range", "")
 %templates:default("end-range", "")
 %templates:default("image", "no")
 %templates:default("order-by", 'date_a')
 function mpese-search:advanced-form($node as node (), $model as map (*),
-        $search as xs:string, $type as xs:string, $exclude as xs:string, $start-range as xs:string,
+        $search as xs:string, $keyword-type as xs:string, $exclude as xs:string, $start-range as xs:string,
         $end-range as xs:string, $image as xs:string, $order-by as xs:string)  {
 
-    let $input_any := if ($type eq 'any') then <input type="radio" name="keyword_type" id="adv_search_type1" value="any" checked="checked"/>
-                      else <input type="radio" name="keyword_type" id="adv_search_type1" value="any"/>
+    let $input_any := if ($keyword-type eq 'any') then <input type="radio" name="keyword-type" id="adv_search_type1" value="any" checked="checked"/>
+                      else <input type="radio" name="keyword-type" id="adv_search_type1" value="any"/>
 
-    let $input_all := if ($type eq 'all') then <input type="radio" name="type" id="adv_search_type2" value="all" checked="checked"/>
-                      else <input type="radio" name="keyword_type" id="adv_search_type2" value="all"/>
+    let $input_all := if ($keyword-type eq 'all') then <input type="radio" name="keyword-type" id="adv_search_type2" value="all" checked="checked"/>
+                      else <input type="radio" name="keyword-type" id="adv_search_type2" value="all"/>
 
-    let $input_phrase := if ($type eq 'phrase') then <input type="radio" name="type" id="adv_search_type3" value="phrase" checked="checked"/>
-                         else <input type="radio" name="keyword_type" id="adv_search_type3" value="phrase"/>
+    let $input_phrase := if ($keyword-type eq 'phrase') then <input type="radio" name="keyword-type" id="adv_search_type3" value="phrase" checked="checked"/>
+                         else <input type="radio" name="keyword-type" id="adv_search_type3" value="phrase"/>
 
     let $text_with_images := if ($image eq 'yes') then <input type="checkbox" name="image" id="adv_image_only" value="yes" checked="checked"/>
                              else <input type="checkbox" name="image" id="adv_image_only" value="yes"/>
