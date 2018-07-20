@@ -20,8 +20,11 @@ import module namespace utils = 'http://mpese.rit.bris.ac.uk/utils/' at 'utils.x
 (:~
  :  Build a suitable search term for a token. If the keyword ends in ~ then <fuzzy/> or * then
  :  <wildcard/>, otherwise <term/>. Add an attribute if needed.
+ :
+ : @param $token – a keyword token
+ : @param $type – keyword search tyle ('all', 'any', 'phrase')
  :)
-declare function mpese-search:build-query-term($token, $type) {
+declare function mpese-search:build-query-term($token as xs:string, $type as xs:string) as xs:string {
     let $elmnt :=   if (fn:ends-with($token, '~')) then
                         let $length := fn:string-length($token)
                         return
@@ -36,8 +39,15 @@ declare function mpese-search:build-query-term($token, $type) {
         $elmnt
 };
 
-(: wrap a search query in eXist's XML wrapper :)
-declare function mpese-search:build-query($phrase, $type, $exclude) {
+(:~
+ : Build an XML object so we can query Lucene.
+ :
+ : @param $phrase – the search phrase
+ : @param $type – keyword search tyle ('all', 'any', 'phrase')
+ : @param $exclude – words to exclude
+ : @return a Lucene XML object
+ :)
+declare function mpese-search:build-query($phrase as xs:string, $type as xs:string, $exclude as xs:string) as node() {
 
     (: tokenize the strings - clean up whitespace :)
     let $search_tokens := fn:tokenize(fn:normalize-space(fn:lower-case($phrase)), '\s+')
@@ -63,25 +73,22 @@ declare function mpese-search:build-query($phrase, $type, $exclude) {
     return $query
 };
 
-(:
-:~
- : Create query XML for a simple search.
+(:~
+ : For a simple search we want to do a wildcard search unless it has already been specified (and fuzzy)
  :
- : @param $phrase - original search phrase.
- : @returns XML for a lucene query.
-:)
-declare function mpese-search:build-simple-query($phrase) {
+ : @param the search string
+ : @return a (possibly) modified search string
+ :)
+declare function mpese-search:process-simple-search($search as xs:string) as xs:string {
 
-    (: :)
-    let $tmp := fn:normalize-space(fn:lower-case($phrase))
+    let $tmp := fn:normalize-space($search)
     return
-        if (fn:starts-with($tmp, '"') and fn:ends-with($tmp, '"')) then
-            mpese-search:build-query(fn:replace($tmp, '"', ''), 'phrase', ())
+        if (fn:string-length($search) < 3) then
+            $search
         else
-            let $tokens := for $token in fn:tokenize($tmp) return
-                                if (not(fn:ends-with($token, '*')) and not(fn:ends-with($token, '~'))) then
-                                    $token || '*' else $token
-            return mpese-search:build-query(fn:string-join($tokens, ' '), (), ())
+            let $tokens := for $t in fn:tokenize($tmp) return
+                                if (fn:ends-with($t, '*') or fn:ends-with($t, '~')) then $t else $t || '*'
+            return fn:string-join($tokens, ' ')
 };
 
 (: ---------- SEARCHING AND PROCESSING RESULTS ---------- :)
@@ -112,7 +119,7 @@ declare function mpese-search:all() as node() {
  : @param $query - an eXist <query/> to pass to Lucene.
  : @return <results/> object.
 :)
-declare function mpese-search:search-original($query) {
+declare function mpese-search:search-original($query as node()) as node() {
     <results>{
         for $doc in fn:collection($config:mpese-tei-corpus-texts)/*[ft:query(.,$query)]
         return
@@ -128,7 +135,7 @@ declare function mpese-search:search-original($query) {
  : @param $query - an eXist <query/> to pass to Lucene.
  : @return <results/> object.
 :)
-declare function mpese-search:search-normalized($query) {
+declare function mpese-search:search-normalized($query as node()) as node() {
     <result>{
         for $doc in fn:collection($config:mpese-normalized-texts)/*[ft:query(.,$query)]
             let $uri := fn:base-uri($doc)
@@ -141,8 +148,14 @@ declare function mpese-search:search-normalized($query) {
 };
 
 
-(: Search against title, author and text :)
-declare function mpese-search:search($query) {
+(:~
+ : Search the corpus using a free text search. We search the originals AND then the normalized texts.
+ : We then merge the results. Lucky the corpus is small ¯\_(ツ)_/¯
+ :
+ : @param $query – search query (XML)
+ : @return resultts
+ :)
+declare function mpese-search:search($query as node()) as node() {
 
         let $a :=  mpese-search:search-original($query)
         let $b :=  mpese-search:search-normalized($query)
@@ -164,33 +177,29 @@ declare function mpese-search:search($query) {
             }</results>
 };
 
-declare function mpese-search:search($phrase, $results_order) {
-
-    let $results := if ($phrase eq '' or functx:all-whitespace($phrase)) then mpese-search:all()
-        else let $query := mpese-search:build-query($phrase, (), ())
-            return (mpese-search:search($query), util:log('INFO', ($query)))
-
-    return
-    <results>{
-        if ($results_order eq 'date') then
-            for $result in $results/result
-            let $hit := fn:doc($result/@uri/fn:string())
-            let $date := $hit//tei:profileDesc/tei:creation/tei:date[1]/@when/string()
-            order by $date ascending
-            return $result
-        else
-            for $result in $results/result
-            order by $result/@score/string() descending
-            return $result
-    }</results>
-};
-
-declare function mpese-search:advanced($phrase, $type, $exclude, $image, $start-range, $end-range, $order-by) {
+(:~
+ : Do a search. We do an initial free text search against the corpus and then filter the results
+ : before rendering them. The query gets quite complex, so we create the query as a string and
+ : then use the eXist's eval function.
+ :
+ : @param $phrase – the search keywords
+ : @param $keyword-type – type of keyword search (all, any, phrase)
+ : @param $exclude – keywords to exclude
+ : @param $image – filter on images
+ : @param $start-range – start year
+ : @param $end-range – end year
+ : @param $order-by – order by date etc.
+ : @return search results
+ :)
+declare function mpese-search:advanced($phrase as xs:string, $keyword-type as xs:string, $exclude as xs:string,
+                                       $image as xs:string, $start-range as xs:string, $end-range as xs:string,
+                                       $order-by as xs:string) as node() {
 
     (: construct the query xml: will be pulled in via util:eval :)
     (: unfiltered results :- parsed in the eval statement at the botton :)
-    let $results := if ($phrase eq '' or functx:all-whitespace($phrase)) then mpese-search:all()
-        else let $query := mpese-search:build-query($phrase, $type, $exclude)
+    let $results := if ($phrase eq '' or functx:all-whitespace($phrase)
+            or fn:string-length(fn:normalize-space($phrase)) < 3) then mpese-search:all()
+        else let $query := mpese-search:build-query($phrase, $keyword-type, $exclude)
             return (mpese-search:search($query), util:log('INFO', ($query)))
 
     (:::: we create the search as strings that can be evaluated ::::)
@@ -249,7 +258,7 @@ declare function mpese-search:advanced($phrase, $type, $exclude, $image, $start-
  : @param $num - the number of results to return in the pagination.
  : @returns a subset of results.
 :)
-declare function mpese-search:paginate-results($results as element()*, $start as xs:int, $num as xs:int) {
+declare function mpese-search:paginate-results($results as element()*, $start as xs:int, $num as xs:int) as node() {
     <results>{
         for $result in subsequence($results/result, $start, $num)
         return $result
@@ -609,48 +618,10 @@ declare function mpese-search:all($page as xs:integer, $num as xs:integer) as no
 };
 
 (:~
- : Basic search against the corpus. After getting the results we create a subset of the results based
+ : Process a search against the corpus. After getting the results we create a subset of the results based
  : on which page of results was requested to be displayed.
  :
- : @param $page – the selected page in the navigation
- : @param $num – the number of results to display per page.
- : @param $search – the search string
- : @param $order-by – order by date  ...
- : @return search results
- :)
-declare function mpese-search:basic-search($page as xs:integer, $num as xs:integer, $search as xs:string,
-                                           $order-by as xs:string) as node() * {
-
-    (: type of search :)
-    let $type := 'basic'
-
-    (: results based on query :)
-    let $results := mpese-search:search($search, $order-by)
-
-    (: total hits :)
-    let $total := fn:count($results/result)
-
-    (: starting point for the subset :)
-    let $start := mpese-search:seq-start($page, $num)
-
-    (: total number of pages :)
-    let $pages := mpese-search:pages-total($total, $num)
-
-    (: subset :)
-    let $results_subset := mpese-search:paginate-results($results, $start, $num)
-
-    (: rebuild search in pagination :)
-    let $map := map { 'search' := $search, 'exclude' := '', 'start-range' := '',
-                      'end-range' := '', 'image' := '', 'order-by' := '', 'page' := $page }
-
-    return
-        mpese-search:render-results($page, $type, $pages, $total, $results_subset, $map)
-};
-
-(:~
- : Advanced search against the corpus. After getting the results we create a subset of the results based
- : on which page of results was requested to be displayed.
- :
+ : @param $type – type of search ('basic' or 'adv')
  : @param $page – the selected page in the navigation
  : @param $num – the number of results to display per page
  : @param $search – the search string
@@ -661,16 +632,15 @@ declare function mpese-search:basic-search($page as xs:integer, $num as xs:integ
  : @param $order-by – order by date  ...
  : @return search results
  :)
-declare function mpese-search:advanced-search($page as xs:integer, $num as xs:integer, $search as xs:string,
-                                              $keyword_type as xs:string, $exclude as xs:string, $image as xs:string,
-                                              $start-range as xs:string, $end-range as xs:string,
-                                              $order-by as xs:string) as node() {
+declare function mpese-search:process-search($type as xs:string, $page as xs:integer, $num as xs:integer,
+                                             $search as xs:string, $keyword-type as xs:string, $exclude as xs:string,
+                                             $image as xs:string, $start-range as xs:string, $end-range as xs:string,
+                                             $order-by as xs:string) as node() {
 
-    (: type of search :)
-    let $type := 'adv'
+    let $search_m := if ($type eq 'basic') then mpese-search:process-simple-search($search) else $search
 
     (: all results, unpaginated :)
-    let $results := mpese-search:advanced($search, $keyword_type, $exclude, $image, $start-range, $end-range, $order-by)
+    let $results := mpese-search:advanced($search_m, $keyword-type, $exclude, $image, $start-range, $end-range, $order-by)
 
     (: total hits :)
     let $total := fn:count($results/result)
@@ -682,13 +652,13 @@ declare function mpese-search:advanced-search($page as xs:integer, $num as xs:in
     let $pages := mpese-search:pages-total($total, $num)
 
     (: subset :)
-    let $results_subset := mpese-search:paginate-results($results, $start, $num)
+    let $results-subset := mpese-search:paginate-results($results, $start, $num)
 
     (: rebuild search in pagination :)
-    let $map := map { 'search' := $search, 'keyword-type' := $keyword_type, 'exclude' := $exclude, 'start-range' := $start-range,
+    let $map := map { 'search' := $search, 'keyword-type' := $keyword-type, 'exclude' := $exclude, 'start-range' := $start-range,
                       'end-range' := $end-range, 'image' := $image, 'order-by' := $order-by, 'page' := $page }
 
-    return mpese-search:render-results($page, $type, $pages, $total, $results_subset, $map)
+    return mpese-search:render-results($page, $type, $pages, $total, $results-subset, $map)
 };
 
 
@@ -751,14 +721,14 @@ declare %templates:default("search", "") %templates:default("results_order", "re
 };
 
 (: homepage with search  :)
-declare %templates:default("page", 1) %templates:default("num", 20) %templates:default("search", "")
-    %templates:default("results_order", "relevance") function mpese-search:default($node as node (), $model as map (*), $page as xs:integer, $num as xs:integer,
-                                  $search as xs:string, $results_order as xs:string)  {
+declare %templates:default("page", 1)
+%templates:default("num", 20)
+%templates:default("search", "")
+%templates:default("order-by", "relevance")
+function mpese-search:default($node as node (), $model as map (*), $page as xs:integer, $num as xs:integer,
+                              $search as xs:string, $order-by as xs:string)  {
 
-    if (fn:string-length($search) eq 0) then
-        mpese-search:all($page, $num)
-    else
-        mpese-search:basic-search($page, $num, $search, $results_order)
+    mpese-search:process-search('basic', $page, $num, $search, 'all', '', '', '', '', $order-by)
 };
 
 declare function mpese-search:last-change($node as node (), $model as map (*))  {
@@ -868,15 +838,17 @@ declare
 %templates:default("page", 1)
 %templates:default("num", 20)
 %templates:default("search", "")
-%templates:default("type", "any")
+%templates:default("keyword-type", "any")
 %templates:default("exclude", "")
 %templates:default("start-range", "")
 %templates:default("end-range", "")
 %templates:default("image", "no")
 %templates:default("order-by", 'date_a')
 function mpese-search:advanced-results($node as node (), $model as map (*), $page as xs:integer, $num as xs:integer,
-        $search as xs:string, $type as xs:string, $exclude as xs:string, $start-range as xs:string,
-        $end-range as xs:string, $image as xs:string, $order-by as xs:string)  {
+                                       $search as xs:string, $keyword-type as xs:string, $exclude as xs:string,
+                                       $start-range as xs:string, $end-range as xs:string, $image as xs:string,
+                                       $order-by as xs:string)  {
 
-    mpese-search:advanced-search($page, $num, $search, $type, $exclude, $image, $start-range, $end-range, $order-by)
+    mpese-search:process-search('adv', $page, $num, $search, $keyword-type, $exclude, $image, $start-range,
+                                $end-range, $order-by)
 };

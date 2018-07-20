@@ -93,44 +93,6 @@ function test-search:results-message-2() {
     mpese-search:results-message(45)
 };
 
-
-(: ------- test build simple query -----:)
-(: nothing but white space creates an empty query:)
-declare %test:assertXPath("deep-equal($result, <query/>)")
-function test-search:build-simple-query-1() {
-    mpese-search:build-simple-query('              ')
-};
-
-(: single term :)
-declare %test:assertXPath("deep-equal($result, <query><bool><wildcard>parliament*</wildcard></bool></query>)")
-function test-search:build-simple-query-2() {
-    mpese-search:build-simple-query('parliament')
-};
-
-(: two terms :)
-declare %test:assertXPath("deep-equal($result, <query><bool><wildcard>parliament*</wildcard><wildcard>king*</wildcard></bool></query>)")
-function test-search:build-simple-query-3() {
-    mpese-search:build-simple-query('parliament king')
-};
-
-(: phrase :)
-declare %test:assertXPath("deep-equal($result, <query><phrase>angry puritan</phrase></query>)")
-function test-search:build-simple-query-4() {
-    mpese-search:build-simple-query('"angry puritan"')
-};
-
-(: single term - fuzzy :)
-declare %test:assertXPath("deep-equal($result, <query><bool><fuzzy>parliament</fuzzy></bool></query>)")
-function test-search:build-simple-query-5() {
-    mpese-search:build-simple-query('parliament~')
-};
-
-(: mix terms - fuzzy and wildcard :)
-declare %test:assertXPath("deep-equal($result, <query><bool><fuzzy>parliament</fuzzy><wildcard>king*</wildcard></bool></query>)")
-function test-search:build-simple-query-6() {
-    mpese-search:build-simple-query('parliament~ king')
-};
-
 (: ------- test build query -----:)
 
 (: nothing just creates a wild card - default view on loading the application / empty basic search:)
