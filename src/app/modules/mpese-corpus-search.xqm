@@ -24,13 +24,13 @@ import module namespace utils = 'http://mpese.rit.bris.ac.uk/utils/' at 'utils.x
  : @param $token – a keyword token
  : @param $type – keyword search tyle ('all', 'any', 'phrase')
  :)
-declare function mpese-search:build-query-term($token as xs:string, $type as xs:string) as xs:string {
+declare function mpese-search:build-query-term($token as xs:string, $type as xs:string) as node() {
     let $elmnt :=   if (fn:ends-with($token, '~')) then
                         let $length := fn:string-length($token)
                         return
                             if ($length eq 1) then ()
                             else <fuzzy>{fn:substring($token, 1, ($length - 1))}</fuzzy>
-                    else if (contains($token, '*')) then <wildcard>{$token}</wildcard>
+                    else if (fn:contains($token, '*')) then <wildcard>{$token}</wildcard>
                     else <term>{$token}</term>
     return
         if ($elmnt and $type eq 'all') then
@@ -48,7 +48,6 @@ declare function mpese-search:build-query-term($token as xs:string, $type as xs:
  : @return a Lucene XML object
  :)
 declare function mpese-search:build-query($phrase as xs:string, $type as xs:string, $exclude as xs:string) as node() {
-
     (: tokenize the strings - clean up whitespace :)
     let $search_tokens := fn:tokenize(fn:normalize-space(fn:lower-case($phrase)), '\s+')
     let $exclude_tokens := fn:tokenize(fn:normalize-space(fn:lower-case($exclude)), '\s+')
@@ -70,7 +69,7 @@ declare function mpese-search:build-query($phrase as xs:string, $type as xs:stri
                                 <term occur="not">{$token}</term>
                     }</bool>
         }</query>
-    return $query
+    return ($query, util:log('INFO', ($query)))
 };
 
 (:~
@@ -120,13 +119,15 @@ declare function mpese-search:all() as node() {
  : @return <results/> object.
 :)
 declare function mpese-search:search-original($query as node()) as node() {
-    <results>{
-        for $doc in fn:collection($config:mpese-tei-corpus-texts)/*[ft:query(.,$query)]
-        return
-            <result uri="{fn:base-uri($doc)}" score="{ft:score($doc)}">
-                <summary>{mpese-search:matches($doc)}</summary>
-            </result>
-    }</results>
+    let $results :=
+        <results>{
+            for $doc in fn:collection($config:mpese-tei-corpus-texts)/*[ft:query(.,$query)]
+            return
+                <result uri="{fn:base-uri($doc)}" score="{ft:score($doc)}">
+                    <summary>{mpese-search:matches($doc)}</summary>
+                </result>
+        }</results>
+    return $results
 };
 
 (:~
@@ -136,15 +137,17 @@ declare function mpese-search:search-original($query as node()) as node() {
  : @return <results/> object.
 :)
 declare function mpese-search:search-normalized($query as node()) as node() {
-    <result>{
-        for $doc in fn:collection($config:mpese-normalized-texts)/*[ft:query(.,$query)]
-            let $uri := fn:base-uri($doc)
-            let $tmp := fn:replace($uri, $config:mpese-normalized-texts, $config:mpese-tei-corpus-texts)
-            return
-                <result uri="{fn:replace($tmp, '.simple', '')}" score="{ft:score($doc)}">
-                    <summary>{mpese-search:matches($doc)}</summary>
-                </result>
-    }</result>
+    let $results :=
+        <result>{
+            for $doc in fn:collection($config:mpese-normalized-texts)/*[ft:query(.,$query)]
+                let $uri := fn:base-uri($doc)
+                let $tmp := fn:replace($uri, $config:mpese-normalized-texts, $config:mpese-tei-corpus-texts)
+                return
+                    <result uri="{fn:replace($tmp, '.simple', '')}" score="{ft:score($doc)}">
+                        <summary>{mpese-search:matches($doc)}</summary>
+                    </result>
+        }</result>
+    return $results
 };
 
 
@@ -160,7 +163,7 @@ declare function mpese-search:search($query as node()) as node() {
         let $a :=  mpese-search:search-original($query)
         let $b :=  mpese-search:search-normalized($query)
         let $uris := distinct-values(($a/result/@uri/string(), $b/result/@uri/string()))
-        return
+        let $results :=
             <results>{
                 for $uri in $uris
                     let $score_a := $a/result[@uri=$uri]/@score/number()
@@ -175,6 +178,7 @@ declare function mpese-search:search($query as node()) as node() {
                                 ()
                         }</result>
             }</results>
+        return $results
 };
 
 (:~
@@ -235,7 +239,8 @@ declare function mpese-search:advanced($phrase as xs:string, $keyword-type as xs
     let $where_predicate := if ($where_filter) then 'where ' || $where_filter else ()
 
     (: order by :)
-    let $order_by_predicate := if ($order-by eq 'date_d') then ' order by $date descending '
+    let $order_by_predicate := if ($order-by eq 'relevance') then ''
+                               else if ($order-by eq 'date_d') then ' order by $date descending '
                                else if ($order-by eq 'witness_d') then ' order by count($doc//tei:listBibl[@xml:id="mss_witness_generated"]/tei:bibl) descending '
                                else if ($order-by eq 'witness_a') then ' order by count($doc//tei:listBibl[@xml:id="mss_witness_generated"]/tei:bibl) ascending '
                                else ' order by $date ascending '
@@ -246,7 +251,7 @@ declare function mpese-search:advanced($phrase as xs:string, $keyword-type as xs
 
     let $return_results := <results>{(util:eval($query2, fn:true()), util:log('INFO', ($query2)))}</results>
 
-    return $return_results
+    return ($return_results, util:log('INFO', ($order-by)))
 };
 
 
@@ -691,18 +696,18 @@ declare function mpese-search:repositories() {
 
 (: ---------- TEMPLATE FUNCTIONS ----------- :)
 
-declare %templates:default("search", "") %templates:default("results_order", "relevance")function mpese-search:form($node as node (), $model as map (*),
-        $search as xs:string, $results_order as xs:string)  {
+declare %templates:default("search", "") %templates:default("order-by", "relevance")function mpese-search:form($node as node (), $model as map (*),
+        $search as xs:string, $order-by as xs:string)  {
 
-    let $rel_order := if ($results_order eq 'relevance') then
-            <input name="results_order" value="relevance" type="radio" checked="checked"/>
+    let $rel_order := if ($order-by eq 'relevance') then
+            <input name="order-by" value="relevance" type="radio" checked="checked"/>
         else
-            <input name="results_order" value="relevance" type="radio"/>
+            <input name="order-by" value="relevance" type="radio"/>
 
-    let $date_order := if ($results_order eq 'date') then
-            <input name="results_order" value="date" type="radio" checked="checked"/>
+    let $date_order := if ($order-by eq 'date_a') then
+            <input name="order-by" value="date_a" type="radio" checked="checked"/>
         else
-            <input name="results_order" value="date" type="radio"/>
+            <input name="order-by" value="date_a" type="radio"/>
     return
     <form action="." method="get">
         <div class="input-group input-group-lg">
@@ -727,8 +732,8 @@ declare %templates:default("page", 1)
 %templates:default("order-by", "relevance")
 function mpese-search:default($node as node (), $model as map (*), $page as xs:integer, $num as xs:integer,
                               $search as xs:string, $order-by as xs:string)  {
-
-    mpese-search:process-search('basic', $page, $num, $search, 'all', '', '', '', '', $order-by)
+    util:log('INFO', 'basic search ...'),
+    mpese-search:process-search('basic', $page, $num, $search, 'any', '', '', '', '', $order-by)
 };
 
 declare function mpese-search:last-change($node as node (), $model as map (*))  {
