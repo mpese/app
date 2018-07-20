@@ -38,7 +38,7 @@ declare %test:assertTrue function test-search:default-all() {
 
 (: Test searching a keyword returns results :)
 declare %test:assertTrue function test-search:search() {
-    let $results := mpese-search:search("petition")
+    let $results := mpese-search:search(<query><bool><term>petition</term></bool></query>)
     return
         fn:count($results) > 0
 };

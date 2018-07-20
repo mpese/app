@@ -47,7 +47,7 @@ declare function mpese-search:build-query-term($token as xs:string, $type as xs:
  : @param $exclude – words to exclude
  : @return a Lucene XML object
  :)
-declare function mpese-search:build-query($phrase as xs:string, $type as xs:string, $exclude as xs:string) as node() {
+declare function mpese-search:build-query($phrase as xs:string?, $type as xs:string?, $exclude as xs:string?) as node() {
     (: tokenize the strings - clean up whitespace :)
     let $search_tokens := fn:tokenize(fn:normalize-space(fn:lower-case($phrase)), '\s+')
     let $exclude_tokens := fn:tokenize(fn:normalize-space(fn:lower-case($exclude)), '\s+')
