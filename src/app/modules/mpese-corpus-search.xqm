@@ -190,14 +190,15 @@ declare function mpese-search:search($query as node()) as node() {
  : @param $keyword-type – type of keyword search (all, any, phrase)
  : @param $exclude – keywords to exclude
  : @param $image – filter on images
+ : @param $transcript – filter on transcript
  : @param $start-range – start year
  : @param $end-range – end year
  : @param $order-by – order by date etc.
  : @return search results
  :)
 declare function mpese-search:advanced($phrase as xs:string, $keyword-type as xs:string, $exclude as xs:string,
-                                       $image as xs:string, $start-range as xs:string, $end-range as xs:string,
-                                       $order-by as xs:string) as node() {
+                                       $image as xs:string, $transcript as xs:string, $start-range as xs:string,
+                                       $end-range as xs:string, $order-by as xs:string) as node() {
 
     (: construct the query xml: will be pulled in via util:eval :)
     (: unfiltered results :- parsed in the eval statement at the botton :)
@@ -220,6 +221,9 @@ declare function mpese-search:advanced($phrase as xs:string, $keyword-type as xs
     (: are we filtering for images :)
     let $image_predicate := if ($image eq 'yes') then "exists($doc//tei:facsimile) " else ()
 
+    (: are we filtering for available transcript :)
+    let $transcript_predicate := if ($transcript eq 'yes') then "fn:string-length(fn:normalize-space($doc//tei:text/tei:body/string())) > 0 " else ()
+
     (: start date? :)
     let $start_date := if (fn:not($start-range eq '' or fn:empty($start-range)) and functx:is-a-number($start-range))
         then "number($date) >= number($start-range)" else ()
@@ -233,7 +237,7 @@ declare function mpese-search:advanced($phrase as xs:string, $keyword-type as xs
         then fn:string-join(($start_date, $end_date) , ' and ') else ()
 
     (: might be filtering on date and images :)
-    let $where_filter := fn:string-join(($date_filter, $image_predicate), ' and ')
+    let $where_filter := fn:string-join(($date_filter, $image_predicate, $transcript_predicate), ' and ')
 
     (: where predicate :)
     let $where_predicate := if ($where_filter) then 'where ' || $where_filter else ()
@@ -639,13 +643,14 @@ declare function mpese-search:all($page as xs:integer, $num as xs:integer) as no
  :)
 declare function mpese-search:process-search($type as xs:string, $page as xs:integer, $num as xs:integer,
                                              $search as xs:string, $keyword-type as xs:string, $exclude as xs:string,
-                                             $image as xs:string, $start-range as xs:string, $end-range as xs:string,
+                                             $image as xs:string, $transcript as xs:string,
+                                             $start-range as xs:string, $end-range as xs:string,
                                              $order-by as xs:string) as node() {
 
     let $search_m := if ($type eq 'basic') then mpese-search:process-simple-search($search) else $search
 
     (: all results, unpaginated :)
-    let $results := mpese-search:advanced($search_m, $keyword-type, $exclude, $image, $start-range, $end-range, $order-by)
+    let $results := mpese-search:advanced($search_m, $keyword-type, $exclude, $image, $transcript, $start-range, $end-range, $order-by)
 
     (: total hits :)
     let $total := fn:count($results/result)
@@ -661,7 +666,8 @@ declare function mpese-search:process-search($type as xs:string, $page as xs:int
 
     (: rebuild search in pagination :)
     let $map := map { 'search' := $search, 'keyword-type' := $keyword-type, 'exclude' := $exclude, 'start-range' := $start-range,
-                      'end-range' := $end-range, 'image' := $image, 'order-by' := $order-by, 'page' := $page }
+                      'end-range' := $end-range, 'image' := $image, 'transcript' := $transcript,
+                      'order-by' := $order-by, 'page' := $page }
 
     return mpese-search:render-results($page, $type, $pages, $total, $results-subset, $map)
 };
@@ -733,7 +739,7 @@ declare %templates:default("page", 1)
 function mpese-search:default($node as node (), $model as map (*), $page as xs:integer, $num as xs:integer,
                               $search as xs:string, $order-by as xs:string)  {
     util:log('INFO', 'basic search ...'),
-    mpese-search:process-search('basic', $page, $num, $search, 'any', '', '', '', '', $order-by)
+    mpese-search:process-search('basic', $page, $num, $search, 'any', '', '', '', '', '', $order-by)
 };
 
 declare function mpese-search:last-change($node as node (), $model as map (*))  {
@@ -750,10 +756,11 @@ declare
 %templates:default("start-range", "")
 %templates:default("end-range", "")
 %templates:default("image", "no")
+%templates:default("transcript", "no")
 %templates:default("order-by", 'date_a')
 function mpese-search:advanced-form($node as node (), $model as map (*),
         $search as xs:string, $keyword-type as xs:string, $exclude as xs:string, $start-range as xs:string,
-        $end-range as xs:string, $image as xs:string, $order-by as xs:string)  {
+        $end-range as xs:string, $image as xs:string, $transcript as xs:string, $order-by as xs:string)  {
 
     let $input_any := if ($keyword-type eq 'any') then <input type="radio" name="keyword-type" id="adv_search_type1" value="any" checked="checked"/>
                       else <input type="radio" name="keyword-type" id="adv_search_type1" value="any"/>
@@ -766,6 +773,9 @@ function mpese-search:advanced-form($node as node (), $model as map (*),
 
     let $text_with_images := if ($image eq 'yes') then <input type="checkbox" name="image" id="adv_image_only" value="yes" checked="checked"/>
                              else <input type="checkbox" name="image" id="adv_image_only" value="yes"/>
+
+    let $text_with_transcript := if ($transcript eq 'yes') then <input type="checkbox" name="transcript" id="adv_transcript_only" value="yes" checked="checked"/>
+                             else <input type="checkbox" name="transcript" id="adv_transcript_only" value="yes"/>
 
     let $date_asc := if ($order-by eq 'date_a') then <input type="radio" name="order-by" value="date_a" checked="checked"/>
                      else <input type="radio" name="order-by" value="date_a"/>
@@ -828,6 +838,9 @@ function mpese-search:advanced-form($node as node (), $model as map (*),
                 <label class="checkbox-inline">
                     {$text_with_images} show only texts with images
                 </label>
+                <label class="checkbox-inline">
+                    {$text_with_transcript} show only texts with a transcript
+                </label>
             </div>
         </div>
         <div class="form-group">
@@ -848,12 +861,13 @@ declare
 %templates:default("start-range", "")
 %templates:default("end-range", "")
 %templates:default("image", "no")
+%templates:default("transcript", "no")
 %templates:default("order-by", 'date_a')
 function mpese-search:advanced-results($node as node (), $model as map (*), $page as xs:integer, $num as xs:integer,
                                        $search as xs:string, $keyword-type as xs:string, $exclude as xs:string,
                                        $start-range as xs:string, $end-range as xs:string, $image as xs:string,
-                                       $order-by as xs:string)  {
+                                       $transcript as xs:string, $order-by as xs:string)  {
 
-    mpese-search:process-search('adv', $page, $num, $search, $keyword-type, $exclude, $image, $start-range,
+    mpese-search:process-search('adv', $page, $num, $search, $keyword-type, $exclude, $image, $transcript, $start-range,
                                 $end-range, $order-by)
 };
