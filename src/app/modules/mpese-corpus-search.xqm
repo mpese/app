@@ -222,7 +222,7 @@ declare function mpese-search:advanced($phrase as xs:string, $keyword-type as xs
     let $image_predicate := if ($image eq 'yes') then "exists($doc//tei:facsimile) " else ()
 
     (: are we filtering for available transcript :)
-    let $transcript_predicate := if ($transcript eq 'yes') then "fn:string-length(fn:normalize-space($doc//tei:text/tei:body/string())) > 0 " else ()
+    let $transcript_predicate := if ($transcript eq 'yes') then "fn:string-length(fn:normalize-space($doc//tei:text[1]/tei:body[1]/string())) > 0 " else ()
 
     (: start date? :)
     let $start_date := if (fn:not($start-range eq '' or fn:empty($start-range)) and functx:is-a-number($start-range))
