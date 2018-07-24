@@ -343,13 +343,13 @@ declare function mpese-search:result-title($doc) {
  : @returns a formatted result item
 :)
 declare function mpese-search:result-entry($link as xs:string, $title as xs:string, $author as xs:string*,
-                                           $snippet as node()*, $mss as xs:string, $images as node()*,
+                                           $snippet, $mss as xs:string, $images as node()*,
                                            $transcripts as node()*, $witnesses as xs:string) as node() {
     <a href="{$link}" class="list-group-item">{
         <div class="result-entry">
             <h4 class="list-group-item-heading result-entry-title">{$title}{$images}{$transcripts}</h4>
             <p class="list-group-item-text result-entry-author">{$author}</p>
-            <p class="list-group-item-text result-entry-snippet">{$snippet}</p>
+            <p class="list-group-item-text result-entry-snippet">{$snippet//p/child::*}</p>
             <p class="list-group-item-text result-entry-witness">{$witnesses}</p>
             <p class="list-group-item-text result-entry-mss"><strong>{$mss}</strong></p>
         </div>
@@ -506,11 +506,15 @@ declare function mpese-search:pagination($page as xs:integer, $pages as xs:integ
      </nav>
 };
 
+(:~
+ : Try and restrict KWIC results to increase performance ... TODO Revisit all this.
+ :)
 declare function mpese-search:matches($result) {
-    let $matches := kwic:summarize($result, <config width="40"/>)
-    return
-        for $match in $matches
-        return $match//*
+    let $matches := kwic:get-matches($result)
+    let $matches_sub := subsequence($matches, 1, 3)
+    let $kwic := for $ancestor in $matches_sub/ancestor::*
+        return kwic:get-summary($ancestor, ($ancestor//exist:match, $ancestor//*[@exist:matches])[1], <config width="40"/>)
+    return functx:distinct-deep($kwic)
 };
 
 
