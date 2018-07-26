@@ -75,6 +75,43 @@ declare variable $config:tei-template-app := concat($config:app-root, '/modules/
 (: preferred date-time format (files :)
 declare variable $config:date-time-fmt := '[D01]/[M01]/[Y0001] [H01]:[m01]:[s01]';
 
+
+(:~
+ : We pass the name of a document as an attribute. Work out the URI so we can get a title
+ : to be used in the metadata of document.
+ :
+ : @return a document URI
+ :)
+declare function config:content-uri() {
+    if (fn:not(fn:empty(request:get-attribute('text')))) then
+        $config:mpese-tei-corpus-texts || '/' || request:get-attribute('text')
+    else if (fn:not(fn:empty(request:get-attribute('mss')))) then
+        $config:mpese-tei-corpus-mss || '/' || request:get-attribute('mss')
+    else
+        ()
+};
+
+declare function config:content-title($uri) {
+    if ($uri) then fn:doc($uri)//tei:fileDesc/tei:titleStmt/tei:title/fn:string() else ()
+};
+
+declare function config:title() as text() {
+
+    (: application name :)
+    let $title := $config:expath-descriptor/expath:title/string()
+
+    (: uri or text or ms :)
+    let $content-uri := config:content-uri()
+
+    (: title with name of text or mss if appropriate :)
+    let $content-title := config:content-title($content-uri)
+        return
+            if (fn:not(fn:empty($content-title))) then
+                text {fn:concat($content-title, ' | ', $title)}
+            else
+                text{$title}
+};
+
 (:~
  : Resolve the given path using the current application context.
  : If the app resides in the file system,
@@ -100,8 +137,18 @@ declare function config:expath-descriptor() as element(expath:package) {
     $config:expath-descriptor
 };
 
+(:~
+ : Get the title of the application.
+ :)
 declare %templates:wrap function config:app-title($node as node(), $model as map(*)) as text() {
     $config:expath-descriptor/expath:title/text()
+};
+
+(:~
+ : Create a title for a page.
+ :)
+declare function config:page-title($node as node(), $model as map(*)) {
+    <title>{config:title()}</title>
 };
 
 declare %templates:wrap function config:app-abbrev($node as node(), $model as map(*)) as text() {
@@ -109,10 +156,33 @@ declare %templates:wrap function config:app-abbrev($node as node(), $model as ma
 };
 
 declare function config:app-meta($node as node(), $model as map(*)) as element()* {
+
+    (: get a title :)
+    (: application name :)
+    let $app-title := $config:expath-descriptor/expath:title/fn:string()
+
+    (: uri or text or ms :)
+    let $content-uri := config:content-uri()
+
+    (: title with name of text or mss if appropriate :)
+    let $content-title := config:content-title($content-uri)
+    let $dc-title := if (fn:not(fn:empty($content-title))) then $content-title else $app-title
+
+    let $authors := fn:doc($content-uri)//tei:fileDesc/tei:titleStmt/tei:author[fn:not(@role eq 'signatory')]/fn:normalize-space(fn:string())
+
+    let $contribs := fn:doc($content-uri)//tei:fileDesc/tei:titleStmt/tei:respStmt/tei:name/fn:string()
+
+    return
+        (
+            <link rel="schema.DC" href="http://purl.org/DC/elements/1.0/"/>,
+            <meta name="DC.Title" content="{$dc-title}"/>,
+            for $author in $authors return if (fn:not($author eq '')) then <meta name="DC.Creator" content="{$author}"/> else (),
+            for $contrib in $contribs return if (fn:not($contrib eq '')) then <meta name="DC.Contributor" content="{$contrib}"/> else (),
+
     <meta xmlns="http://www.w3.org/1999/xhtml" name="description" content="{$config:repo-descriptor/repo:description/text()}"/>,
     for $author in $config:repo-descriptor/repo:author
     return
-        <meta xmlns="http://www.w3.org/1999/xhtml" name="creator" content="{$author/text()}"/>
+        <meta xmlns="http://www.w3.org/1999/xhtml" name="creator" content="{$author/text()}"/>)
 };
 
 (:~
