@@ -191,7 +191,7 @@ declare function config:app-meta($node as node(), $model as map(*)) as element()
     return
         (
             <meta name="dc:title" content="{$dc-title}"/>,
-            for $author in $authors return if (fn:not($author eq '')) then <meta name="dc:reator" content="{$author}"/> else (),
+            for $author in $authors return if (fn:not($author eq '')) then <meta name="dc:creator" content="{$author}"/> else (),
             for $contrib in $contribs return if (fn:not($contrib eq '')) then <meta name="dc:contributor" content="{$contrib}"/> else (),
             if (fn:not($keywords eq '')) then <meta name="dc:keywords" content="{$keywords}"/> else (),
             if (fn:not($description eq '')) then <meta name="dc:description" content="{$description}"/> else (),
