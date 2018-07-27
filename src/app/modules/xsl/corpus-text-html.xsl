@@ -120,12 +120,12 @@
     <xsl:template match="tei:pb">
         <xsl:choose>
             <xsl:when test="@facs">
-                <p class='mpese-pb'>
+                <span class='mpese-pb'>
                     <xsl:attribute name="data-facs"><xsl:value-of select='@facs'/></xsl:attribute>
-                    <xsl:value-of select="@n"/><xsl:text> </xsl:text><span class="mpese-photo glyphicon glyphicon-camera small" aria-hidden="true"></span></p>
+                    <xsl:value-of select="@n"/><xsl:text> </xsl:text><span class="mpese-photo glyphicon glyphicon-camera small" aria-hidden="true"></span></span>
             </xsl:when>
             <xsl:otherwise>
-                <p class='mpese-pb'><xsl:value-of select="@n"/></p>
+                <span class='mpese-pb'><xsl:value-of select="@n"/></span>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>

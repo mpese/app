@@ -168,21 +168,36 @@ declare function config:app-meta($node as node(), $model as map(*)) as element()
     let $content-title := config:content-title($content-uri)
     let $dc-title := if (fn:not(fn:empty($content-title))) then $content-title else $app-title
 
+    (: authors :)
     let $authors := fn:doc($content-uri)//tei:fileDesc/tei:titleStmt/tei:author[fn:not(@role eq 'signatory')]/fn:normalize-space(fn:string())
 
+    (: transcript contributors :)
     let $contribs := fn:doc($content-uri)//tei:fileDesc/tei:titleStmt/tei:respStmt/tei:name/fn:string()
+
+    (: kewords :)
+    let $keywords := fn:string-join(for $keyword in fn:doc($content-uri)//tei:keywords/tei:term/fn:string()
+                            return if (fn:not($keyword eq '')) then $keyword else (), ', ')
+
+    (: description :)
+    let $description := fn:normalize-space(fn:doc($content-uri)//tei:profileDesc/tei:abstract/fn:string())
+
+    (: languages :)
+    let $languages := for $lang in fn:doc($content-uri)//tei:langUsage/tei:language/@ident/fn:string()
+                            return if (fn:not($lang eq '')) then $lang else ()
+
+    (: date :)
+    let $date := fn:doc($content-uri)//tei:profileDesc/tei:creation/tei:date[1]/@when/fn:string()
 
     return
         (
-            <link rel="schema.DC" href="http://purl.org/DC/elements/1.0/"/>,
-            <meta name="DC.Title" content="{$dc-title}"/>,
-            for $author in $authors return if (fn:not($author eq '')) then <meta name="DC.Creator" content="{$author}"/> else (),
-            for $contrib in $contribs return if (fn:not($contrib eq '')) then <meta name="DC.Contributor" content="{$contrib}"/> else (),
-
-    <meta xmlns="http://www.w3.org/1999/xhtml" name="description" content="{$config:repo-descriptor/repo:description/text()}"/>,
-    for $author in $config:repo-descriptor/repo:author
-    return
-        <meta xmlns="http://www.w3.org/1999/xhtml" name="creator" content="{$author/text()}"/>)
+            <meta name="dc:title" content="{$dc-title}"/>,
+            for $author in $authors return if (fn:not($author eq '')) then <meta name="dc:reator" content="{$author}"/> else (),
+            for $contrib in $contribs return if (fn:not($contrib eq '')) then <meta name="dc:contributor" content="{$contrib}"/> else (),
+            if (fn:not($keywords eq '')) then <meta name="dc:keywords" content="{$keywords}"/> else (),
+            if (fn:not($description eq '')) then <meta name="dc:description" content="{$description}"/> else (),
+            for $lang in $languages return if (fn:not($lang eq '')) then <meta name="dc:language" content="{fn:lower-case($lang)}"/> else (),
+            if (fn:not(fn:normalize-space($date) eq '')) then <meta name="dc:date" content="{$date}"/> else ()
+        )
 };
 
 (:~
