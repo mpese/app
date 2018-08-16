@@ -101,7 +101,7 @@ declare function mpese-search:process-simple-search($search as xs:string) as xs:
 declare function mpese-search:all() as node() {
     <results>{
         for $result in fn:collection($config:mpese-tei-corpus-texts)
-        order by $result//tei:titleStmt/tei:title/string()
+        order by fn:replace($result//tei:titleStmt/tei:title/fn:string(), '^((A|The)\s*)', '')
         return
             <result uri="{fn:base-uri($result)}">
                 {
