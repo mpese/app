@@ -243,11 +243,11 @@ declare function mpese-search:advanced($phrase as xs:string, $keyword-type as xs
     let $where_predicate := if ($where_filter) then 'where ' || $where_filter else ()
 
     (: order by :)
-    let $order_by_predicate := if ($order-by eq 'relevance') then ''
-                               else if ($order-by eq 'date_d') then ' order by $date descending '
-                               else if ($order-by eq 'witness_d') then ' order by count($doc//tei:listBibl[@xml:id="mss_witness_generated"]/tei:bibl) descending '
-                               else if ($order-by eq 'witness_a') then ' order by count($doc//tei:listBibl[@xml:id="mss_witness_generated"]/tei:bibl) ascending '
-                               else ' order by $date ascending '
+    let $order_by_predicate := (if ($order-by eq 'relevance') then ' order by $result/@score/string() descending'
+                               else if ($order-by eq 'date_d') then ' order by $date descending'
+                               else if ($order-by eq 'witness_d') then ' order by count($doc//tei:listBibl[@xml:id="mss_witness_generated"]/tei:bibl) descending'
+                               else if ($order-by eq 'witness_a') then ' order by count($doc//tei:listBibl[@xml:id="mss_witness_generated"]/tei:bibl) ascending'
+                               else ' order by $date ascending') || ', fn:replace($result//tei:titleStmt/tei:title/fn:string(), "^((A|The)\s*)", "") '
 
     let $return_predicate := " return if ($doc) then $result else ()"
 
