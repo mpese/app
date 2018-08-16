@@ -88,18 +88,21 @@ declare function local:witness-label($name as xs:string) {
 
     (: get the details from the xi:include and create the file path :)
     let $incl := $doc//tei:sourceDesc/tei:msDesc/xi:include
-    let $target := $incl/@href/string()
-    let $pointer := $incl/@xpointer/string()
-    let $seq := fn:tokenize($target, '/')
-    let $file := $seq[fn:last()]
-
-    (: open the ms file to get its details :)
-    let $mss := doc(concat($config:mpese-tei-corpus-mss, '/', $file))
-    let $desc := $mss//tei:msIdentifier[@xml:id=$pointer]
-
-    (: return man:)
     return
-        concat($desc//tei:repository, ', ', $desc//tei:collection, ' ', $desc//tei:idno)
+        if ($incl) then
+            let $target := $incl/@href/string()
+            let $pointer := $incl/@xpointer/string()
+            let $seq := fn:tokenize($target, '/')
+            let $file := $seq[fn:last()]
+
+            (: open the ms file to get its details :)
+            let $mss := doc(concat($config:mpese-tei-corpus-mss, '/', $file))
+            let $desc := $mss//tei:msIdentifier[@xml:id=$pointer]
+
+            (: return man:)
+            return
+                concat($desc//tei:repository, ', ', $desc//tei:collection, ' ', $desc//tei:idno)
+        else ()
 };
 
 (:~
@@ -267,7 +270,7 @@ declare function mpese-mss:contents($node as node (), $model as map (*)) {
 
                 (: scribes and others responsible for the item :)
                 let $resps := for $resp in $item/tei:respStmt
-                              return if (functx:has-empty-content($resp/tei:name) or boolean($resp/tei:name/comment())) then () else $resp
+                              return if (functx:has-empty-content($resp/tei:name/tei:persName) or functx:has-empty-content($resp/tei:name) or boolean($resp/tei:name/comment())) then () else $resp
                 let $resp_list := if (count($resps) eq 0) then ()
                                     else <span class="mss-resp-list"><em>Responsibility:</em>  {
                                         if (count($resps) eq 1) then
@@ -294,7 +297,8 @@ declare function mpese-mss:contents($node as node (), $model as map (*)) {
                                                     else if ($name and $link/@type/string() eq 'witness') then
                                                         let $label := local:witness-label($name)
                                                         return
-                                                            <li><a href="../t/{$name}.html">Witness from {$label}</a></li>
+                                                            if (empty($label)) then <li><a href="../t/{$name}.html">Text details</a></li>
+                                                            else <li><a href="../t/{$name}.html">Witness from {$label}</a></li>
                                                     else
                                                         ()
                                         }</ul>
