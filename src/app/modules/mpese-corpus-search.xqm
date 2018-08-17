@@ -106,7 +106,7 @@ declare function mpese-search:all() as node() {
             <result uri="{fn:base-uri($result)}">
                 {
                     let $val := fn:substring($result//tei:text[1]/tei:body/tei:p[1]/string(), 1, 200)
-                    return if (fn:not(fn:normalize-space($val) eq '')) then <summary><em>{$val}</em> ...</summary> else ()
+                    return if (fn:not(fn:normalize-space($val) eq '')) then <summary><p><em>{$val}</em> ...</p></summary> else ()
                 }
             </result>
     }</results>
