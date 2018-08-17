@@ -513,7 +513,16 @@
      <xsl:template match="tei:supplied">{<xsl:apply-templates/>}</xsl:template>
 
     <!-- gap -->
-    <xsl:template match="tei:gap">{<fo:inline font-style="italic">gap:<xsl:text> </xsl:text><xsl:value-of select="@reason/string()"/></fo:inline>}</xsl:template>
+    <xsl:template match="tei:gap">
+        <xsl:choose>
+            <xsl:when test="local-name(../parent::*) eq 'p'">
+                {<fo:inline font-style="italic">gap:<xsl:text> </xsl:text><xsl:value-of select="@reason/string()"/></fo:inline>}
+            </xsl:when>
+            <xsl:otherwise>
+                <fo:block font-family="{$font}" font-size="{$text-size}">{<fo:inline font-style="italic">gap:<xsl:text> </xsl:text><xsl:value-of select="@reason/string()"/></fo:inline>}</fo:block>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
 
     <xsl:template match="tei:foreign">
         <fo:inline font-style="italic">

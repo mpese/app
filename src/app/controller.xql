@@ -219,9 +219,9 @@ else if ($exist:path eq '/changes.html') then
 (: handle URL that ends without a slash, eg. /dashboard :)
 else if (fn:matches($exist:path, '^[^\.]*[^/]$')) then
     local:redirect-with-slash()
-else if (fn:matches($exist:path, '^(/m/)(\w+|%20|_)+\.html$')) then
+else if (fn:matches($exist:path, '^(/m/)(\w+|%20|%27|-|_)+\.html$')) then
     local:mss()
-else if (fn:matches($exist:path, '^(/t/)(\w+|%20)+\.(html|simple\.xml|xml|pdf|txt)$')) then
+else if (fn:matches($exist:path, '^(/t/)(\w+|%20|%27|-|_)+\.(html|simple\.xml|xml|pdf|txt)$')) then
     local:texts()
 else if (fn:matches($exist:path, '^(/p/)(\w+|%20)+\.html$')) then
     local:dispatch-attribute('/person.html', 'person_id', local:item('person_id'))
