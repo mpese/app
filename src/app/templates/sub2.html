@@ -1,5 +1,16 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
     <head prefix="dc: http://purl.org/dc/terms/#">
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async="async" src="https://www.googletagmanager.com/gtag/js?id=@ANALYTICS_TOKEN@"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', '@ANALYTICS_TOKEN@');
+        </script>
+
         <title data-template="config:page-title"></title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta data-template="config:app-meta" />
@@ -42,7 +53,5 @@
                         <span data-template="app:deployed"></span>)</p>
             </div>
         </footer>
-        <script async="async" src="https://www.googletagmanager.com/gtag/js?id=@ANALYTICS_TOKEN@"></script>
-        <script src="../../resources/js/analytics.js"></script>
     </body>
 </html>
