@@ -260,7 +260,7 @@ div#content .mpese-search-nav a {
 .home .navbar-inverse:after {
   background: url('../img/home.jpg');
   background-size: cover;
-  height: 400px;
+  height: 225px;
   position: absolute;
   width: 100vw;
   z-index: -10;
@@ -283,7 +283,7 @@ div#content .mpese-search-nav a {
 }
 
 #search-results {
-  margin-top: 150px;
+  margin-top: 55px;
   position: relative;
 }
 
