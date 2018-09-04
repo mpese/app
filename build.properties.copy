@@ -1,1 +1,2 @@
 xmlrpc=xmldb:exist://localhost:9090/exist/xmlrpc
+google.analytics=TOKEN_HERE

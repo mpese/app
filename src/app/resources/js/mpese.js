@@ -159,7 +159,9 @@ var facsimile_viewer = {
         var doc_id = $('#facsimile').data('doc-id');
 
         // call the service and process ...
-        this.call(doc_type, doc_id)
+        if (doc_type && doc_id) {
+            this.call(doc_type, doc_id)
+        }
     }
 
 };
