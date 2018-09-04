@@ -186,7 +186,7 @@ declare function local:mss() {
             local:dispatch-attribute('/mss.html', 'mss', $file)
 };
 
-response:set-header("Content-Security-Policy", "default-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; script-src 'self' 'unsafe-inline' www.googletagmanager.com; img-src 'self' https://bristoluni.atlassian.net data:; frame-src 'self' https://bristoluni.atlassian.net"),
+response:set-header("Content-Security-Policy", "default-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; script-src 'self' 'unsafe-inline' www.googletagmanager.com www.google-analytics.com; img-src 'self' https://bristoluni.atlassian.net data:; frame-src 'self' https://bristoluni.atlassian.net"),
 response:set-header("X-Content-Type-Options", "nosniff"),
 response:set-header("X-Frame-Options", "Deny"),
 
