@@ -571,18 +571,19 @@ declare function mpese-search:render-results($page as xs:integer, $type as xs:st
             for $result in $results/result
                 let $uri := $result/@uri/fn:string()
                 let $item := doc($uri)/tei:TEI
-                let $title := mpese-text:title-label($item)
-                let $authors := $item//tei:fileDesc/tei:titleStmt/tei:author[not(@role)]
-                let $mss := mpese-text:mss-details($item)
-                let $mss-label := mpese-mss:ident-label($mss)
-                let $author-label := mpese-text:author-label($authors)
-                let $link := mpese-search:text-link($item)
-                let $snippet := $result/summary
-                let $images := mpese-search:images($item)
-                let $transcripts := mpese-search:transcript($item)
-                let $witnesses := mpese-search:witness-count($item)
-                return mpese-search:result-entry($link, $title, $author-label, $snippet, $mss-label, $images,
-                                                 $transcripts, $witnesses)
+                    return if (not($item)) then () else
+                        let $title := mpese-text:title-label($item)
+                        let $authors := $item//tei:fileDesc/tei:titleStmt/tei:author[not(@role)]
+                        let $mss := mpese-text:mss-details($item)
+                        let $mss-label := mpese-mss:ident-label($mss)
+                        let $author-label := mpese-text:author-label($authors)
+                        let $link := mpese-search:text-link($item)
+                        let $snippet := $result/summary
+                        let $images := mpese-search:images($item)
+                        let $transcripts := mpese-search:transcript($item)
+                        let $witnesses := mpese-search:witness-count($item)
+                        return mpese-search:result-entry($link, $title, $author-label, $snippet, $mss-label, $images,
+                                                         $transcripts, $witnesses)
         }
         </div>
         {
