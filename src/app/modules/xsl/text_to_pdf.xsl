@@ -209,7 +209,10 @@
                     </fo:list-item-label>
                     <fo:list-item-body start-indent="body-start()">
                         <fo:block font-family="{$font}" font-size="{$list-size}">
-                            <xsl:value-of select="."/>
+                            <xsl:choose>
+                                <xsl:when test="contains(., 'Transcript of ')"><xsl:value-of select="substring-after(., 'Transcript of ')"/></xsl:when>
+                                <xsl:otherwise><xsl:value-of select="."/></xsl:otherwise>
+                            </xsl:choose>
                         </fo:block>
                     </fo:list-item-body>
                 </fo:list-item>
