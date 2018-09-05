@@ -270,7 +270,7 @@ declare function mpese-mss:contents($node as node (), $model as map (*)) {
 
                 (: scribes and others responsible for the item :)
                 let $resps := for $resp in $item/tei:respStmt
-                              return if (functx:has-empty-content($resp/tei:name/tei:persName) or functx:has-empty-content($resp/tei:name) or boolean($resp/tei:name/comment())) then () else $resp
+                              return if (functx:has-empty-content($resp) or functx:has-empty-content($resp/tei:name) or functx:has-empty-content($resp/tei:name/tei:persName) or boolean($resp/tei:name/comment())) then () else $resp
                 let $resp_list := if (count($resps) eq 0) then ()
                                     else <span class="mss-resp-list"><em>Responsibility:</em>  {
                                         if (count($resps) eq 1) then
