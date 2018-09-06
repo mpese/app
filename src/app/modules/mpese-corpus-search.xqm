@@ -413,7 +413,8 @@ declare function mpese-search:transcript($item) as node()* {
  : @param $item – an item from a result set
  :)
 declare function mpese-search:witness-count($item) as xs:string {
-    let $total := fn:count($item//tei:listBibl[@xml:id='mss_witness_generated']/tei:bibl) + fn:number(1)
+    let $base_total := fn:count($item//tei:listBibl[@xml:id='mss_witness_generated']/tei:bibl)
+    let $total := if (fn:not(functx:has-element-only-content($item//tei:text/tei:body))) then $base_total = + 1 else $base_total
     return
         if ($total eq 1) then '1 witness' else $total || ' witnesses'
 };
