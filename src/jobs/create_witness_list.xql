@@ -60,4 +60,7 @@ for $text in collection('/mpese/tei/corpus/texts')
         if (exists($text//tei:fileDesc/tei:sourceDesc/tei:listBibl[@xml:id='mss_witness_generated'])) then
                     update replace $text//tei:fileDesc/tei:sourceDesc/tei:listBibl[@xml:id='mss_witness_generated'] with $witness
                 else
-                    update insert $witness following $text//tei:fileDesc/tei:sourceDesc/tei:listBibl[@xml:id='mss_witness']
+                    if (not(exists($text//tei:fileDesc/tei:sourceDesc/tei:listBibl[@xml:id='mss_witness']))) then
+                        update insert $witness following $text//tei:fileDesc/tei:sourceDesc/tei:msDesc
+                    else
+                        update insert $witness following $text//tei:fileDesc/tei:sourceDesc/tei:listBibl[@xml:id='mss_witness']
