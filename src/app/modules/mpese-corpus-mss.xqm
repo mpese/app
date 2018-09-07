@@ -244,7 +244,7 @@ declare function mpese-mss:contents($node as node (), $model as map (*)) {
             for $item in $results
 
                 (: item locus :)
-                let $locus := if (functx:has-empty-content($item/tei:locus) or boolean($item/tei:locus/comment())) then ()
+                let $locus := if (fn:normalize-space($item/tei:locus/string()) eq '')  then ()
                     else <p class="mss-item-locus">{$item/tei:locus/string()}</p>
 
                 (: item title :)
@@ -270,7 +270,7 @@ declare function mpese-mss:contents($node as node (), $model as map (*)) {
 
                 (: scribes and others responsible for the item :)
                 let $resps := for $resp in $item/tei:respStmt
-                              return if (functx:has-empty-content($resp) or functx:has-empty-content($resp/tei:name) or functx:has-empty-content($resp/tei:name/tei:persName) or boolean($resp/tei:name/comment())) then () else $resp
+                              return if (fn:normalize-space($resp/string()) eq '') then () else $resp
                 let $resp_list := if (count($resps) eq 0) then ()
                                     else <span class="mss-resp-list"><em>Responsibility:</em>  {
                                         if (count($resps) eq 1) then
