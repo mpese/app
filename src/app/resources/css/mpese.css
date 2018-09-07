@@ -324,7 +324,7 @@ div#content .mpese-search-nav a {
   background-size: cover;
   height: 300px;
   position: absolute;
-  width: 100vw;
+  width: 100%;
   z-index: -10;
 }
 
