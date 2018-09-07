@@ -322,7 +322,7 @@ div#content .mpese-search-nav a {
 .home .navbar-inverse:after {
   background: url('../img/home.jpg');
   background-size: cover;
-  height: 300px;
+  height: 250px;
   position: absolute;
   width: 100%;
   z-index: -10;
@@ -352,15 +352,15 @@ div#content .mpese-search-nav a {
   margin-top: 1em;
 }
 
-#search-box:before {
-  content: 'Search';
-  display: block;
-  font-family: now;
-  font-size: 1.3em;
-  font-weight: 500;
-  margin: -10px auto 15px;
-  text-align: center;
-}
+/*#search-box:before {*/
+  /*content: 'Search';*/
+  /*display: block;*/
+  /*font-family: now;*/
+  /*font-size: 1.3em;*/
+  /*font-weight: 500;*/
+  /*margin: -10px auto 15px;*/
+  /*text-align: center;*/
+/*}*/
 
 .input-group {
   background: #299b80; /* Old browsers */

@@ -721,9 +721,10 @@ declare %templates:default("search", "") %templates:default("order-by", "relevan
         else
             <input name="order-by" value="date_a" type="radio"/>
     return
-    <form action="." method="get">
+    <form action="" method="get">
+        <label for="mpese-search" class="hidden">Search</label>
         <div class="input-group input-group-lg">
-             <input name="search" type="text" class="form-control" placeholder="Search ..." value="{$search}" />
+            <input id="mpese-search" name="search" type="text" class="form-control" placeholder="Search ..." value="{$search}" />
             <span class="input-group-btn">
                 <button class="btn btn-secondary" type="submit" aria-label="Search"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
             </span>
