@@ -919,3 +919,23 @@ declare function mpese-text:downloads($node as node (), $model as map (*)) {
             </div>
         </div>
 };
+
+declare function mpese-text:tabs($node as node (), $model as map (*)) {
+        <ul id="mpese-text-nav" class="nav nav-tabs">{
+            if (fn:doc($model('text'))//tei:text[1][fn:normalize-space(tei:body/string()) eq '']) then
+                    <li id="mpese-details-tab" role="presentation" class="active"><a href="#">Text details</a></li>
+            else
+                (<li id="mpese-text-tab" role="presentation" class="active"><a href="#">Text</a></li>,
+                <li id="mpese-details-tab" role="presentation"><a href="#">Text details</a></li>)
+        }</ul>
+};
+
+declare function mpese-text:text-panel($node as node (), $model as map (*)) {
+    if (fn:doc($model('text'))//tei:text[1][fn:normalize-space(tei:body/string()) eq '']) then () else
+        <div id="mpese-text-panel" class="mpese-content-panel" data-panel="mpese-text-panel">
+            <div class="row">
+                <div id="mpese-transcript" class="col-md-6">{mpese-text:transcript($node, $model)}</div>
+                <div id="mpese-image-viewer" class="col-md-6">{mpese-text:image($node, $model)}</div>
+            </div>
+        </div>
+};
