@@ -83,7 +83,7 @@
         <replace dir="build/" includes="**/expath-pkg.xml,**/repo.xml"
                  token="@APPVERSION@"
                  value="${build.major}.${build.minor}.${build.patch}"/>
-         <replace dir="build/" includes="**/*.html,**/*.js"
+         <replace dir="build/" includes="**/modules/config.xqm"
                  token="@ANALYTICS_TOKEN@"
                  value="${google.analytics}"/>
     </target>

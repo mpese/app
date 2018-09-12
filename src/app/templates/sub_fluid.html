@@ -1,75 +1,19 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
     <head prefix="dc: http://purl.org/dc/terms/#">
-        <!-- Global site tag (gtag.js) - Google Analytics -->
-        <script async="async" src="https://www.googletagmanager.com/gtag/js?id=@ANALYTICS_TOKEN@"></script>
-        <script>
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-
-          gtag('config', '@ANALYTICS_TOKEN@');
-        </script>
-
+        <script data-template="config:analytics"></script>
         <title data-template="config:page-title"></title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta data-template="config:app-meta" />
-
-        <!-- Bootstrap CSS -->
-        <link href="../../resources/css/bootstrap.min.css" rel="stylesheet" />
-        <link href="../../resources/css/style.css" rel="stylesheet" />
-        <link href="../../resources/css/ie10-viewport-bug-workaround.css" rel="stylesheet" />
-        <link href="../../resources/css/mpese.css" rel="stylesheet" />
-
-        <!-- Bootstrap  JavaScript -->
-        <script src="../../resources/js/jquery-3.2.1.min.js"></script>
-        <script src="../../resources/js/bootstrap.min.js"></script>
-        <script src="../../resources/js/ie10-viewport-bug-workaround.js"></script>
-
-        <!-- OpenSeaDragon Image Viewer -->
-        <script src="../../resources/openseadragon/openseadragon.min.js"></script>
-
-        <!-- MPESE -->
-        <script src="../../resources/js/mpese.js"></script>
+        <link data-template="config:bootstrap-css" data-template-path="../../"/>
+        <script data-template="config:bootstrap-js" data-template-path="../../"></script>
+        <script data-template="config:mpese-js" data-template-path="../../"></script>
     </head>
     <body id="body">
-        <!-- navigation -->
-       <nav class="navbar navbar-inverse navbar-fixed-top">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="../">
-                        <span data-template="config:app-abbrev">Abbrev</span>
-                        <span class="hidden-xs hidden-sm hidden-md">: <span data-template="config:app-title">App Title</span></span></a>
-            </div>
-            <div id="navbar" class="collapse navbar-collapse">
-                <ul class="nav navbar-nav">
-                    <li><a href="../introduction.html">Introduction</a></li>
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">How to use <span class="caret"></span></a>
-                    <ul class="dropdown-menu">
-                        <li><a href="../scope.html">Scope of coverage</a></li>
-                        <li><a href="../conventions.html">Transcription conventions</a></li>
-                    </ul></li>
-                    <li><a href="../teaching.html">Teaching</a></li>
-                <li><a href="../about.html">About</a></li>
-            </ul>
-        </div><!--/.nav-collapse -->
-      </div>
-    </nav>
-
-
-        <div id="content" class="container-fluid"></div>
+        <nav data-template="config:navigation" data-template-path="../../"></nav>
+        <div id="content" class="container"></div>
         <footer>
-            <div class="container">
-                <p><span data-template="app:copyright"/> See <a href="../copyright.html">copyright and licence details</a> and
-                    <a href="../cookies.html">cookie and privacy policy</a>.</p>
-            </div>
+            <div data-template="config:logo-block" data-template-path="../../"></div>
+            <div data-template="config:copyright" data-template-path="../../"></div>
         </footer>
-
     </body>
 </html>

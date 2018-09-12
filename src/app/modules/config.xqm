@@ -75,6 +75,8 @@ declare variable $config:tei-template-app := concat($config:app-root, '/modules/
 (: preferred date-time format (files :)
 declare variable $config:date-time-fmt := '[D01]/[M01]/[Y0001] [H01]:[m01]:[s01]';
 
+(: value updated by deployment process :)
+declare variable $config:analytics-token := '@ANALYTICS_TOKEN@';
 
 (:~
  : We pass the name of a document as an attribute. Work out the URI so we can get a title
@@ -252,4 +254,81 @@ declare function config:changes($node as node(), $model as map(*)) {
                 </div>
         }</div>
 
+};
+
+declare function config:analytics($node as node(), $model as map(*)) {
+    <script async="async" src="https://www.googletagmanager.com/gtag/js?id={$config:analytics-token}"></script>,
+    <script>{fn:serialize('
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag("js", new Date());
+        gtag("config", "' || $config:analytics-token || '", { "anonymize_ip": true });')}
+    </script>
+};
+
+declare function config:copyright($node as node(), $model as map(*), $path) {
+    <div class="container">
+        <p>© 2017–2018 University of Birmingham, University of Bristol. See <a href="{$path}copyright.html">copyright and licence details</a> and
+                    <a href="{$path}cookies.html">cookie and privacy policy</a>.</p>
+            </div>
+};
+
+declare function config:logo-block($node as node(), $model as map(*), $path) {
+    <div class="logo-block">
+        <img class="logo" src="{$path}resources/img/logo-AHRC.jpg" height="50" alt="AHRC" />
+        <img class="logo" src="{$path}resources/img/logo-birmingham.svg" height="50" alt="University of Birmingham" />
+        <img class="logo" src="{$path}resources/img/logo-bristol.svg" height="50" alt="University of Bristol" />
+        <img class="logo" src="{$path}resources/img/logo-ha.svg" height="50" alt="Historical Association" />
+        <img class="logo" src="{$path}resources/img/logo-bl.svg" height="50" alt="British Library" />
+    </div>
+};
+
+declare function config:bootstrap-js($node as node(), $model as map(*), $path) {
+    <script src="{$path}resources/js/jquery-3.2.1.min.js"></script>,
+    <script src="{$path}resources/js/bootstrap.min.js"></script>,
+    <script src="{$path}resources/js/ie10-viewport-bug-workaround.js"></script>
+};
+
+declare function config:bootstrap-css($node as node(), $model as map(*), $path) {
+    <link href="{$path}resources/css/bootstrap.min.css" rel="stylesheet" />,
+    <link href="{$path}resources/css/style.css" rel="stylesheet" />,
+    <link href="{$path}resources/css/ie10-viewport-bug-workaround.css" />,
+    <link href="{$path}resources/css/mpese.css" rel="stylesheet" />
+};
+
+declare function config:mpese-js($node as node(), $model as map(*), $path) {
+    <script src="{$path}resources/openseadragon/openseadragon.min.js"></script>,
+    <script src="{$path}resources/js/mpese.js"></script>
+};
+
+declare function config:navigation($node as node(), $model as map(*), $path) {
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                        aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="{$path}">{config:app-abbrev($node, $model)}
+                        <span class="hidden-xs hidden-sm hidden-md">: {config:app-title($node, $model)}</span></a>
+            </div>
+            <div id="navbar" class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="{$path}introduction.html">Introduction</a></li>
+                    <li class="dropdown">
+                        <a href="{$path}" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                           aria-haspopup="true" aria-expanded="false">How to use <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{$path}scope.html">Scope of coverage</a></li>
+                        <li><a href="{$path}conventions.html">Transcription conventions</a></li>
+                    </ul></li>
+                    <li><a href="{$path}teaching.html">Teaching</a></li>
+                    <li><a href="{$path}about.html">About</a></li>
+                </ul>
+            </div><!--/.nav-collapse -->
+        </div>
+    </nav>
 };
