@@ -101,7 +101,7 @@
     <!-- Transcript of the text -->
     <xsl:template name="transcript">
         <xsl:choose>
-            <xsl:when test="//tei:text/tei:body">
+            <xsl:when test="not(normalize-space(//tei:text/tei:body/string()) eq '')">
                 <!-- subtitle -->
                 <fo:block font-family="{$font}" font-size="{$subheading-size}" font-weight="bold"
                           space-before="12pt" space-after="6pt">Transcript</fo:block>
