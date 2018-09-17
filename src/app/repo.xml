@@ -7,7 +7,7 @@
     <status>beta</status>
     <target>mpese</target>
     <version>@APPVERSION@</version>
-    <prepare>pre-install.xql</prepare>
-    <finish>post-install.xql</finish>
+    <prepare>modules/install/pre-install.xql</prepare>
+    <finish>modules/install/post-install.xql</finish>
     <deployed/>
 </meta>
