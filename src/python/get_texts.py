@@ -25,7 +25,7 @@ class GetTexts:
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
-        url = host + '/modules/mpese-text-all.xql'
+        url = host + '/api/texts.xql'
         xml_request = urllib.urlopen(url)
         tree = etree.parse(xml_request)
         root = tree.getroot()
