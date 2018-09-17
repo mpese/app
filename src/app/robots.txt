@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /dashboard/
+Disallow: /resources/
+Disallow: /tests/
+Disallow: /data/
