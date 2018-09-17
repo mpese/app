@@ -347,7 +347,7 @@ declare function mpese-search:result-entry($link as xs:string, $title as xs:stri
                                            $transcripts as node()*, $witnesses as xs:string) as node() {
     <a href="{$link}" class="list-group-item">{
         <div class="result-entry">
-            <h4 class="list-group-item-heading result-entry-title">{$title}{$images}{$transcripts}</h4>
+            <h2 class="list-group-item-heading result-entry-title">{$title}{$images}{$transcripts}</h2>
             <p class="list-group-item-text result-entry-author">{$author}</p>
             <p class="list-group-item-text result-entry-snippet">{$snippet//p/child::*}</p>
             <p class="list-group-item-text result-entry-witness">{$witnesses}</p>

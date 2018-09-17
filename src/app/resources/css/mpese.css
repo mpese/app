@@ -401,12 +401,14 @@ div#content .mpese-search-nav a {
   transition: 0.2s all ease-in-out;
 }
 
-#search-results {
+h1.mpese-home-heading {
   margin-top: 77px;
   position: relative;
+  font-size: 1.1em;
+  text-align: center;
 }
 
-#search-results:before {
+h1.mpese-home-heading:before {
   background: white;
   content: '';
   height: 40px;
@@ -565,12 +567,6 @@ left: 50%;
 
 }
 
-#search-results {
-
-margin-top: 63px;
-
-}
-
 .home .navbar-inverse:after {
 
 height: 240px;
@@ -653,4 +649,8 @@ position: absolute;
 
 width: 350px;
 
+}
+
+.result-entry h2 {
+  font-size: 1.2em;
 }
