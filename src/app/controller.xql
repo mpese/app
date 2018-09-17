@@ -157,7 +157,7 @@ declare function local:texts() {
     return
         (: throw a 404 if the file doesn't exist :)
         if (fn:not(fn:doc-available('/db/mpese/tei/corpus/texts/' || $file))) then
-            (response:set-status-code(404), local:dispatch('/sub404.html'))
+            (response:set-status-code(404), local:dispatch('/modules/html/sub404.html'))
         else
             (: simple xml, used for processing with VARD :)
             if (fn:ends-with($exist:path, '.simple.xml')) then
@@ -173,7 +173,7 @@ declare function local:texts() {
                 local:serialize-text-txt($file)
             (: HTML version of the text :)
             else
-                local:dispatch-attribute('/text.html', 'text', $file)
+                local:dispatch-attribute('/modules/html/text.html', 'text', $file)
 };
 
 (: handle URL to a manuscript :)
@@ -181,9 +181,9 @@ declare function local:mss() {
     let $file := fn:concat(local:item('mss'), '.xml')
     return
         if (fn:not(fn:doc-available('/db/mpese/tei/corpus/mss/' || $file))) then
-            (response:set-status-code(404), local:dispatch('/sub404.html'))
+            (response:set-status-code(404), local:dispatch('/modules/html/sub404.html'))
         else
-            local:dispatch-attribute('/mss.html', 'mss', $file)
+            local:dispatch-attribute('/modules/html/mss.html', 'mss', $file)
 };
 
 response:set-header("Content-Security-Policy", "default-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; script-src 'self' 'unsafe-inline' www.googletagmanager.com www.google-analytics.com; img-src 'self' www.google-analytics.com data:; frame-src 'self'"),
@@ -215,12 +215,12 @@ else if (fn:starts-with($exist:path, "/resources/")) then
     (:</ignore>:)
     local:default()
 else if (fn:starts-with($exist:path, "/modules/")) then
-    (response:set-status-code(404), local:dispatch('/sub404.html'))
+    (response:set-status-code(404), local:dispatch('/modules/html/sub404.html'))
 else if ($exist:path eq "") then
     local:redirect-with-slash()
 (: homepage, / or /index.html :)
 else if ($exist:path eq '/' or $exist:path eq '/index.html') then
-    local:dispatch('/home.html')
+    local:dispatch('/modules/html/home.html')
 (: handle URL that ends without a slash, eg. /dashboard :)
 else if (fn:matches($exist:path, '^[^\.]*[^/]$')) then
     local:redirect-with-slash()
@@ -229,7 +229,7 @@ else if (fn:matches($exist:path, '^(/m/)(\w+|%20|%27|-|_)+\.html$')) then
 else if (fn:matches($exist:path, '^(/t/)(\w+|%20|%27|-|_)+\.(html|simple\.xml|xml|pdf|txt)$')) then
     local:texts()
 else if (fn:matches($exist:path, '^(/p/)(\w+|%20)+\.html$')) then
-    local:dispatch-attribute('/person.html', 'person_id', local:item('person_id'))
+    local:dispatch-attribute('/modules/html/person.html', 'person_id', local:item('person_id'))
 else if (fn:starts-with($exist:path, "/dashboard/")) then
     (: forward dashboard :)
     local:dashboard()
