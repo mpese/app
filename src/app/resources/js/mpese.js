@@ -18,7 +18,6 @@ var text = {
 
         if ($('#mpese-text-panel').length === 1) {
             $('#mpese-details-panel').hide();
-            console.log('Yup');
         }
 
             $('ul#mpese-text-nav > li > a').off('click')
@@ -116,10 +115,11 @@ var facsimile_viewer = {
      * .dzi names so that they can be passed to the OpenSeaDragon server.
      */
     call: function(type, id) {
-        $.get("/modules/images.xql", {type: type, id: id}, function(data) {
+        $.ajax({url: "/api/images.xql", data: {type: type, id: id}, dataType: 'json'})
+            .done(function(json) {
 
             // parse the results
-            var json = JSON.parse(data);
+            // var json = JSON.parse(data);
 
             // hold the tiles
             var tiles = []
@@ -127,7 +127,6 @@ var facsimile_viewer = {
             // create a list of dzi files
             if (typeof json !== "undefined") {
                 for (var i = 0; i < json.results.images.length; i++) {
-                    console.log("*** " + json.results.images[i])
                     var tmp = json.results.images[i].split('.');
                     var tile = '/images' + tmp[0] + '.dzi';
                     tiles.push(tile)
