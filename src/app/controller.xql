@@ -221,8 +221,6 @@ else if ($exist:path eq "") then
 (: homepage, / or /index.html :)
 else if ($exist:path eq '/' or $exist:path eq '/index.html') then
     local:dispatch('/home.html')
-else if ($exist:path eq '/changes.html') then
-    local:dispatch('/changes.html')
 (: handle URL that ends without a slash, eg. /dashboard :)
 else if (fn:matches($exist:path, '^[^\.]*[^/]$')) then
     local:redirect-with-slash()
