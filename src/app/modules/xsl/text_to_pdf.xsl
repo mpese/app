@@ -192,7 +192,7 @@
         <xsl:call-template name="C17_print_witness"/>
         <xsl:call-template name="modern_print_witness"/>
         <xsl:call-template name="selected_criticism"/>
-        <fo:block space-before="24pt" font-family="{$font}" font-size="{$note-size}">&#169; 2018 University of Birmingham,
+        <fo:block space-before="24pt" font-family="{$font}" font-size="{$note-size}">&#169; 2017–<xsl:value-of select="year-from-date(current-date())"/> University of Birmingham,
                         University of Bristol</fo:block>
         <fo:block space-before="6pt" text-align="center" font-family="{$font}" font-size="{$note-size}"><xsl:value-of select="$url"/></fo:block>
     </xsl:template>
