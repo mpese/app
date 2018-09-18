@@ -25,7 +25,7 @@ class GetTexts:
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
-        url = host + '/api/texts.xql'
+        url = host + '/api/texts.xql?type=t'
         xml_request = urllib.urlopen(url)
         tree = etree.parse(xml_request)
         root = tree.getroot()
