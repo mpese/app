@@ -193,7 +193,7 @@
         <xsl:call-template name="modern_print_witness"/>
         <xsl:call-template name="selected_criticism"/>
         <fo:block space-before="24pt" font-family="{$font}" font-size="{$note-size}">&#169; 2017–<xsl:value-of select="year-from-date(current-date())"/> University of Birmingham,
-                        University of Bristol</fo:block>
+                        University of Bristol. Provided under a Creative Commons Attribution 4.0 International (CC BY 4.0) licence.</fo:block>
         <fo:block space-before="6pt" text-align="center" font-family="{$font}" font-size="{$note-size}"><xsl:value-of select="$url"/></fo:block>
     </xsl:template>
 
