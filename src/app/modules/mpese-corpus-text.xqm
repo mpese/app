@@ -640,7 +640,7 @@ declare function mpese-text:author-title($node as node (), $model as map (*)) {
     (: get the authors :)
     let $authors := mpese-text:authors($model('text'), false())
     return
-        <h2 class="mpese-item-title">{(mpese-text:author-label($authors), text{' &apos;'}, mpese-text:title($model('text')), text{'&apos;'})}</h2>
+        <h1 class="mpese-item-title">{(mpese-text:author-label($authors), text{' &apos;'}, mpese-text:title($model('text')), text{'&apos;'})}</h1>
 };
 
 (:~
@@ -651,7 +651,11 @@ declare function mpese-text:author-title($node as node (), $model as map (*)) {
  : @return the details of the manuscript
  :)
 declare function mpese-text:mss($node as node (), $model as map (*)) {
-    <p>{mpese-text:mss-with-link($model('mss'), doc($model('text')))}</p>
+    let $text := mpese-text:mss-with-link($model('mss'), doc($model('text')))
+    return if (fn:not(fn:empty($text))) then
+        <h2 class="mpese-item-ms">{mpese-text:mss-with-link($model('mss'), doc($model('text')))}</h2>
+        else
+        <h2 class="mpese-item-ms">No manuscript details.</h2>
 };
 
 (: ----- Main text tab -----:)

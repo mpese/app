@@ -2,23 +2,25 @@
      data-template="templates:surround" data-template-with="templates/sub_fluid.html"
      data-template-at="content">
 
-    <div data-template="mpese-person:person">
-        <h2 data-template="mpese-person:title"></h2>
-        <p data-template="mpese-mss:search-nav"></p>
+    <div class="mpese-content-panel">
+        <div data-template="mpese-person:person">
+            <h1 data-template="mpese-person:title"></h1>
+            <p data-template="mpese-mss:search-nav"></p>
 
-        <div class="row">
-            <div class="col-md-4">
-                <h4>Texts</h4>
-                <h5>Author</h5>
-                <div data-template="mpese-person:author"></div>
-            </div>
-            <div class="col-md-3">
-                <h4>Bibliographic details</h4>
-                <div data-template="mpese-person:bibliographic"></div>
-            </div>
-            <div class="col-md-5">
-                <h4>Further reading</h4>
-                <div data-template="mpese-person:further-reading"></div>
+            <div class="row">
+                <div class="col-md-4">
+                    <h2>Texts</h2>
+                    <h3>Author</h3>
+                    <div data-template="mpese-person:author"></div>
+                </div>
+                <div class="col-md-3">
+                    <h2>Bibliographic details</h2>
+                    <div data-template="mpese-person:bibliographic"></div>
+                </div>
+                <div class="col-md-5">
+                    <h2>Further reading</h2>
+                    <div data-template="mpese-person:further-reading"></div>
+                </div>
             </div>
         </div>
     </div>

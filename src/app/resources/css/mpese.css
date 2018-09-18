@@ -654,3 +654,12 @@ width: 350px;
 .result-entry h2 {
   font-size: 1.2em;
 }
+
+h2.mpese-item-ms {
+  font-size: 0.8em;
+  font-weight: normal;
+}
+
+.mpese-content-panel h3 {
+  font-size: 1.0em;
+}
