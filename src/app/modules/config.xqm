@@ -266,9 +266,13 @@ declare function config:analytics($node as node(), $model as map(*)) {
     </script>
 };
 
+declare function config:copyright-date($node as node(), $model as map(*)) {
+    text {'&#169; 2017–' || fn:year-from-date(fn:current-date())}
+};
+
 declare function config:copyright($node as node(), $model as map(*), $path) {
     <div class="container">
-        <p>© 2017–2018 University of Birmingham, University of Bristol. See <a href="{$path}copyright.html">copyright and licence details</a> and
+        <p>&#169; 2017–{fn:year-from-date(fn:current-date())} University of Birmingham, University of Bristol. See <a href="{$path}copyright.html">copyright and licence details</a> and
                     <a href="{$path}cookies.html">cookie and privacy policy</a>.</p>
             </div>
 };
