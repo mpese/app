@@ -18,6 +18,8 @@ var text = {
 
         if ($('#mpese-text-panel').length === 1) {
             $('#mpese-details-panel').hide();
+        } else {
+            $('#mpese-details-panel').show();
         }
 
             $('ul#mpese-text-nav > li > a').off('click')
