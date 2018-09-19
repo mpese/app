@@ -134,7 +134,12 @@
         <xsl:choose>
             <xsl:when test="@place='LM'"><span class="mpese-add-lm"><em class="mpese-lm-note">Left margin: </em> <xsl:apply-templates/></span></xsl:when>
             <xsl:when test="@place='RM'"><span class="mpese-add-rm"><em class="mpese-rm-note">Right margin: </em> <xsl:apply-templates/></span></xsl:when>
-            <xsl:when test="@place='header'"><span class="tei-add-header"><xsl:apply-templates/></span></xsl:when>
+            <xsl:when test="@place='header'">
+                <xsl:choose>
+                    <xsl:when test="@rend='align-centre'"><span class="tei-add-header text-center"><xsl:apply-templates/></span></xsl:when>
+                    <xsl:otherwise><span class="tei-add-header"><xsl:apply-templates/></span></xsl:otherwise>
+                </xsl:choose>
+            </xsl:when>
             <xsl:when test="@place='above'"><span class="superscript"><xsl:apply-templates/></span></xsl:when>
             <xsl:otherwise ><span class="mpese-add">[<xsl:apply-templates/>]</span></xsl:otherwise>
         </xsl:choose>
