@@ -59,7 +59,7 @@ declare function local:dispatch-attribute($uri as xs:string, $param as xs:string
             <forward url="{$view}"/>
         </view>
         <error-handler>
-            <forward url="{$exist:controller}/error-page.html" method="get"/>
+            <forward url="{$exist:controller}/modules/html/error-page.html" method="get"/>
             <forward url="{$exist:controller}/modules/view.xql"/>
         </error-handler>
      </dispatch>
