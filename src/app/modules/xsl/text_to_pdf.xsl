@@ -68,6 +68,18 @@
             <xsl:value-of select="//tei:fileDesc/tei:sourceDesc/tei:msDesc/tei:msIdentifier/tei:idno"/>
         </xsl:variable>
         <xsl:variable name="folios" select="//tei:pb/@n/string()"/>
+        <xsl:variable name="editions" select="//tei:pb/@ed/string()"/>
+        <xsl:variable name="edition_label">
+            <xsl:choose>
+                <xsl:when test="count($editions) &gt; 0">
+                    <xsl:text>, </xsl:text>
+                    <xsl:value-of select="$editions[1]"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:text></xsl:text>
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
         <xsl:variable name="folio_label">
             <xsl:choose>
                 <xsl:when test="count($folios) &gt; 1">
@@ -82,7 +94,7 @@
                 </xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
-        <xsl:value-of select="$repo"/> <xsl:value-of select="$folio_label"/>
+        <xsl:value-of select="$repo"/> <xsl:value-of select="$edition_label"/> <xsl:value-of select="$folio_label"/>
     </xsl:variable>
 
     <!-- Introduction to the text -->

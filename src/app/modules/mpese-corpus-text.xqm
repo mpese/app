@@ -231,11 +231,14 @@ declare function mpese-text:languages($text as xs:string) as element()* {
 declare function mpese-text:folios($doc as node()) as xs:string {
     let $folios := for $folio in $doc//tei:pb/@n/string()
                    return $folio
-    return
-        if (count($folios) eq 0) then ''
-        else if (count($folios) > 1) then ', ff. ' || $folios[1] || "-" || $folios[last()]
+    let $range :=
+        if (fn:count($folios) eq 0) then ()
+        else if (fn:count($folios) > 1) then ', ff. ' || $folios[1] || "-" || $folios[fn:last()]
         else ', f. ' || $folios[1]
 
+    let $edition := fn:head($doc//tei:pb/@ed)/fn:string()
+
+    return if (fn:not(fn:normalize-space($edition) eq '')) then ', ' || $edition || $range else $range
 };
 
 
