@@ -7,6 +7,7 @@
             <text qname="tei:text"/>
             <text qname="tei:msDesc"/>
             <text qname="tei:term" boost="3.0"/>
+            <text qname="tei:bibl"/>
         </lucene>
         <range>
             <create qname="tei:term" type="xs:string" case="no"/>
