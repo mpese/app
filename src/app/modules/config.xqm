@@ -336,3 +336,11 @@ declare function config:navigation($node as node(), $model as map(*), $path) {
         </div>
     </nav>
 };
+
+declare function config:archives-list($node as node(), $model as map(*)) {
+    <ul>{
+        for $repo in fn:distinct-values(fn:collection($config:mpese-tei-corpus-mss)//tei:repository/fn:string())
+        order by $repo
+        return <li>{$repo}</li>
+    }</ul>
+};
