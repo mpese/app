@@ -887,7 +887,7 @@ function mpese-search:advanced-results($node as node (), $model as map (*), $pag
  : @return the introducton in a <p/> or nothing.
  :)
 declare function mpese-search:mpese-home-description($node as node (), $model as map (*)) {
-    if (fn:not(functx:is-value-in-sequence('search', request:get-parameter-names()))) then
+    if (fn:count(request:get-parameter-names()) eq 0) then
         <p class="mpese-home-description">Before the outbreak of Civil War in 1642, England developed a large,
                 influential and often radical pamphlet literature. This project aims to survey the vast hidden archive
                 of early Stuart England's manuscript pamphlets.</p>
