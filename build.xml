@@ -17,6 +17,8 @@
     <property name="ivy.jar.dir" value="${ivy.home}/lib"/>
     <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
 
+    <property name="env.workspace" value="${basedir}"/>
+
     <!-- create lib for holding jars needed for running ant tasks -->
     <target name="init">
         <mkdir dir="${lib}"/>
@@ -198,7 +200,7 @@
     <target name="get-texts">
         <mkdir dir="data/texts-original"/>
         <exec dir="src/python" executable="python">
-            <arg line="get_texts.py ${server.base.url} ${basedir}/data/texts-original"/>
+            <arg line="get_texts.py ${server.base.url} ${env.workspace}/data/texts-original"/>
         </exec>
     </target>
 
