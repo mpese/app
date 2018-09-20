@@ -878,3 +878,19 @@ function mpese-search:advanced-results($node as node (), $model as map (*), $pag
     mpese-search:process-search('adv', $page, $num, $search, $keyword-type, $exclude, $image, $transcript, $start-range,
                                 $end-range, $order-by)
 };
+
+(:~
+ : Display the homepage text if we are not in a search.
+ :
+ : @param $node     the HTML node being processes
+ : @param $model    application data
+ : @return the introducton in a <p/> or nothing.
+ :)
+declare function mpese-search:mpese-home-description($node as node (), $model as map (*)) {
+    if (fn:not(functx:is-value-in-sequence('search', request:get-parameter-names()))) then
+        <p class="mpese-home-description">Before the outbreak of Civil War in 1642, England developed a large,
+                influential and often radical pamphlet literature. This project aims to survey the vast hidden archive
+                of early Stuart England's manuscript pamphlets.</p>
+    else
+        ()
+};
