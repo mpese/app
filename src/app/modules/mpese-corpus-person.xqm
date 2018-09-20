@@ -49,7 +49,7 @@ declare function mpese-person:label($persName as node()?) as xs:string {
 
 
 declare function mpese-person:person-label($person as node()) as node() {
-    <h2>{fn:string-join($person//tei:persName/*/string(), ' ')}</h2>
+    <h1>{fn:string-join($person//tei:persName/*/string(), ' ')}</h1>
 };
 
 (: ---------- TEMPLATE FUNCTIONS ----------- :)

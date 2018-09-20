@@ -45,7 +45,7 @@ function test-mss:person-without-link() {
 (: --------- Test template functions ---------- :)
 
 (: Check we get the text and mss and add it to the model:)
-declare %test:assertXPath("deep-equal($result, <h2>British Library, Additional MS 35331</h2>)")
+declare %test:assertXPath("deep-equal($result, <h1>British Library, Additional MS 35331</h1>)")
 function test-mss:mss-ident() {
 
     let $node := <test></test>

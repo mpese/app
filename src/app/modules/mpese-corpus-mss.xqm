@@ -159,7 +159,7 @@ declare function mpese-mss:mss-ident($node as node (), $model as map (*)) {
 
     let $msIdentifier := doc($model('mss'))//tei:body/tei:msDesc/tei:msIdentifier
     return
-        <h2>{mpese-mss:ident-label($msIdentifier)}</h2>
+        <h1>{mpese-mss:ident-label($msIdentifier)}</h1>
 };
 
 (:~
