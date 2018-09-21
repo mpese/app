@@ -906,6 +906,21 @@ declare function mpese-text:text-topic($node as node (), $model as map (*)) {
         mpese-text:keywords-label($text-types)
 };
 
+declare function mpese-text:transcribed-by($node as node (), $model as map (*)) {
+
+    let $transcribed-by := fn:doc($model('text'))//tei:change[@status="transcribed"]
+
+    return
+        if (fn:count($transcribed-by) eq 0) then <p>No transcription details</p>
+        else
+            let $people :=
+                for $idref in $transcribed-by
+                    let $id := fn:substring-after($idref/@who/fn:string(), '#')
+                    let $person := fn:doc($model('text'))/fn:id($id)
+                    return $person/tei:name/fn:string() || ' (' || $person/tei:resp/fn:string() || ')'
+            return <p>{fn:string-join($people, ', ')}</p>
+};
+
 (:~
  : Display download links
  : @param $node     the HTML node being processes
