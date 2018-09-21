@@ -208,7 +208,7 @@
         <java jar="${vard.home}/clui.jar" fork="true" dir="${vard.home}">
             <jvmarg value="-Xms256M"/>
             <jvmarg value="-Xmx512M"/>
-            <arg line="${basedir}vard/setup 50 1 ${basedir}/data/texts-original true  ${basedir}/data/texts-normalized true"/>
+            <arg line="${basedir}/vard/setup 50 1 ${basedir}/data/texts-original true  ${basedir}/data/texts-normalized true"/>
         </java>
     </target>
 
