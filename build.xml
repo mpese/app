@@ -196,19 +196,18 @@
 
     <!-- use python script to get 'simple' texts -->
     <target name="get-texts">
-        <mkdir dir="data/texts-original"/>
+        <mkdir dir="data/text-original"/>
         <exec dir="src/python" executable="python">
-            <arg line="get_texts.py ${server.base.url} ${basedir}/data/texts-original"/>
+            <arg line="get_texts.py ${server.base.url} ${basedir}/data/text-original"/>
         </exec>
     </target>
 
     <!-- normalize texts with Vard -->
     <target name="run-vard">
-        <mkdir dir="data/texts-normalized"/>
         <java jar="${vard.home}/clui.jar" fork="true" dir="${vard.home}">
             <jvmarg value="-Xms256M"/>
             <jvmarg value="-Xmx512M"/>
-            <arg line="${basedir}/vard/setup 50 1 ${basedir}/data/texts-original true  ${basedir}/data/texts-normalized true"/>
+            <arg line="${basedir}vard/setup 50 1 ${basedir}/data/text-original true  ${basedir}/data/text-normalized true"/>
         </java>
     </target>
 
@@ -216,7 +215,7 @@
     <target name="store-normalized" depends="resolve,credentials">
         <xdb:store uri="${xmlrpc}/db/mpese/normalized/texts" ssl="${ssl}"
                    createcollection="true" user="${username}" password="${password}">
-            <fileset dir="${basedir}/data/texts-normalized/varded(50%) - Changes Tagged">
+            <fileset dir="${basedir}/data/text-normalized/varded(50%) - Changes Tagged">
                 <include name="*.xml"/>
             </fileset>
         </xdb:store>
