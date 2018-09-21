@@ -19,6 +19,7 @@ class GetTexts:
         return tmp.replace('.xml', '.simple.xml')
 
     def get_xml_file_process(self, host, workspace):
+
         """ Process the files and get the text """
         try:
             os.makedirs(os.path.dirname(workspace))
@@ -35,7 +36,9 @@ class GetTexts:
             text_uri = host + '/t/' + filename
             print('Retrieving ' + text_uri)
             r = urllib.urlopen(text_uri)
-            with open(workspace + '/' + filename, 'wb') as file:
+            file_to_write = r'' + workspace + '/' + filename
+            print(file_to_write)
+            with open(file_to_write, 'wb') as file:
                 file.write(r.read())
             # throttle
             time.sleep(0.2)
