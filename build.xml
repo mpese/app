@@ -208,7 +208,7 @@
         <java jar="${vard.home}/clui.jar" fork="true" dir="${vard.home}">
             <jvmarg value="-Xms256M"/>
             <jvmarg value="-Xmx512M"/>
-            <arg line="${basedir}vard/setup 50 1 ${basedir}/data/texts-original true  ${basedir}/data/text-normalized true"/>
+            <arg line="${basedir}vard/setup 50 1 ${basedir}/data/texts-original true  ${basedir}/data/texts-normalized true"/>
         </java>
     </target>
 
@@ -216,7 +216,7 @@
     <target name="store-normalized" depends="resolve,credentials">
         <xdb:store uri="${xmlrpc}/db/mpese/normalized/texts" ssl="${ssl}"
                    createcollection="true" user="${username}" password="${password}">
-            <fileset dir="${basedir}/data/text-normalized/varded(50%) - Changes Tagged">
+            <fileset dir="${basedir}/data/texts-normalized/varded(50%) - Changes Tagged">
                 <include name="*.xml"/>
             </fileset>
         </xdb:store>
