@@ -122,6 +122,9 @@ div#content .pagination a, div#content .pagination a:hover {
   border: 0;
 }
 
+.main-row {
+  padding-top: 10px;
+}
 
 /* Images */
 
@@ -165,8 +168,15 @@ p.mpese-home-img-caption {
   width: 95%;
 }
 
+@media (min-width: 768px) {
+  .navbar-inverse > .container {
+    display: flex;
+  }
+}
+
 .container > .navbar-header {
   flex: 1;
+  padding: 10px 0;
 }
 
 .navbar-inverse .navbar-brand,
@@ -203,10 +213,18 @@ p.mpese-home-img-caption {
   margin-left: -1px;
 }
 
+.navbar-inverse .navbar-collapse, .navbar-inverse .navbar-form {
+  border-color:white;
+}
+
 
 @media (min-width: 768px) {
   .navbar-nav {
     float: none;
+  }
+
+  .container > .navbar-header {
+    padding: 0;
   }
   .navbar>.container .navbar-brand {
     height: 85px;
@@ -251,6 +269,7 @@ footer::before {
   height: 180px;
   left: 50%;
   margin: -195px 0 0 -175px;
+  max-width: 100%;
   position: absolute;
   width: 350px;
 }
@@ -267,7 +286,7 @@ footer .container {
 footer p {
   clear: none;
   font-size: 0.85em;
-  margin: 1em 0;
+  margin: 1em auto;
   padding: 0;
   text-align: center;
 }
@@ -556,6 +575,20 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#dddddd', end
   transition: 0.2s all ease-in-out;
 }
 
+h1 {
+  font-size: 1.7em;
+  margin-top: 0;
+}
+h2 {
+  font-size: 1.5em;
+}
+h3 {
+  font-size: 1.3em;
+}
+h4 {
+  font-size: 1.15em;
+}
+
 h1.mpese-home-heading {
   margin-top: 100px;
   position: relative;
@@ -584,17 +617,17 @@ h1.mpese-home-heading {
   }
 }
 
-h1.mpese-home-heading:before {
-  background: white;
-  content: '';
-  height: 40px;
-  margin-left: -14px;
-  left: 50%;
-  position: absolute;
-  top: -65px;
-  transform: rotate(45deg);
-  width: 40px;
-}
+/*h1.mpese-home-heading:before {*/
+  /*background: white;*/
+  /*content: '';*/
+  /*height: 40px;*/
+  /*margin-left: -14px;*/
+  /*left: 50%;*/
+  /*position: absolute;*/
+  /*top: -65px;*/
+  /*transform: rotate(45deg);*/
+  /*width: 40px;*/
+/*}*/
 
 .mpese-home-description {
   margin: 0 auto;
@@ -727,6 +760,11 @@ div#content .pagination > .disabled > a:hover {
   border: transparent;
 }
 
+.navbar-inverse .navbar-toggle:hover, .navbar-inverse .navbar-toggle:focus {
+  background-color: transparent;
+  border: 0;
+}
+
 /* panel-primary */
 
 .panel-primary {
@@ -738,6 +776,10 @@ div#content .pagination > .disabled > a:hover {
   border-color: #333;
 }
 
+.panel-body {
+  padding: 10px;
+}
+
 .btn-success {
   background-color: #00a0c6;
   border:0;
@@ -746,13 +788,15 @@ div#content .pagination > .disabled > a:hover {
 .btn-success:hover {
 }
 
-div#content p a.btn-success:hover {
-  background-color: #36985f;}
-
 div#content p a.btn-success {
   border: 0;
   border-radius: 30px;
   color: white;
+  margin: 5px 0;
+}
+
+div#content p a.btn-success:hover {
+  background-color: #36985f;
 }
 
 
@@ -763,3 +807,5 @@ div#content p a.btn-success {
 .mpese-content-panel h3 {
   font-size: 1.0em;
 }
+
+

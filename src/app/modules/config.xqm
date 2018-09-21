@@ -297,7 +297,8 @@ declare function config:bootstrap-css($node as node(), $model as map(*), $path) 
     <link href="{$path}resources/css/bootstrap.min.css" rel="stylesheet" />,
     <link href="{$path}resources/css/style.css" rel="stylesheet" />,
     <link href="{$path}resources/css/ie10-viewport-bug-workaround.css" />,
-    <link href="{$path}resources/css/mpese.css" rel="stylesheet" />
+    <link href="{$path}resources/css/mpese.css" rel="stylesheet" />,
+    <link rel="icon" type="image/png" href="{$path}resources/img/favicon-32x32.png"/>
 };
 
 declare function config:mpese-js($node as node(), $model as map(*), $path) {
