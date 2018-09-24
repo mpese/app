@@ -329,6 +329,7 @@ declare function config:navigation($node as node(), $model as map(*), $path) {
                     <ul class="dropdown-menu">
                         <li><a href="{$path}scope.html">Scope of coverage</a></li>
                         <li><a href="{$path}conventions.html">Transcription conventions</a></li>
+                        <li><a href="{$path}collation.html">Collation Sets</a></li>
                         <li><a href="{$path}technical.html">Technical details</a></li>
                     </ul></li>
                     <li><a href="{$path}teaching.html">Teaching</a></li>
