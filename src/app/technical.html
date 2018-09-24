@@ -1,0 +1,52 @@
+<!--suppress ALL -->
+<div xmlns="http://www.w3.org/1999/xhtml"
+     data-template="templates:surround" data-template-with="templates/main.html"
+     data-template-at="content">
+
+   <div class="row main-row">
+        <div class="col-lg-12">
+            <h1>Technical Details</h1>
+            <p>Questions about the technical work can be sent to Research IT, University of Bristol
+                (<a href="mailto:research-it@bristol.ac.uk">research-it@bristol.ac.uk</a>,
+                <a href="https://twitter.com/BrisUniRIT">https://twitter.com/BrisUniRIT</a>)</p>
+            <h2>XML</h2>
+            <p>The <em>Manuscript Pamphleteering in Early Stuart England</em> (MPESE) project contains over 1700 XML
+                documents that represent texts, manuscripts and people. An instance of the
+                <a href="http://exist-db.org">eXistdb database</a> is used to store the data and provide a platform
+                for running the application. The data and the source code of the application are available on
+                <a href="https://github.com/mpese">GitHub</a>. <a href="http://ucrel.lancs.ac.uk/vard/about/">VARD 2</a>
+                was used to normalize, i.e. modernize spelling, texts with transcripts to improve the keyword
+                searching.</p>
+            <h2>Images</h2>
+            <p>The British Library digitised ~2500 pages of their manuscripts and the TIFF files were processed with
+                <a href="https://www.imagemagick.org">ImageMagick</a> on the University of Bristol’s
+                <a href="http://www.bristol.ac.uk/acrc/">High-Performance Computing cluster</a> to produce Zeep Zoom
+                images. Using <a href="https://openseadragon.github.io/">OpenSeadragon</a>, the MPESE application
+                provides high-quality photographs of pamphlets next to their transcripts.</p>
+            <h2>URLs</h2>
+            <p>It is possible to get different representations of texts by changing the file extension in the URL,
+                for example:</p>
+            <h3>HTML:</h3>
+            <p><a href="../t/RaleighSpeechDeath1618.html">https://mpese.ac.uk/t/RaleighSpeechDeath1618.html</a></p>
+            <h3>PDF:</h3>
+            <p><a href="../t/RaleighSpeechDeath1618.pdf">https://mpese.ac.uk/t/RaleighSpeechDeath1618.pdf</a></p>
+            <h3>TEI/XML:</h3>
+            <p><a href="../t/RaleighSpeechDeath1618.xml">https://mpese.ac.uk/t/RaleighSpeechDeath1618.xml</a></p>
+            <h3>Text (no formatting):</h3>
+            <p><a href="../t/RaleighSpeechDeath1618.txt">https://mpese.ac.uk/t/RaleighSpeechDeath1618.txt</a></p>
+            <h3>XML (minimum markup, used by VARD 2)</h3>
+            <p><a href="../t/RaleighSpeechDeath1618.simple.xml">https://mpese.ac.uk/t/RaleighSpeechDeath1618.simple.xml</a></p>
+            <p>For manuscripts, we only provide an HTML and XML representation:</p>
+            <h3>HTML:</h3>
+            <p><a href="../m//BLAddMS11600.html">https://mpese.ac.uk/m/BLAddMS11600.html</a></p>
+            <h3>XML:</h3>
+            <p><a href="../m/BLAddMS11600.xml">https://mpese.ac.uk/m/BLAddMS11600.xml</a></p>
+            <h2>Puppet</h2>
+            <p>A <a href="https://puppet.com/">Puppet</a> configuration management module was written to deploy the
+            eXist database onto University of Bristol infrastructure. The module was contributed back to the
+                <a href="https://github.com/eXist-db/puppet-existdb">eXist project</a> and is now available to the
+                open source community.</p>
+
+        </div>
+    </div>
+</div>
