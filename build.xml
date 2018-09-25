@@ -224,4 +224,10 @@
     <!-- normalize texts -->
     <target name="normalize-texts" depends="get-texts,run-vard,store-normalized"/>
 
+    <!-- extract data -->
+    <target name="extract-data" depends="resolve,credentials">
+        <xdb:extract uri="${xmlrpc}/db/mpese/tei/corpus" ssl="${ssl}" user="${username}" password="${password}"
+                     createdirectories="true" subcollections="true" destdir="${extract.dir}" overwrite="true"/>
+    </target>
+
 </project>
