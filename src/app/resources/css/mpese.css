@@ -482,22 +482,30 @@ h2.mpese-item-ms a {
   display: none; /* For theming purposes */
 }
 
-.home .navbar-inverse:after {
-  background: url('../img/home.jpg');
-  background-size: cover;
-  height: 240px;
-  position: absolute;
-  width: 100vw;
-  z-index: -10;
+
+
+.navbar {
+    margin-bottom: 0;
 }
 
+div.searchbox-container {
+  background: url('../img/home.jpg');
+  background-size: cover;
+  width: 100vw;
+}
+
+
 #search-box {
+  width: 420px;
+  margin: 0 auto;
+  padding : 38px 0 68px 0;
 }
 
 @media (min-width: 768px) {
   #search-box {
-    margin: 0 4em;
-    padding: 2em 3em 1.5em;
+    width: 580px;
+    margin: 0 auto;
+    padding: 58px 0;
   }
 }
 
@@ -506,12 +514,6 @@ h2.mpese-item-ms a {
   position: relative;
 }
 
-@media (min-width: 768px) {
-  #search-box {
-    margin: 0 3em;
-    padding: 2em 4em;
-  }
-}
 
 #search-box p {
 /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#dddddd+0,ffffff+11 */
@@ -807,5 +809,4 @@ div#content p a.btn-success:hover {
 .mpese-content-panel h3 {
   font-size: 1.0em;
 }
-
 
