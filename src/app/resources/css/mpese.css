@@ -503,7 +503,7 @@ div.searchbox-container {
 
 @media (min-width: 768px) {
   #search-box {
-    width: 580px;
+    width: 540px;
     margin: 0 auto;
     padding: 58px 0;
   }
