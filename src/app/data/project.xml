@@ -98,8 +98,22 @@
                         impactful research across the School.</bio>
                 </person>
                 <person>
+                    <name>Tim Wales</name>
+                    <role>Senior Manuscript Researcher</role>
+                    <institution>University of Birmingham</institution>
+                    <bio>Tim Wales has worked extensively on the social, political and cultural history of Early Modern
+                        England. He has published on seventeenth-century poverty and welfare and on informal policing in
+                        later Stuart London. He is the author of over twenty articles for the Oxford Dictionary of
+                        National Biography was compiler of the
+                        <a href="https://www.british-history.ac.uk/no-series/cromwell-army-officers">The Cromwell
+                            Association Online Directory of Parliamentarian Army Officers</a>.
+                        Most recently he has been a Research Associate on the 'Intoxicants and Early Modernity' project
+                        at the University of Sheffield. He is a co-editor of Volume 1 of the forthcoming new critical
+                        edition of the letters and speeches of Oliver Cromwell.</bio>
+                </person>
+                <person>
                     <name>Mike Jones</name>
-                    <role>Developer</role>
+                    <role>Research Software Engineer</role>
                     <institution>University of Bristol</institution>
                     <bio>Mike Jones has over eighteen years’ experience of software development,
                         working with numerous software languages, frameworks, open standards and
@@ -119,6 +133,12 @@
                     He has worked in university IT for over twenty years and in that time has administered the full stack of technologies 
                     in use in higher education, from patch cables to departmental IT infrastructure to critical corporate systems. His 
                     skills include Puppet, Python, Perl, Unix, databases and networking.</bio>
+                </person>
+                <person>
+                    <name>Richard Rowley</name>
+                    <role>Designer</role>
+                    <institution>Richard Rowley Design</institution>
+                    <bio><a href="http://www.richardrowley.net/">Richard</a> is a project manager for Agile Collective Ltd and tutor in early modern literature.</bio>
                 </person>
             </members>
         </group>
