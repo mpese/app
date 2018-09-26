@@ -163,7 +163,7 @@ p.mpese-home-img-caption {
 
 .navbar-inverse > .container {
   align-items: center;
-  display: flex;
+  /*display: flex;*/
   justify-content: space-between;
   width: 95%;
 }
@@ -491,7 +491,7 @@ h2.mpese-item-ms a {
 div.searchbox-container {
   background: url('../img/home.jpg');
   background-size: cover;
-  width: 100vw;
+  width: 100%;
 }
 
 
