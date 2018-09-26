@@ -230,4 +230,12 @@
                      createdirectories="true" subcollections="true" destdir="${extract.dir}" overwrite="true"/>
     </target>
 
+    <!-- use python script to get PDFs -->
+    <target name="get-texts-pdf">
+        <mkdir dir="data/text-pdf"/>
+        <exec dir="src/python" executable="python">
+            <arg line="get_pdfs.py ${server.base.url} ${basedir}/data/text-pdf"/>
+        </exec>
+    </target>
+
 </project>

@@ -5,7 +5,7 @@ import time
 import urllib
 import xml.etree.ElementTree as etree
 
-""" Quick and dirty script to get the texts as XML files """
+""" Quick and dirty script to get the texts as PDF files """
 
 
 class GetTexts:
@@ -16,9 +16,9 @@ class GetTexts:
     def get_text_filename(self, uri):
         """ Create the filename from the URI """
         tmp = uri.split("/")[-1]
-        return tmp.replace('.xml', '.simple.xml')
+        return tmp.replace('.xml', '.pdf')
 
-    def get_xml_file_process(self, host, workspace):
+    def get_pdf_file_process(self, host, workspace):
 
         """ Process the files and get the text """
         try:
@@ -26,7 +26,7 @@ class GetTexts:
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
-        url = host + '/api/texts.xql?type=t'
+        url = host + '/api/texts.xql'
         xml_request = urllib.urlopen(url)
         tree = etree.parse(xml_request)
         root = tree.getroot()
@@ -41,9 +41,8 @@ class GetTexts:
             with open(file_to_write, 'wb') as file:
                 file.write(r.read())
             # throttle
-            time.sleep(0.2)
+            time.sleep(3)
 
 
 if __name__ == "__main__":
-    GetTexts().get_xml_file_process(sys.argv[1], sys.argv[2])
-    # print(sys.argv[2])
+    GetTexts().get_pdf_file_process(sys.argv[1], sys.argv[2])
