@@ -103,12 +103,7 @@ declare function mpese-search:all() as node() {
         for $result in fn:collection($config:mpese-tei-corpus-texts)
         order by fn:replace($result//tei:titleStmt/tei:title/fn:string(), '^((A|The)\s*)', '')
         return
-            <result uri="{fn:base-uri($result)}">
-                {
-                    let $val := fn:substring($result//tei:text[1]/tei:body/tei:p[1]/string(), 1, 200)
-                    return if (fn:not(fn:normalize-space($val) eq '')) then <summary><p><em>{$val}</em> ...</p></summary> else ()
-                }
-            </result>
+            <result uri="{fn:base-uri($result)}"/>
     }</results>
 };
 
