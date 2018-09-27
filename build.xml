@@ -238,4 +238,16 @@
         </exec>
     </target>
 
+    <target name="setup-data" depends="resolve,credentials">
+        <!-- data -->
+        <xdb:restore uri="${xmlrpc}" ssl="${ssl}" user="${username}" password="${password}"
+                     file="setup/eXist-data.zip"/>
+        <!-- indices -->
+        <xdb:restore uri="${xmlrpc}" ssl="${ssl}" user="${username}" password="${password}"
+                     file="setup/eXist-index.zip"/>
+        <loadfile property="xquery" srcFile="setup/index_data.xql"/>
+        <xdb:xquery uri="${xmlrpc}/db" user="${username}" password="${password}" ssl="${ssl}"
+                    query="${xquery}" outputproperty="job_output"/>
+    </target>
+
 </project>

@@ -1,0 +1,1 @@
+xmldb:reindex('/db/mpese')
