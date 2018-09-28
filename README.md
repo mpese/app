@@ -109,3 +109,8 @@ Properties might need to be updated.
 | google.analytics| Google analytics token                                               |
 | extract.dir     | Location to extract data from eXist, e.g.=/home/foobar/mpese-data/   |
 
+### Normalized texts
+
+The project uses VARD 2 to normalize texts (modernize spelling)
+
+http://ucrel.lancs.ac.uk/vard/about/
