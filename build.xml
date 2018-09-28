@@ -238,6 +238,7 @@
         </exec>
     </target>
 
+    <!-- add MPESE data, indices and index -->
     <target name="setup-data" depends="resolve,credentials">
         <!-- data -->
         <xdb:restore uri="${xmlrpc}" ssl="${ssl}" user="${username}" password="${password}"
