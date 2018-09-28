@@ -68,12 +68,6 @@ declare function local:make-collections() {
     )
 };
 
-declare function local:create-indices() {
-    (local:create-collection(concat('/db/system/config', $config:mpese-tei-corpus-texts)),
-    local:create-collection(concat('/db/system/config', $config:mpese-tei-corpus-mss)),
-    local:create-collection(concat('/db/system/config', $config:mpese-normalized-texts)))
-};
-
 util:log('INFO', ('MPESE: Running the pre-installation script ...')),
 
 (: create group that will own collections :)
@@ -83,8 +77,5 @@ local:make-group($config:mpese_group, $config:mpese_group_desc),
 (: create collections :)
 util:log('INFO', ('MPESE: Creating collections.')),
 local:make-collections(),
-
-util:log('INFO', ('MPESE: Creating indices.')),
-local:create-indices(),
 
 util:log('INFO', ('MPESE: The pre-installation script has finished'))
