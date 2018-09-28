@@ -139,7 +139,10 @@
         <echo>${test-results}</echo>
         <fail message="There are failed tests.">
             <condition>
-                <contains string="${test-results}" substring="failure-error-code"/>
+                <or>
+                    <contains string="${test-results}" substring="failure-error-code"/>
+                    <contains string="${test-results}" substring="exerr:ERROR"/>
+                </or>
             </condition>
         </fail>
     </target>

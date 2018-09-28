@@ -79,18 +79,18 @@ declare %test:assertEquals("Untitled (No date)") function test-text:result-title
 };
 
  (: Test folio label for no/missing folio :)
-declare %test:assertEquals("") function test-text:folios-0() {
+(:declare %test:assertEquals("") function test-text:folios-0() {:)
 
-    let $doc := <tei:TEI>
-                    <tei:text>
-                        <tei:body/>
-                    </tei:text>
-                </tei:TEI>
+    (:let $doc := <tei:TEI>:)
+                    (:<tei:text>:)
+                        (:<tei:body/>:)
+                    (:</tei:text>:)
+                (:</tei:TEI>:)
 
-    return
-        mpese-text:folios($doc)
+    (:return:)
+        (:mpese-text:folios($doc):)
 
-};
+(:};:)
 
  (: Test folio label for a single folio :)
 declare %test:assertEquals(", f. 56r") function test-text:folios-1() {
