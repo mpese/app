@@ -113,43 +113,6 @@ declare function local:serialize-text-txt($file) {
     </dispatch>
 };
 
-(: handle dashboard related urls :)
-declare function local:dashboard() {
-    (: /dashboard/ or /dashboard/index.html :)
-    if ($exist:path eq '/dashboard/' or $exist:path eq '/dashboard/index.html') then
-        (util:log('INFO', ('Dasboard homepage')),
-        local:dispatch('/dashboard/index.html'))
-    (: XML file of a text, e.g. /dashboard/text/Baconpeech.xml or /dashboard/text/Bacon%20Speech.xml :)
-    else if (fn:starts-with($exist:path , '/dashboard/text/') and fn:ends-with($exist:path, '.xml')) then
-        (util:log('INFO', ('Dashboard: text as XML')),
-        local:serialize-xml('text', concat(local:item('text'), '.xml')))
-    (: HTML file of a text, e.g. /dashboard/text/BaconSpeech.html or /dashboard/text/Bacon%20Speech.html :)
-    else if (fn:starts-with($exist:path , '/dashboard/text/') and fn:ends-with($exist:path, '.html')) then
-        (util:log('INFO', ('Dashboard: text as HTML')),
-        local:dispatch-attribute('/dashboard/text_item.html', 'text', concat(local:item('text'), '.xml')))
-    (: /dashboard/mss/all/ or /dashboard/mss/all/index.html :)
-    else if ($exist:path eq '/dashboard/mss/all.html') then
-        (util:log('INFO', ('Dashboard: display all MSS')),
-        local:dispatch('/dashboard/mss_all.html'))
-    (: HTML file of a manuscript, e.g. /dashboard/mss/BLAddMS11049.html :)
-    else if (fn:matches($exist:path, '(/dashboard/mss/)(\w+|%20)+\.html$')) then
-        (util:log('INFO', ('Dashboard: display a MS as HTML')),
-        local:dispatch-attribute('/dashboard/mss_item.html', 'mss', concat(local:item('mss'), '.xml')))
-    else if (fn:matches($exist:path, '(/dashboard/mss/)(\w+|%20)+\.xml$')) then
-        (util:log('INFO', ('Dashboard: mss as XML')),
-        local:serialize-xml('mss', concat(local:item('mss'), '.xml')))
-    (: list people, /dashboard/people/ /dashboard/people/index.html :)
-    else if ($exist:path eq '/dashboard/people/' or $exist:path eq '/dashboard/people/index.html') then
-        (util:log('INFO', ('Dashboard: display all people')),
-        local:dispatch('/dashboard/people_all.html'))
-    else if (fn:matches($exist:path, '/dashboard/people/P[0-9]{4}\.html$')) then
-        (util:log('INFO', ('Display a person')),
-        local:dispatch-attribute('/dashboard/person.html', 'pid', local:item('pid')))
-    else
-        (util:log('INFO', ('Dashboard: default handling')),
-        local:default())
-};
-
 (: handle URL to a text:)
 declare function local:texts() {
     (: work out name of the file :)
@@ -230,9 +193,6 @@ else if (fn:matches($exist:path, '^(/t/)(\w+|%20|%27|-|_)+\.(html|simple\.xml|xm
     local:texts()
 else if (fn:matches($exist:path, '^(/p/)(\w+|%20)+\.html$')) then
     local:dispatch-attribute('/modules/html/person.html', 'person_id', local:item('person_id'))
-else if (fn:starts-with($exist:path, "/dashboard/")) then
-    (: forward dashboard :)
-    local:dashboard()
 else if (fn:ends-with($exist:path, ".html")) then
     local:dispatch($exist:path)
 else
