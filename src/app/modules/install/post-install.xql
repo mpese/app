@@ -97,8 +97,8 @@ local:chgrp-collection($config:mpese_group, $config:mpese-word-unzip),
 local:chgrp-collection($config:mpese_group, $config:mpese-normalized-texts),
 
 (: set the group owner for certain paths (not recursively) :)
-sm:chgrp($mpese-app-dashboard, $config:mpese_group),
-sm:chown($mpese-app-dashboard, 'admin'),
+(:sm:chgrp($mpese-app-dashboard, $config:mpese_group),:)
+(:sm:chown($mpese-app-dashboard, 'admin'),:)
 
 (: change permission for certain paths :)
 sm:chmod(xs:anyURI($config:mpese-tei-corpus-texts), 'rwxrwxr-x'),
@@ -113,13 +113,13 @@ local:copy-text-template(),
 
 local:copy-mpese-meta(),
 
-local:copy-mpese-indices(),
+(:local:copy-mpese-indices(),:)
 
 xmldb:reindex($config:mpese-tei-corpus-texts),
 
 xmldb:reindex($config:mpese-normalized-texts),
 
 (: force login for dash ... :)
-sm:chmod(xs:anyURI($mpese-app-dashboard), 'r-xr-x---'),
+(:sm:chmod(xs:anyURI($mpese-app-dashboard), 'r-xr-x---'),:)
 
 util:log('INFO', ('MPESE: The post-installation script has finished'))
