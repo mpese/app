@@ -173,10 +173,8 @@ else if (not (request:get-method() = $methods) or (request:get-method() eq 'POST
 (: limit the options ... needs nginx to rewrite this though :)
 (: empty path :)
 else if (fn:starts-with($exist:path, "/resources/")) then
-    (:<ignore xmlns="http://exist.sourceforge.net/NS/exist">:)
-        (:<set-header name="Cache-Control" value="max-age=3600, must-revalidate"/>:)
-    (:</ignore>:)
-    local:default()
+    (response:set-header('Cache-Control', 'public, max-age=3600, must-revalidate'),
+    local:default())
 else if (fn:starts-with($exist:path, "/modules/")) then
     (response:set-status-code(404), local:dispatch('/modules/html/sub404.html'))
 else if ($exist:path eq "") then
