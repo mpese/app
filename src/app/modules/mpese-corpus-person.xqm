@@ -6,6 +6,7 @@ module namespace mpese-person = 'http://mpese.rit.bris.ac.uk/corpus/person/';
 declare namespace tei = 'http://www.tei-c.org/ns/1.0';
 
 import module namespace config = "http://mpese.rit.bris.ac.uk/config" at "config.xqm";
+import module namespace functx = 'http://www.functx.com' at 'functx-1.0.xql';
 import module namespace utils = 'http://mpese.rit.bris.ac.uk/utils/' at 'utils.xql';
 import module namespace mpese-mss = 'http://mpese.rit.bris.ac.uk/corpus/mss/' at 'mpese-corpus-mss.xqm';
 
@@ -150,19 +151,22 @@ declare function mpese-person:responsibility($node as node (), $model as map (*)
     <div>{
         let $id := '../people/people.xml#' || $model('id')
         let $resp_list := fn:collection($config:mpese-tei-corpus-mss)//tei:respStmt/descendant::*[@corresp eq $id]
+        let $results := for $resp in $resp_list
+                            let $item := $resp/ancestor::tei:msItem
+                            let $title := $item/tei:title/fn:string()
+                            order by fn:replace($title, '^((A|The)\s*)', '')
+                            return
+                                let $mss := fn:base-uri($item)
+                                let $msIdentifier := fn:doc($mss)//tei:body/tei:msDesc/tei:msIdentifier
+                                let $mss-name := utils:name-from-uri($mss)
+                                let $resp_val := $resp/ancestor::tei:respStmt/tei:resp/string()
+                                return <li>'{$title}' ({$resp_val}) in <a href="../m/{$mss-name}.html">{mpese-mss:ident-label($msIdentifier)}</a></li>
+        let $distinct_results := functx:distinct-deep($results)
         return
-            if (fn:count($resp_list) > 0) then
+            if (fn:count($distinct_results) > 0) then
                 <ul>{
-                    for $resp in $resp_list
-                    let $item := $resp/ancestor::tei:msItem
-                    let $title := $item/tei:title/fn:string()
-                    order by fn:replace($title, '^((A|The)\s*)', '')
-                    return
-                            let $mss := fn:base-uri($item)
-                            let $msIdentifier := fn:doc($mss)//tei:body/tei:msDesc/tei:msIdentifier
-                            let $mss-name := utils:name-from-uri($mss)
-                            let $resp_val := $resp/ancestor::tei:respStmt/tei:resp/string()
-                            return <li>'{$title}' ({$resp_val}) in <a href="../m/{$mss-name}.html">{mpese-mss:ident-label($msIdentifier)}</a></li>
+                    for $result in $distinct_results
+                        return $result
                 }</ul>
             else (<p>No texts</p>)
     }</div>
