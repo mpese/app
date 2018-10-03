@@ -190,7 +190,10 @@ else if (fn:matches($exist:path, '^(/m/)(\w+|%20|%27|-|_)+\.html$')) then
 else if (fn:matches($exist:path, '^(/t/)(\w+|%20|%27|-|_)+\.(html|simple\.xml|xml|pdf|txt)$')) then
     local:texts()
 else if (fn:matches($exist:path, '^(/p/)(\w+|%20)+\.html$')) then
-    local:dispatch-attribute('/modules/html/person.html', 'person_id', local:item('person_id'))
+    if (fn:empty(doc('/db/mpese/tei/corpus/people/people.xml')/id(local:item('person_id')))) then
+        (response:set-status-code(404), local:dispatch('/modules/html/sub404.html'))
+    else
+        local:dispatch-attribute('/modules/html/person.html', 'person_id', local:item('person_id'))
 else if (fn:ends-with($exist:path, ".html")) then
     local:dispatch($exist:path)
 else
