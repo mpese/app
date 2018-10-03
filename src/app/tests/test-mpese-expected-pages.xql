@@ -100,7 +100,7 @@ function test-page:advanced-search-page-results-ok() {
  : 2) We should see the name of the page
 :)
 declare %test:assertXPath("$result//@statusCode/string() eq '200'")
-%test:assertXPath("contains($result//h1/string(), 'Introduction')")
+%test:assertXPath("contains($result//h1/string(), 'Introductory Essay')")
 function test-page:introduction-ok() {
     httpclient:get(xs:anyURI($test-page:host || '/introduction.html'), false(), ())
 };
