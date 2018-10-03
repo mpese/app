@@ -49,7 +49,9 @@ declare function mpese-person:label($persName as node()?) as xs:string {
 
 
 declare function mpese-person:person-label($person as node()) as node() {
-    <h1>{fn:string-join($person//tei:persName/*/string(), ' ')}</h1>
+    <h1 class="align-center">{if (fn:count($person//tei:persName/*/fn:string()) > 1) then
+            fn:string-join($person//tei:persName/*/fn:string(), ' ')
+         else fn:normalize-space($person//tei:persName/fn:string())}</h1>
 };
 
 (: ---------- TEMPLATE FUNCTIONS ----------- :)
@@ -129,12 +131,14 @@ declare function mpese-person:further-reading($node as node (), $model as map (*
 declare function mpese-person:author($node as node (), $model as map (*)) {
     <div>{
         let $id := '../people/people.xml#' || $model('id')
-        let $texts := collection($config:mpese-tei-corpus-texts)//tei:teiHeader/tei:fileDesc/tei:titleStmt[tei:author/tei:persName/@corresp = $id]
-        let $text_list := if (count($texts) > 0) then
-                            for $text in $texts
-                                let $uri := base-uri($text)
+        let $texts := fn:collection($config:mpese-tei-corpus-texts)//tei:teiHeader/tei:fileDesc/tei:titleStmt[tei:author/tei:persName/@corresp = $id]
+        let $text_list := if (fn:count($texts) > 0) then
+                            <ul>{
+                                for $text in $texts
+                                let $uri := fn:base-uri($text)
                                 let $name := utils:name-from-uri($uri)
                                 return <li><a href="../t/{$name}.html">{$text/tei:title/string()}</a></li>
+                            }</ul>
                           else (<p>No texts</p>)
         return
             $text_list

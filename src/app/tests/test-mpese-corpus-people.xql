@@ -11,7 +11,7 @@ import module namespace mpese-person = 'http://mpese.rit.bris.ac.uk/corpus/perso
 
 
 (: test we get a list of topics :)
-declare %test:assertXPath("deep-equal($result, <h1>William Herbert 3rd Earl of Pembroke</h1>)")
+declare %test:assertXPath("deep-equal($result, <h1 class='align-center'>William Herbert 3rd Earl of Pembroke</h1>)")
 function test-person:text-topic() {
     let $node := <test></test>
     let $person := <tei:person xml:id="P0079" sex="M">
