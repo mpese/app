@@ -620,7 +620,7 @@ declare function mpese-search:all($page as xs:integer, $num as xs:integer) as no
     let $results_subset := mpese-search:paginate-results($results, $start, $num)
 
     (: rebuild search in pagination / cookie after navigating :)
-    let $map := map { 'page' := $page }
+    let $map := map { 'page' : $page }
 
     (: render the subset :)
     return
@@ -666,9 +666,9 @@ declare function mpese-search:process-search($type as xs:string, $page as xs:int
     let $results-subset := mpese-search:paginate-results($results, $start, $num)
 
     (: rebuild search in pagination :)
-    let $map := map { 'search' := $search, 'keyword-type' := $keyword-type, 'exclude' := $exclude, 'start-range' := $start-range,
-                      'end-range' := $end-range, 'image' := $image, 'transcript' := $transcript,
-                      'order-by' := $order-by, 'page' := $page }
+    let $map := map { 'search' : $search, 'keyword-type' : $keyword-type, 'exclude' : $exclude, 'start-range' : $start-range,
+                      'end-range' : $end-range, 'image' : $image, 'transcript' : $transcript,
+                      'order-by' : $order-by, 'page' : $page }
 
     return mpese-search:render-results($page, $type, $pages, $total, $results-subset, $map)
 };

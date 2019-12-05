@@ -71,7 +71,7 @@ declare function mpese-person:person($node as node (), $model as map (*), $perso
     let $person := mpese-person:person-by-id($person_id)
 
     return
-        map { "person" := $person, "id" := $person_id}
+        map { "person" : $person, "id" : $person_id}
 };
 
 (:~

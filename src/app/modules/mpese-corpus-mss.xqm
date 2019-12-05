@@ -140,7 +140,7 @@ declare function mpese-mss:mss($node as node (), $model as map (*), $mss as xs:s
 
     let $doc := $config:mpese-tei-corpus-mss || '/' || $mss
     return
-        map { "mss" := $doc}
+        map { "mss" : $doc}
 };
 
 (:~
