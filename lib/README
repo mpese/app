@@ -1,2 +1,0 @@
-JAR files needed to run the eXist Ant tasks. These are retrieved by Apache Ivy and shouldn't
-be included with the project.
