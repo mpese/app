@@ -22,6 +22,10 @@
         <mkdir dir="${lib}"/>
     </target>
 
+    <target name="clean-lib">
+        <delete dir="${lib}"/>
+    </target>
+
     <!-- download ivy -->
     <target name="download-ivy" unless="offline">
         <mkdir dir="${ivy.jar.dir}"/>
@@ -29,7 +33,7 @@
              dest="${ivy.jar.file}" usetimestamp="true"/>
     </target>
 
-    <target name="init-ivy" depends="download-ivy">
+    <target name="init-ivy" depends="clean-lib,download-ivy">
         <path id="ivy.lib.path">
             <fileset dir="${ivy.jar.dir}" includes="*.jar"/>
         </path>
