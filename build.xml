@@ -258,4 +258,11 @@
                     query="${xquery}" outputproperty="job_output"/>
     </target>
 
+    <!-- Repair database (after binary restore) -->
+    <target name="repair-database" depends="resolve,credentials">
+        <loadfile property="xquery" srcFile="src/jobs/repair_database.xql"/>
+        <xdb:xquery uri="${xmlrpc}/db" user="${username}" password="${password}" ssl="${ssl}"
+                    query="${xquery}" outputproperty="job_output"/>
+    </target>
+
 </project>
